@@ -26,6 +26,7 @@ import io.legado.app.utils.cnCompare
 import io.legado.app.utils.fromJsonObject
 import io.legado.app.utils.printOnDebug
 import io.legado.app.utils.stackTraceStr
+import io.legado.app.utils.TranslateUtils
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import splitties.init.appCtx
@@ -58,6 +59,17 @@ object BookController {
 
                     3 -> books.sortedBy { it.order }
                     else -> books.sortedByDescending { it.durChapterTime }
+                }
+                if (TranslateUtils.isTranslateEnabled()) {
+                    runBlocking {
+                        data.forEach {
+                            it.name = TranslateUtils.translateMeta(it.name)
+                            it.author = TranslateUtils.translateMeta(it.author)
+                            it.latestChapterTitle = TranslateUtils.translateMeta(it.latestChapterTitle)
+                            it.durChapterTitle = TranslateUtils.translateMeta(it.durChapterTitle)
+                            it.intro = TranslateUtils.translateMeta(it.intro)
+                        }
+                    }
                 }
                 returnData.setData(data)
             }
@@ -133,6 +145,11 @@ object BookController {
                 appDb.bookChapterDao.delByBook(book.bookUrl)
                 appDb.bookChapterDao.insert(*toc.toTypedArray())
                 appDb.bookDao.update(book)
+                if (TranslateUtils.isTranslateEnabled()) {
+                    runBlocking {
+                        toc.forEach { it.title = TranslateUtils.translateMeta(it.title) }
+                    }
+                }
                 return returnData.setData(toc)
             } else {
                 val bookSource = appDb.bookSourceDao.getBookSource(book.origin)
@@ -146,6 +163,11 @@ object BookController {
                 appDb.bookChapterDao.delByBook(book.bookUrl)
                 appDb.bookChapterDao.insert(*toc.toTypedArray())
                 appDb.bookDao.update(book)
+                if (TranslateUtils.isTranslateEnabled()) {
+                    runBlocking {
+                        toc.forEach { it.title = TranslateUtils.translateMeta(it.title) }
+                    }
+                }
                 return returnData.setData(toc)
             }
         } catch (e: Exception) {
@@ -165,6 +187,11 @@ object BookController {
         val chapterList = appDb.bookChapterDao.getChapterList(bookUrl)
         if (chapterList.isEmpty()) {
             return refreshToc(parameters)
+        }
+        if (TranslateUtils.isTranslateEnabled()) {
+            runBlocking {
+                chapterList.forEach { it.title = TranslateUtils.translateMeta(it.title) }
+            }
         }
         return returnData.setData(chapterList)
     }
