@@ -5,7 +5,6 @@ import androidx.collection.LruCache
 import io.legado.app.R
 import io.legado.app.constant.PreferKey
 import io.legado.app.model.TranslationLoader
-import io.legado.app.model.Trie
 import splitties.init.appCtx
 import java.util.regex.Pattern
 import kotlinx.coroutines.*
@@ -215,16 +214,19 @@ object TranslateUtils {
         while (currentIndex < length) {
             var longestMatchLen = 0
             
-            fun checkTrie(trie: Trie) {
-                trie.findLongestMatch(text, currentIndex)?.let { (len, _) ->
-                    if (len > longestMatchLen) {
-                        longestMatchLen = len
-                    }
+            // Check names dictionary
+            data.names.findLongestMatch(text, currentIndex)?.let { (len, _) ->
+                if (len > longestMatchLen) {
+                    longestMatchLen = len
                 }
             }
             
-            checkTrie(data.names)
-            checkTrie(data.vietPhrase)
+            // Check vietPhrase dictionary
+            data.vietPhrase.findLongestMatch(text, currentIndex)?.let { (len, _) ->
+                if (len > longestMatchLen) {
+                    longestMatchLen = len
+                }
+            }
             
             if (longestMatchLen > 0) {
                 // Found a word
@@ -316,6 +318,7 @@ object TranslateUtils {
      */
     fun clearCache() {
         translationCache.evictAll()
+        TranslationLoader.clearCache()
     }
     
     /**

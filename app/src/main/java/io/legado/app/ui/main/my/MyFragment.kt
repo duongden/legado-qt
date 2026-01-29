@@ -39,6 +39,7 @@ import io.legado.app.utils.setEdgeEffectColor
 import io.legado.app.utils.showHelp
 import io.legado.app.utils.startActivity
 import io.legado.app.utils.viewbindingdelegate.viewBinding
+import io.legado.app.utils.toastOnUi
 
 class MyFragment() : BaseFragment(R.layout.fragment_my_config), MainFragmentInterface {
 
@@ -165,9 +166,14 @@ class MyFragment() : BaseFragment(R.layout.fragment_my_config), MainFragmentInte
                 "readRecord" -> startActivity<ReadRecordActivity>()
                 "about" -> startActivity<AboutActivity>()
                 "exit" -> activity?.finish()
+                "custom_dict_manage" -> startActivity<io.legado.app.ui.dict.manage.DictManageActivity>()
             }
             return super.onPreferenceTreeClick(preference)
         }
+
+
+
+
 
 
     }

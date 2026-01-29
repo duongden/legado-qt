@@ -1237,5 +1237,16 @@
     <string name="translate_setting">Translation</string>
     <string name="translate_enable">Enable QT Translation</string>
     <string name="translate_enable_summary">Translate Chinese book metadata and content to Vietnamese</string>
+    <string name="import_names">Names Dictionary</string>
+    <string name="import_names_summary">Import custom Names.txt (Default if empty)</string>
+    <string name="import_vietphrase">VietPhrase Dictionary</string>
+    <string name="import_vietphrase_summary">Import custom VietPhrase.txt (Default if empty)</string>
+    <string name="import_phienam">Phonetic Dictionary</string>
+    <string name="import_phienam_summary">Import custom ChinesePhienAmWords.txt (Default if empty)</string>
+    <string name="import_success">Import success</string>
+    <string name="import_fail">Import failed</string>
+    <string name="delete_success">Reset to default</string>
+    <string name="custom_dict_manage">Manage Custom Dictionaries</string>
+    <string name="custom_dict_manage_summary">Import and manage custom translation files</string>
 
 </resources>

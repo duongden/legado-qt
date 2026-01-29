@@ -25,7 +25,7 @@ class Trie {
      * Insert a key-value pair into the trie
      */
     fun insert(key: String, value: String) {
-        var  node = root
+        var node = root
         for (char in key) {
             node = node.children.getOrPut(char) { TrieNode() }
         }
