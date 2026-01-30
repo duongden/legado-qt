@@ -1,5 +1,7 @@
 package io.legado.app.ui.main
 
+import io.legado.app.utils.TranslateUtils
+
 import android.app.Application
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -64,6 +66,7 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
 
     init {
         deleteNotShelfBook()
+        checkSourceTranslation()
     }
 
     override fun onCleared() {
@@ -245,6 +248,39 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
     private fun deleteNotShelfBook() {
         execute {
             appDb.bookDao.deleteNotShelfBook()
+        }
+    }
+
+    fun checkSourceTranslation() {
+        execute {
+            if (TranslateUtils.isTranslateEnabled()) {
+                val sources = appDb.bookSourceDao.all
+                val updatedSources = arrayListOf<BookSource>()
+                sources.forEach { source ->
+                    var changed = false
+                    val newName = TranslateUtils.translateMeta(source.bookSourceName)
+                    if (newName != source.bookSourceName) {
+                        source.bookSourceName = newName
+                        changed = true
+                    }
+                    val newGroup = TranslateUtils.translateMeta(source.bookSourceGroup)
+                    if (newGroup != source.bookSourceGroup) {
+                        source.bookSourceGroup = newGroup
+                        changed = true
+                    }
+                    val newComment = TranslateUtils.translateMeta(source.bookSourceComment)
+                    if (newComment != source.bookSourceComment) {
+                        source.bookSourceComment = newComment
+                        changed = true
+                    }
+                    if (changed) {
+                        updatedSources.add(source)
+                    }
+                }
+                if (updatedSources.isNotEmpty()) {
+                    appDb.bookSourceDao.update(*updatedSources.toTypedArray())
+                }
+            }
         }
     }
 

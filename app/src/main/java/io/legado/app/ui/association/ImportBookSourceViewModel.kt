@@ -1,5 +1,7 @@
 package io.legado.app.ui.association
 
+import io.legado.app.utils.TranslateUtils
+
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.MutableLiveData
@@ -145,6 +147,7 @@ class ImportBookSourceViewModel(app: Application) : BaseViewModel(app) {
                             if (it.bookSourceUrl.isEmpty()) {
                                 throw NoStackTraceException(context.getString(R.string.sc_not_book_source))
                             }
+                            translateSource(it)
                             allSources.add(it)
                         }
                     }
@@ -156,6 +159,7 @@ class ImportBookSourceViewModel(app: Application) : BaseViewModel(app) {
                         if (source.bookSourceUrl.isEmpty()) {
                             throw NoStackTraceException(context.getString(R.string.sc_not_book_source))
                         }
+                        items.forEach { source -> translateSource(source) }
                         allSources.addAll(items)
                     }
 
@@ -171,6 +175,7 @@ class ImportBookSourceViewModel(app: Application) : BaseViewModel(app) {
                             if (source.bookSourceUrl.isEmpty()) {
                                 throw NoStackTraceException(context.getString(R.string.sc_not_book_source))
                             }
+                            it.forEach { source -> translateSource(source) }
                             allSources.addAll(it)
                         }
                     }
@@ -200,6 +205,7 @@ class ImportBookSourceViewModel(app: Application) : BaseViewModel(app) {
                 if (source.bookSourceUrl.isEmpty()) {
                     throw NoStackTraceException(context.getString(R.string.sc_not_book_source))
                 }
+                list.forEach { source -> translateSource(source) }
                 allSources.addAll(list)
             }
         }
@@ -215,6 +221,15 @@ class ImportBookSourceViewModel(app: Application) : BaseViewModel(app) {
                 updateSourceStatus.add(source != null && source.lastUpdateTime < it.lastUpdateTime)
             }
             successLiveData.postValue(allSources.size)
+        }
+    }
+
+
+    private suspend fun translateSource(source: BookSource) {
+        if (TranslateUtils.isTranslateEnabled()) {
+            source.bookSourceName = TranslateUtils.translateMeta(source.bookSourceName)
+            source.bookSourceGroup = TranslateUtils.translateMeta(source.bookSourceGroup)
+            source.bookSourceComment = TranslateUtils.translateMeta(source.bookSourceComment)
         }
     }
 

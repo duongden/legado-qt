@@ -349,6 +349,11 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
         observeEvent<String>(PreferKey.threadCount) {
             viewModel.upPool()
         }
+        observeEvent<Boolean>(PreferKey.translateEnable) {
+            if (it) {
+                viewModel.checkSourceTranslation()
+            }
+        }
     }
 
     private fun upBottomMenu() {
