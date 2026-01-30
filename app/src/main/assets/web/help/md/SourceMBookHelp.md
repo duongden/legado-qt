@@ -1,29 +1,29 @@
-# 书源管理界面帮助
+# Trợ giúp giao diện quản lý nguồn sách
 
-* 书源右上角标志
-  * 绿点表示书源有发现,且启用了发现
-  * 红点表示书源有发现,但是未启用
-  * 没有标志表示此书源没有发现
-* 右上角有分组菜单,可以按分组筛选书源
-* 右上角更多菜单里包含
-  * 新建书源
-  * 本地导入
-  * 网络导入
-  * 二维码导入
-  * 分享选中源
-* 选择源的更多操作在右下角的菜单里面,操作都是针对选择的书源
-  * 启用所选
-  * 禁用所选
-  * 添加分组
-  * 移除分组
-  * 启用发现
-  * 禁用发现
-  * 置顶所选
-  * 置底所选
-  * 导出所选
-  * 校验所选
-* 校验书源可批量校验书源，由于网络等原因结果仅限参考
-  * "校验成功"是指所选的校验项目全部通过
-  * 可正常识别搜索为空、发现为空、搜索(发现)目录为空、搜索(发现)正文为空、校验超时、js执行错误导致的失效，其余的原因视为网站失效
-  * 校验搜索优先使用书源填写的校验关键词，不存在时使用用户输入的关键词
-  * 校验结束后会自动筛选"失效"书源
+* Biểu tượng góc trên bên phải nguồn sách
+  * Điểm xanh lá biểu thị nguồn sách có khám phá và đã bật khám phá
+  * Điểm đỏ biểu thị nguồn sách có khám phá nhưng chưa bật
+  * Không có biểu tượng biểu thị nguồn sách này không có khám phá
+* Góc trên bên phải có menu nhóm, có thể lọc nguồn sách theo nhóm
+* Menu thêm ở góc trên bên phải bao gồm
+  * Nguồn sách mới
+  * Nhập cục bộ
+  * Nhập mạng
+  * Nhập mã QR
+  * Chia sẻ nguồn đã chọn
+* Các thao tác khác cho nguồn đã chọn nằm trong menu ở góc dưới bên phải, các thao tác đều áp dụng cho nguồn sách đã chọn
+  * Bật đã chọn
+  * Tắt đã chọn
+  * Thêm nhóm
+  * Xóa nhóm
+  * Bật khám phá
+  * Tắt khám phá
+  * Đưa lên đầu đã chọn
+  * Đưa xuống cuối đã chọn
+  * Xuất đã chọn
+  * Kiểm tra đã chọn
+* Kiểm tra nguồn sách có thể kiểm tra hàng loạt, do lý do mạng v.v. kết quả chỉ mang tính tham khảo
+  * "Kiểm tra thành công" nghĩa là tất cả các mục kiểm tra đã chọn đều thông qua
+  * Có thể nhận dạng bình thường tìm kiếm trống, khám phá trống, danh mục tìm kiếm (khám phá) trống, nội dung tìm kiếm (khám phá) trống, quá thời gian kiểm tra, lỗi thực thi js dẫn đến không hợp lệ, các nguyên nhân còn lại được coi là trang web không hợp lệ
+  * Kiểm tra tìm kiếm ưu tiên sử dụng từ khóa kiểm tra do nguồn sách điền vào, nếu không có sẽ sử dụng từ khóa do người dùng nhập
+  * Sau khi kiểm tra kết thúc sẽ tự động lọc nguồn sách "không hợp lệ"

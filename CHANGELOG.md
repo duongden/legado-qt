@@ -1,11 +1,11 @@
 **2022/10/02**
 
-* 更新cronet: 106.0.5249.79
-* 正文选择菜单朗读按钮长按可切换朗读选择内容和从选择开始处一直朗读
-* 源编辑输入框设置最大行数12,在行数特别多的时候更容易滚动到其它输入
-* 修复某些情况下无法搜索到标题的bug，净化规则较多的可能会降低搜索速度 by Xwite
-* 修复文件类书源换源后阅读bug by Xwite
-* Cronet 支持DnsHttpsSvcb by g2s20150909
-* 修复web进度同步问题 by 821938089
-* 启用混淆以减小app大小 有bug请带日志反馈
-* 其它一些优化
+* Cập nhật cronet: 106.0.5249.79
+* Nhấn giữ nút đọc trong menu chọn văn bản để chuyển đổi giữa đọc nội dung đã chọn và đọc từ vị trí bắt đầu chọn
+* Đặt số dòng tối đa cho hộp nhập liệu chỉnh sửa nguồn là 12, giúp dễ dàng cuộn đến các đầu vào khác khi có quá nhiều dòng
+* Sửa lỗi trong một số trường hợp không tìm thấy tiêu đề, quy tắc làm sạch quá nhiều có thể làm giảm tốc độ tìm kiếm bởi Xwite
+* Sửa lỗi đọc sau khi thay đổi nguồn sách dạng file bởi Xwite
+* Cronet hỗ trợ DnsHttpsSvcb bởi g2s20150909
+* Sửa lỗi đồng bộ tiến độ web bởi 821938089
+* Bật làm mờ mã (obfuscation) để giảm kích thước ứng dụng, nếu có lỗi vui lòng phản hồi kèm nhật ký
+* Một số tối ưu hóa khác

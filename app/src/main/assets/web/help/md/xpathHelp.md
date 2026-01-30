@@ -1,63 +1,63 @@
-# xpath 路径表达式详解
+# Giải thích chi tiết biểu thức đường dẫn xpath
 
-_注：本文所有代码均通过 Chrome(版本 123.0.6312.86) 验证_
+_Lưu ý: Tất cả mã trong bài này đều đã được xác minh qua Chrome (phiên bản 123.0.6312.86)_
 
-> XPath 规范中定义了 13 种不同的轴（axes）。  
-> 轴表示与元素的关系，并用于定位元素树上相对于该元素的元素。
+> Trong đặc tả XPath định nghĩa 13 trục (axes) khác nhau.  
+> Trục biểu thị mối quan hệ với phần tử, và được dùng để định vị phần tử trên cây phần tử so với phần tử đó.
 
--   `namespace`（不支持）
--   `attribute` 元素的属性。它可以缩写为 `@`
--   `self` 表示元素本身。它可以缩写为 `.`
--   `parent` 当前元素的父元素。它可以缩写为 `..`
--   `child` 当前元素的子元素。
--   `ancestor` 当前元素的所有直属祖先。
--   `ancestor-or-self` 当前元素及其所有直属祖先。
--   `descendant` 当前元素的所有递归子元素。
--   `descendant-or-self` 当前元素及其所有递归子元素。
--   `following` 当前元素之后出现的所有元素。无视元素层级，但不含直属后代。
--   `following-sibling` 当前元素之后出现的所有同级元素。
--   `preceding` 当前元素之前出现的所有元素。无视元素层级，但不含直属祖先。
--   `preceding-sibling` 当前元素之前出现的所有同级元素。
+-   `namespace` (không hỗ trợ)
+-   `attribute` Thuộc tính của phần tử. Có thể viết tắt là `@`
+-   `self` Biểu thị bản thân phần tử. Có thể viết tắt là `.`
+-   `parent` Phần tử cha của phần tử hiện tại. Có thể viết tắt là `..`
+-   `child` Phần tử con của phần tử hiện tại.
+-   `ancestor` Tất cả tổ tiên trực tiếp của phần tử hiện tại.
+-   `ancestor-or-self` Phần tử hiện tại và tất cả tổ tiên trực tiếp của nó.
+-   `descendant` Tất cả phần tử con đệ quy của phần tử hiện tại.
+-   `descendant-or-self` Phần tử hiện tại và tất cả phần tử con đệ quy của nó.
+-   `following` Tất cả phần tử xuất hiện sau phần tử hiện tại. Bỏ qua cấp độ phần tử, nhưng không bao gồm hậu duệ trực tiếp.
+-   `following-sibling` Tất cả phần tử cùng cấp xuất hiện sau phần tử hiện tại.
+-   `preceding` Tất cả phần tử xuất hiện trước phần tử hiện tại. Bỏ qua cấp độ phần tử, nhưng không bao gồm tổ tiên trực tiếp.
+-   `preceding-sibling` Tất cả phần tử cùng cấp xuất hiện trước phần tử hiện tại.
 
 ```js
-// 轴的用法-> 轴名::表达式
-// 例:
+// Cách dùng trục -> Tên trục::Biểu thức
+// Ví dụ:
 > $x('//body/ancestor-or-self::*')
 < [body, html]
 ```
 
-#### 一、xpath 表达式的基本格式
+#### I. Định dạng cơ bản của biểu thức xpath
 
-> xpath 通过"路径表达式"（Path Expression）来选取元素。  
-> 在形式上，"路径表达式"与传统的文件系统非常类似。
-
-```txt
-# "/"斜杠作为路径内部的分割符。
-# 同一个元素有绝对路径和相对路径两种写法。
-# 绝对路径必须用"/"起首，后面紧跟根元素，比如/step/step/...。
-# 相对路径则是除了绝对路径以外的其他写法，比如 step/step，也就是不使用"/"起首。
-# "."表示当前元素。
-# ".."表示当前元素的父元素
-```
-
-### 二、选取元素的基本规则
+> xpath chọn phần tử thông qua "biểu thức đường dẫn" (Path Expression).  
+> Về hình thức, "biểu thức đường dẫn" rất giống với hệ thống tệp truyền thống.
 
 ```txt
-- "/"：表示选取根元素
-- "//"：表示选取任意位置的某个元素
-- nodename：表示选指定名称的元素
-- "@"： 表示选取某个属性
+# Dấu gạch chéo "/" làm dấu phân cách bên trong đường dẫn.
+# Cùng một phần tử có hai cách viết là đường dẫn tuyệt đối và đường dẫn tương đối.
+# Đường dẫn tuyệt đối phải bắt đầu bằng "/", theo sau là phần tử gốc, ví dụ /step/step/...
+# Đường dẫn tương đối là các cách viết khác ngoài đường dẫn tuyệt đối, ví dụ step/step, tức là không bắt đầu bằng "/".
+# "." biểu thị phần tử hiện tại.
+# ".." biểu thị phần tử cha của phần tử hiện tại
 ```
 
-### 三、选取元素的实例
+### II. Quy tắc cơ bản chọn phần tử
+
+```txt
+- "/"：Biểu thị chọn phần tử gốc
+- "//"：Biểu thị chọn một phần tử ở vị trí bất kỳ
+- nodename：Biểu thị chọn phần tử có tên chỉ định
+- "@"： Biểu thị chọn một thuộc tính nào đó
+```
+
+### III. Ví dụ chọn phần tử
 
 ```html
 <!DOCTYPE html>
 <html>
     <head>
         <meta charset="utf-8" />
-        <title>标题</title>
-        <meta property=author" content="作者" />
+        <title>Tiêu đề</title>
+        <meta property="author" content="Tác giả" />
     </head>
     <body>
         <div>
@@ -66,15 +66,15 @@ _注：本文所有代码均通过 Chrome(版本 123.0.6312.86) 验证_
             <p>usd</p>
         </div>
         <div>
-            <title lang="cn">Cpp高级编程</title>
+            <title lang="cn">Lập trình Cpp nâng cao</title>
             <p>39.95</p>
             <p>rmb</p>
         </div>
         <div id="list">
             <dl>
-                <dd><a href="/1">一</a></dd>
-                <dd><a href="/2">二</a></dd>
-                <dd><a href="/3">三</a></dd>
+                <dd><a href="/1">Một</a></dd>
+                <dd><a href="/2">Hai</a></dd>
+                <dd><a href="/3">Ba</a></dd>
             </dl>
         </div>
     </body>
@@ -82,184 +82,184 @@ _注：本文所有代码均通过 Chrome(版本 123.0.6312.86) 验证_
 ```
 
 ```js
-// 例1
-> $x('/') // 选取根元素,返回包含被选中元素的数组。
+// Ví dụ 1
+> $x('/') // Chọn phần tử gốc, trả về mảng chứa phần tử được chọn.
 < [document]
-// 例2
-> $x('/html') // 选取根元素下的所有 html 子元素，这是绝对路径写法。
+// Ví dụ 2
+> $x('/html') // Chọn tất cả phần tử con html dưới phần tử gốc, đây là cách viết đường dẫn tuyệt đối.
 < [html]
-// 例3
-> $x('html/head/meta') // 选取 head 元素下的所有 meta 元素，这是相对路径写法。
-< [meta, meta]  // <meta charset="utf-8">, <meta property="author" content="作者">
-// 例4
-> $x('//p') // 选取所有 p 元素，不管它们在哪里
+// Ví dụ 3
+> $x('html/head/meta') // Chọn tất cả phần tử meta dưới phần tử head, đây là cách viết đường dẫn tương đối.
+< [meta, meta]  // <meta charset="utf-8">, <meta property="author" content="Tác giả">
+// Ví dụ 4
+> $x('//p') // Chọn tất cả phần tử p, bất kể chúng ở đâu
 < [p, p, p, p] // <p>29.39</p>, <p>usd</p>, <p>39.95</p>, <p>rmb</p>
-// 例5
-> $x('html/body//a') // 选取 body 元素下的所有 a 元素
-< [a, a, a] // <a href="/1">一</a>, <a href="/2">二</a>, <a href="/3">三</a>
-// 例6
-> $x('//@lang') // 选取所有名为 lang 的属性。
+// Ví dụ 5
+> $x('html/body//a') // Chọn tất cả phần tử a dưới phần tử body
+< [a, a, a] // <a href="/1">Một</a>, <a href="/2">Hai</a>, <a href="/3">Ba</a>
+// Ví dụ 6
+> $x('//@lang') // Chọn tất cả thuộc tính có tên là lang.
 < [lang, lang] // lang="eng", lang="cn"
-> $x('html/head/meta/@content') // 选取 head 元素下所有 meta 元素的 content 属性。
-< [content] // content="作者"
-// 例7
-> $x('//meta/..') // 选取所有 meta 元素的父元素。（相同的结果只会返回一个）
+> $x('html/head/meta/@content') // Chọn thuộc tính content của tất cả phần tử meta dưới phần tử head.
+< [content] // content="Tác giả"
+// Ví dụ 7
+> $x('//meta/..') // Chọn phần tử cha của tất cả phần tử meta. (Kết quả giống nhau sẽ chỉ trả về một)
 < [head] // <head>...</head>
 ```
 
-### 四、xpath 的谓语条件（Predicate）
+### IV. Điều kiện vị ngữ của xpath (Predicate)
 
-> 所谓"谓语条件"，就是对路径表达式的附加条件。  
-> 所有的附加条件，都写在方括号 `[]` 中，用于对元素进一步的筛选。
-> 方括号内的表达式结果为 true 的元素才会被选取。
+> Cái gọi là "điều kiện vị ngữ", chính là điều kiện bổ sung cho biểu thức đường dẫn.  
+> Tất cả các điều kiện bổ sung đều được viết trong dấu ngoặc vuông `[]`, dùng để lọc thêm các phần tử.
+> Chỉ các phần tử có kết quả biểu thức trong ngoặc vuông là true mới được chọn.
 
 ```js
-// 例8
-> $x('html/head/meta[1]') //  选取 head 元素下的第一个 meta 元素
+// Ví dụ 8
+> $x('html/head/meta[1]') //  Chọn phần tử meta đầu tiên dưới phần tử head
 < [meta] // <meta charset="utf-8">
-> $x('//p[1]') // 选取所有元素下的第一个 p 元素
+> $x('//p[1]') // Chọn phần tử p đầu tiên dưới tất cả các phần tử
 < [p, p] // <p>29.39</p>, <p>39.95</p>
-// 例9
-> $x('html/head/meta[last()]') // 选取 head 元素下的最后一个 meta 元素
-< [meta] // <meta property="author" content="作者">
-// 例10
-> $x('html/head/meta[last()-1]') // 选取 head 元素下的倒数第二个 meta 元素
+// Ví dụ 9
+> $x('html/head/meta[last()]') // Chọn phần tử meta cuối cùng dưới phần tử head
+< [meta] // <meta property="author" content="Tác giả">
+// Ví dụ 10
+> $x('html/head/meta[last()-1]') // Chọn phần tử meta áp chót dưới phần tử head
 < [meta] // <meta charset="utf-8">
-// 例11
-> $x('html/head/meta[position()>1]') // 选取 head 元素下的除了第一个元素外的所有 meta 元素
-< [meta] // <meta property="author" content="作者">
-// 例12
-> $x('//title[@lang]') // 选取所有具有lang属性的title元素。
-< [title, title] // <title lang="eng">Harry Potter</title>, <title lang="cn">Cpp高级编程</title>
-// 例13
-> $x('//title[@lang="eng"]') // 选取所有lang属性的值等于"eng"的title元素。
+// Ví dụ 11
+> $x('html/head/meta[position()>1]') // Chọn tất cả phần tử meta dưới phần tử head trừ phần tử đầu tiên
+< [meta] // <meta property="author" content="Tác giả">
+// Ví dụ 12
+> $x('//title[@lang]') // Chọn tất cả phần tử title có thuộc tính lang.
+< [title, title] // <title lang="eng">Harry Potter</title>, <title lang="cn">Lập trình Cpp nâng cao</title>
+// Ví dụ 13
+> $x('//title[@lang="eng"]') // Chọn tất cả phần tử title có giá trị thuộc tính lang bằng "eng".
 < [title] // <title lang="eng">Harry Potter</title>
-// 例14
-> $x('/html/body/div[dl]') // 选择 body 的 div 子元素，且被选中 的 div 元素必须带有 dl 子元素。
+// Ví dụ 14
+> $x('/html/body/div[dl]') // Chọn phần tử con div của body, và phần tử div được chọn phải có phần tử con dl.
 < [div] // <div id="list"><dl id="list">...</dl></div>
-// 例15
-> $x('/html/body/div[p>35.00]') // 选取 body 的 div 子元素，且被选中 div 元素的 p 子元素的值必须大于 35.00。
-< [div] // <div><title lang="cn">Cpp高级编程</title><p>39.95</p><p>rmb</p></div>
-> $x('/html/body/div[p="rmb"]') // 选取 body 的 div 子元素，且被选中 div 元素的 p 子元素的值必须等于 "rmb"。
-< [div] // <div><title lang="cn">Cpp高级编程</title><p>39.95</p><p>rmb</p></div>
-// 例16
-> $x('/html/body/div[p="rmb"]/title') // 在例14结果集中，选择title子元素。
-< [title] // <title lang="cn">Cpp高级编程</title>
-// 例17
-> $x('/html/body/div/p[.>35.00]') // 选择值大于 35.00 的 "/html/body/div" 的 p 子元素。
+// Ví dụ 15
+> $x('/html/body/div[p>35.00]') // Chọn phần tử con div của body, và giá trị phần tử con p của phần tử div được chọn phải lớn hơn 35.00.
+< [div] // <div><title lang="cn">Lập trình Cpp nâng cao</title><p>39.95</p><p>rmb</p></div>
+> $x('/html/body/div[p="rmb"]') // Chọn phần tử con div của body, và giá trị phần tử con p của phần tử div được chọn phải bằng "rmb".
+< [div] // <div><title lang="cn">Lập trình Cpp nâng cao</title><p>39.95</p><p>rmb</p></div>
+// Ví dụ 16
+> $x('/html/body/div[p="rmb"]/title') // Trong tập kết quả ví dụ 14, chọn phần tử con title.
+< [title] // <title lang="cn">Lập trình Cpp nâng cao</title>
+// Ví dụ 17
+> $x('/html/body/div/p[.>35.00]') // Chọn phần tử con p của "/html/body/div" có giá trị lớn hơn 35.00.
 < [p] // <p>39.95</p>
 ```
 
-### 五、通配符
+### V. Ký tự đại diện
 
--   `\*` 表示匹配任何元素。
--   `@\*` 表示匹配任何属性名。
+-   `\*` Biểu thị khớp với bất kỳ phần tử nào.
+-   `@\*` Biểu thị khớp với bất kỳ tên thuộc tính nào.
 
 ```js
-// 例18
-> $x('//*') // 选取所有元素，结果以递归顺序返回
+// Ví dụ 18
+> $x('//*') // Chọn tất cả phần tử, kết quả trả về theo thứ tự đệ quy
 < [html, head, meta, title, meta, body, div, title, p, p, div, title, p, p, div, dl, dd, a, dd, a, dd, a]
-// 例19
-> $x('/*/*') // 选取所有第二层的元素
+// Ví dụ 19
+> $x('/*/*') // Chọn tất cả phần tử tầng thứ hai
 < [head, body] // <head>...</head>, <body>...</body>
-// 例20
-> $x('//dl[@id="list"]/*') // 选取 id="list" 的 dl 元素的所有子元素。
-< [dd, dd, dd] // <dd><a href="/1">一</a></dd>, <dd><a href="/2">二</a></dd>, <dd><a href="/3">三</a></dd>
-// 例21
-> $x('//title[@*]') // 选取所有带有属性的 title 元素。
-< [title, title] // <title lang="eng">Harry Potter</title>, <title lang="cn">Cpp高级编程</title>
+// Ví dụ 20
+> $x('//dl[@id="list"]/*') // Chọn tất cả phần tử con của phần tử dl có id="list".
+< [dd, dd, dd] // <dd><a href="/1">Một</a></dd>, <dd><a href="/2">Hai</a></dd>, <dd><a href="/3">Ba</a></dd>
+// Ví dụ 21
+> $x('//title[@*]') // Chọn tất cả phần tử title có thuộc tính.
+< [title, title] // <title lang="eng">Harry Potter</title>, <title lang="cn">Lập trình Cpp nâng cao</title>
 ```
 
-### 六、选择多个路径
+### VI. Chọn nhiều đường dẫn
 
--   用 `|` 合并多个表达式的选取结果。
+-   Dùng `|` để gộp kết quả chọn của nhiều biểu thức.
 
 ```js
-// 例22
-> $x('//title | //a') // 选取所有 title 和 a 元素。
+// Ví dụ 22
+> $x('//title | //a') // Chọn tất cả phần tử title và a.
 < [title, title, title, a, a, a]
 
 ```
 
-### 七、xpath 的函数
+### VII. Hàm của xpath
 
-> xpath 函数的参数可以是静态字符串或表达式，且函数可以嵌套调用。  
-> xpath 的索引均从1开始，而不是从0开始。
+> Tham số hàm của xpath có thể là chuỗi tĩnh hoặc biểu thức, và hàm có thể gọi lồng nhau.  
+> Chỉ mục của xpath bắt đầu từ 1, không phải bắt đầu từ 0.
 
 ```js
-// boolean(expression) 将表达式选取的结果转换为布尔值。
+// boolean(expression) Chuyển đổi kết quả chọn của biểu thức thành giá trị boolean.
 > $x('boolean(//title)')
 < true
-// number([object]) 将表达式选取的结果转换为数字。(HTML元素内容默认均为字符串)
+// number([object]) Chuyển đổi kết quả chọn của biểu thức thành số. (Nội dung phần tử HTML mặc định đều là chuỗi)
 > $x('number(//p[1])')
 < 29.39
-// round(decimal) 将数字参数转换为整数并四舍五入。
+// round(decimal) Chuyển đổi tham số số thành số nguyên và làm tròn.
 > $x('round(//p[1])')
 < 29
-// ceiling(number) 将数字参数转换为整数并向上取整。ceiling(5.2)=6
-> $x('ceiling(//p[1])') // 仅使用匹配表达式的第一个元素
+// ceiling(number) Chuyển đổi tham số số thành số nguyên và làm tròn lên. ceiling(5.2)=6
+> $x('ceiling(//p[1])') // Chỉ sử dụng phần tử đầu tiên khớp với biểu thức
 < 30
-// floor(number) 将数字参数转换为整数并向下取整。floor(5.8)=5
+// floor(number) Chuyển đổi tham số số thành số nguyên và làm tròn xuống. floor(5.8)=5
 > $x('floor(//p[1])')
 < 29
-// concat( string1, string2 [,stringn]* ) 字符串拼接，参数为静态字符串或表达式
-> $x('concat("cost:", //p[1], //p[2])') // 仅使用匹配表达式的第一个元素
+// concat( string1, string2 [,stringn]* ) Nối chuỗi, tham số là chuỗi tĩnh hoặc biểu thức
+> $x('concat("cost:", //p[1], //p[2])') // Chỉ sử dụng phần tử đầu tiên khớp với biểu thức
 < 'cost:29.39usd'
-// contains(haystack, needle) 判断 haystack 是否包含 needle，返回 boolean
-> $x('contains(//p[1], "29.39")') // 仅使用匹配表达式的第一个元素
+// contains(haystack, needle) Kiểm tra haystack có chứa needle không, trả về boolean
+> $x('contains(//p[1], "29.39")') // Chỉ sử dụng phần tử đầu tiên khớp với biểu thức
 < true
-> $x('//title[contains(., "Harry")]') // 选取内容中包含 "Harry" 的 title 元素。
+> $x('//title[contains(., "Harry")]') // Chọn phần tử title có nội dung chứa "Harry".
 < [title] // <title lang="eng">Harry Potter</title>
-// count( node-set ) 统计表达式选取的元素个数。
+// count( node-set ) Thống kê số lượng phần tử được chọn bởi biểu thức.
 > $x('count(//p)')
 < 4
-// id(expression) 根据 id 属性选取元素，若参数为表达式，将获取表达式结果作为id查询。
-> $x('id(//dl/@id)') // 等效于 $x('id("list")')
+// id(expression) Chọn phần tử theo thuộc tính id, nếu tham số là biểu thức, sẽ lấy kết quả biểu thức làm id để truy vấn.
+> $x('id(//dl/@id)') // Tương đương với $x('id("list")')
 < [dl#list] // <dl id="list">...</dl>
-// last() 返回当前路径表达式匹配的同级元素集合的成员数量。
+// last() Trả về số lượng thành viên của tập hợp phần tử cùng cấp khớp với biểu thức đường dẫn hiện tại.
 > $x('//p[last()]')
 < [p, p] // <p>usd</p>, <p>rmb</p>
-// name([node-set]) 返回表达式选取集合的首个成员带命名空间的元素名，HTML中与local-name([node-set])等价。
-// local-name([node-set]) 返回表达式选取集合的首个成员本地元素名。
+// name([node-set]) Trả về tên phần tử kèm không gian tên của thành viên đầu tiên trong tập hợp được chọn bởi biểu thức, trong HTML tương đương với local-name([node-set]).
+// local-name([node-set]) Trả về tên phần tử cục bộ của thành viên đầu tiên trong tập hợp được chọn bởi biểu thức.
 > $x('local-name(//*[@id])') //
 < 'dl'
-// namespace-uri([node-set]) 获取选定节点集中第一个节点的命名空间URI。
+// namespace-uri([node-set]) Lấy URI không gian tên của nút đầu tiên trong tập nút đã chọn.
 > $x('namespace-uri(//div)')
-< 'http://www.w3.org/1999/xhtml' // HTML通常都返回这个固定值
-// normalize-space([string]) 去文本内容中的前后空白以及将内部连续的空白替换为单个空格
+< 'http://www.w3.org/1999/xhtml' // HTML thường trả về giá trị cố định này
+// normalize-space([string]) Loại bỏ khoảng trắng trước và sau nội dung văn bản cũng như thay thế khoảng trắng liên tiếp bên trong thành một dấu cách
 > $x('normalize-space("  test    string   ")')
 < 'test string'
-// not(expression) 返回表达式的布尔反值。
+// not(expression) Trả về giá trị nghịch đảo boolean của biểu thức.
 > $x('//title[not(@lang)]')
-< [title] // <title>标题</title>
-// position() 返回选定元素处于路径表达式匹配的同级元素集合中的位置。
+< [title] // <title>Tiêu đề</title>
+// position() Trả về vị trí của phần tử được chọn trong tập hợp phần tử cùng cấp khớp với biểu thức đường dẫn.
 > $x('//meta[position()=2]')
-< [meta] // <meta property=author" content="作者" />
-// starts-with(haystack, needle) 检查某个字符串 haystack 是否以另一个字符串 needle 开始。
+< [meta] // <meta property="author" content="Tác giả" />
+// starts-with(haystack, needle) Kiểm tra xem chuỗi haystack có bắt đầu bằng chuỗi needle hay không.
 > $x('//title[starts-with(., "Cpp")]')
-< [title] // <title lang="cn">Cpp高级编程</title]
-// string([object]) 将给定参数转换为字符串
+< [title] // <title lang="cn">Lập trình Cpp nâng cao</title]
+// string([object]) Chuyển đổi tham số đã cho thành chuỗi
 > $x('string(//p)')
 < '29.39'
-// string-length([string]) 返回给定字符串的字符数量
+// string-length([string]) Trả về số lượng ký tự của chuỗi đã cho
 > $x('string-length(string(//p))')
 < 5
-// substring(string, start[, length]) 截取字符串
+// substring(string, start[, length]) Cắt chuỗi
 > $x('substring(string(//p), 1, 3)')
 < '29.'
-// substring-after(haystack, needle) 返回字符串 haystack 中第一个 needle 之后的字符串。
+// substring-after(haystack, needle) Trả về chuỗi sau needle đầu tiên trong chuỗi haystack.
 > $x('substring-after(string(//p), ".")')
 < '39'
-// substring-before(haystack, needle) 返回字符串 haystack 中第一个 needle 之前的字符串。
+// substring-before(haystack, needle) Trả về chuỗi trước needle đầu tiên trong chuỗi haystack.
 > $x('substring-before(string(//p), ".")')
 < '29'
-// sum([node-set]) 对给定集合的数字求和。若给定集合中存在非数字，则返回 NaN
+// sum([node-set]) Tính tổng các số trong tập hợp đã cho. Nếu có phần tử không phải số trong tập hợp, trả về NaN
 > $x('sum(//p[1])')
 < 69.34
-// translate(string, "abc", "XYZ") 依次替换 string 中出现的 a、b、c 为对应位置的 X、Y、Z。
-// 若第三个参数中的字符少于第二个参数，那么在第一个参数中相应的字符将被删除。
+// translate(string, "abc", "XYZ") Lần lượt thay thế a, b, c xuất hiện trong string thành X, Y, Z ở vị trí tương ứng.
+// Nếu số ký tự trong tham số thứ ba ít hơn tham số thứ hai, thì các ký tự tương ứng trong tham số thứ nhất sẽ bị xóa.
 > $x('translate("aabbcc112233", "ac2", "V8")')
 < 'VVbb881133'
-// true() 表示函数中的 true 布尔值
-// false() 表示函数中的 false 布尔值
+// true() Biểu thị giá trị boolean true trong hàm
+// false() Biểu thị giá trị boolean false trong hàm
 ```

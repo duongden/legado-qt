@@ -1,19 +1,19 @@
-# WebDav备份教程
+# Hướng dẫn sao lưu WebDav
 
-### 阅读支持云备份,采用WebDav协议,所有支持WebDav的云盘都可以,建议采用坚果云,每月免费1G流量,用来备份阅读足够了,下面就采用坚果云来讲解配置步骤.
+### Legado hỗ trợ sao lưu đám mây, sử dụng giao thức WebDav, tất cả các đám mây hỗ trợ WebDav đều được, khuyên dùng Jianguoyun, miễn phí 1G lưu lượng mỗi tháng, đủ để sao lưu Legado, dưới đây sẽ dùng Jianguoyun để giải thích các bước cấu hình.
 
-1. 打开坚果云网站 https://www.jianguoyun.com/d/home#/
-2. 如果没有注册过坚果云先注册一下
-3. 登录坚果云
-4. 右上角用户名点开点账户信息
-5. 点击安全选项
-6. 在第三方管理里添加应用
-7. 将应用示例里的服务器地址,用户名,和密码填到阅读的WebDav设置里
-8. 阅读的WebDav配置在我的-备份与恢复,创建子文件夹选项保持默认即可
-9. 设置完成后手动执行一下备份,看看是否成功
-10. 恢复时选择想要恢复的备份文件
+1. Mở trang web Jianguoyun https://www.jianguoyun.com/d/home#/
+2. Nếu chưa đăng ký Jianguoyun hãy đăng ký trước
+3. Đăng nhập Jianguoyun
+4. Nhấp vào tên người dùng ở góc trên bên phải, nhấp vào thông tin tài khoản
+5. Nhấp vào tùy chọn bảo mật
+6. Trong quản lý bên thứ ba thêm ứng dụng
+7. Điền địa chỉ máy chủ, tên người dùng và mật khẩu trong ví dụ ứng dụng vào cài đặt WebDav của Legado
+8. Cấu hình WebDav của Legado nằm trong Của tôi-Sao lưu và khôi phục, tùy chọn tạo thư mục con cứ để mặc định là được
+9. Sau khi cài đặt xong, thực hiện sao lưu thủ công một lần xem có thành công không
+10. Khi khôi phục chọn file sao lưu muốn khôi phục
 
-### 自动备份说明
+### Giải thích tự động sao lưu
 
-* 设置好备份之后每次退出App会自动进行备份
-* WebDav同一天的备份会覆盖,不同日期的备份不会覆盖
+* Sau khi cài đặt sao lưu tốt, mỗi lần thoát App sẽ tự động thực hiện sao lưu
+* Bản sao lưu cùng một ngày của WebDav sẽ bị ghi đè, bản sao lưu khác ngày sẽ không bị ghi đè

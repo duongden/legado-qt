@@ -1,4 +1,4 @@
-# Trợ giúp quy tắc nguồn
+# Cấu hình nguồn sách
 
 * [Hướng dẫn quy tắc Legado 3.0](https://mgz0227.github.io/The-tutorial-of-Legado/)
 * [Tài liệu trợ giúp nguồn sách](https://mgz0227.github.io/The-tutorial-of-Legado/Rule/source.html)

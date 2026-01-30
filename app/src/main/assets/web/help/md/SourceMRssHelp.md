@@ -1,20 +1,20 @@
-# 订阅源管理界面帮助
+# Trợ giúp giao diện quản lý nguồn đăng ký
 
-* 订阅源可以通过规则订阅一些网络内容
-* 书源右上角标志
-  * 绿点表示书源有发现,且启用了发现
-  * 红点表示书源有发现,但是未启用
-  * 没有标志表示此书源没有发现
-* 右上角有分组菜单,可以按分组筛选书源
-* 右上角更多菜单里包含
-  * 新建订阅源
-  * 本地导入
-  * 网络导入
-  * 二维码导入
-  * 分享选中源
-* 选择源的更多操作在右下角的菜单里面,操作都是针对选择的书源
-  * 启用所选
-  * 禁用所选
-  * 置顶所选
-  * 置底所选
-  * 导出所选
+* Nguồn đăng ký có thể đăng ký một số nội dung mạng thông qua quy tắc
+* Biểu tượng góc trên bên phải nguồn sách
+  * Điểm xanh lá biểu thị nguồn sách có khám phá và đã bật khám phá
+  * Điểm đỏ biểu thị nguồn sách có khám phá nhưng chưa bật
+  * Không có biểu tượng biểu thị nguồn sách này không có khám phá
+* Góc trên bên phải có menu nhóm, có thể lọc nguồn sách theo nhóm
+* Menu thêm ở góc trên bên phải bao gồm
+  * Nguồn đăng ký mới
+  * Nhập cục bộ
+  * Nhập mạng
+  * Nhập mã QR
+  * Chia sẻ nguồn đã chọn
+* Các thao tác khác cho nguồn đã chọn nằm trong menu ở góc dưới bên phải, các thao tác đều áp dụng cho nguồn sách đã chọn
+  * Bật đã chọn
+  * Tắt đã chọn
+  * Đưa lên đầu đã chọn
+  * Đưa xuống cuối đã chọn
+  * Xuất đã chọn

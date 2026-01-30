@@ -1,7 +1,7 @@
-## 字典规则说明
+## Giải thích quy tắc từ điển
 
-* 字典规则是用在正文文字选择菜单字典里的规则,通常用来做翻译或者查找
+* Quy tắc từ điển là quy tắc được sử dụng trong menu từ điển khi chọn văn bản, thường được dùng để dịch hoặc tra cứu.
 * urlRule
-    * 同书源的url规则
+    * Giống quy tắc url của nguồn sách
 * showRule
-    * 用来提取显示到对话框里面内容的规则
+    * Quy tắc được dùng để trích xuất nội dung hiển thị trong hộp thoại
