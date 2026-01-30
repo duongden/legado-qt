@@ -60,6 +60,7 @@ const settings = {
     'PingFangSC-Regular, -apple-system, Simsun',
 
     'Kaiti',
+    '"Literata", "Noto Serif SC", serif',
   ],
 }
 export default settings

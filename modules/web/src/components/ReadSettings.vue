@@ -4,11 +4,11 @@
     :style="popupTheme"
     :class="{ night: isNight, day: !isNight }"
   >
-    <div class="settings-title">设置</div>
+    <div class="settings-title">Cài đặt</div>
     <div class="setting-list">
       <ul>
         <li class="theme-list">
-          <i>阅读主题</i>
+          <i>Giao diện</i>
           <span
             class="theme-item"
             v-for="(themeColor, index) in themeColors"
@@ -22,7 +22,7 @@
           >
         </li>
         <li class="font-list">
-          <i>正文字体</i>
+          <i>Phông chữ</i>
           <span
             class="font-item"
             v-for="(font, index) in fonts"
@@ -33,13 +33,13 @@
           >
         </li>
         <li class="font-list">
-          <i>自定字体</i>
-          <el-tooltip effect="dark" content="自定义的字体名称" placement="top">
+          <i>Phông tùy chỉnh</i>
+          <el-tooltip effect="dark" content="Tên phông chữ tùy chỉnh" placement="top">
             <input
               type="text"
               class="font-item font-item-input"
               v-model="customFontName"
-              placeholder="请输入自定义的字体名称"
+              placeholder="Nhập tên phông chữ"
             />
           </el-tooltip>
 
@@ -50,29 +50,29 @@
             v-model:visible="customFontSavePopVisible"
           >
             <p>
-              已经安装在您的设备上的字体请确认输入的字体名称完整无误，或者从网络下载字体。
+              Phông chữ đã cài trên thiết bị, vui lòng nhập chính xác tên, hoặc tải từ mạng.
             </p>
             <div style="text-align: right; margin: 0">
               <el-button
                 size="small"
                 plain
                 @click="customFontSavePopVisible = false"
-                >取消</el-button
+                >Hủy</el-button
               >
               <el-button type="primary" size="small" @click="setCustomFont()"
-                >确定</el-button
+                >OK</el-button
               >
               <el-button type="primary" size="small" @click="loadFontFromURL()"
-                >网络下载</el-button
+                >Tải về</el-button
               >
             </div>
             <template #reference>
-              <span type="text" class="font-item">保存</span>
+              <span type="text" class="font-item">Lưu</span>
             </template>
           </el-popover>
         </li>
         <li class="font-size">
-          <i>字体大小</i>
+          <i>Cỡ chữ</i>
           <div class="resize">
             <span class="less" @click="lessFontSize"
               ><em class="iconfont">&#58966;</em></span
@@ -84,7 +84,7 @@
           </div>
         </li>
         <li class="letter-spacing">
-          <i>字距</i>
+          <i>Khoảng cách chữ</i>
           <div class="resize">
             <span class="less" @click="lessLetterSpacing"
               ><em class="iconfont">&#58966;</em></span
@@ -96,7 +96,7 @@
           </div>
         </li>
         <li class="line-spacing">
-          <i>行距</i>
+          <i>Khoảng cách dòng</i>
           <div class="resize">
             <span class="less" @click="lessLineSpacing"
               ><em class="iconfont">&#58966;</em></span
@@ -108,7 +108,7 @@
           </div>
         </li>
         <li class="paragraph-spacing">
-          <i>段距</i>
+          <i>Khoảng cách đoạn</i>
           <div class="resize">
             <div class="resize">
               <span class="less" @click="lessParagraphSpacing"
@@ -123,7 +123,7 @@
           </div>
         </li>
         <li class="read-width" v-if="!store.miniInterface">
-          <i>页面宽度</i>
+          <i>Chiều rộng trang</i>
           <div class="resize">
             <span class="less" @click="lessReadWidth"
               ><em class="iconfont">&#58965;</em></span
@@ -135,7 +135,7 @@
           </div>
         </li>
         <li class="paragraph-spacing">
-          <i>翻页速度</i>
+          <i>Tốc độ lật trang</i>
           <div class="resize">
             <div class="resize">
               <span class="less" @click="lessJumpDuration">
@@ -150,20 +150,20 @@
           </div>
         </li>
         <li class="infinite-loading">
-          <i>无限加载</i>
+          <i>Tải vô tận</i>
           <span
             class="infinite-loading-item"
             :key="0"
             :class="{ selected: infiniteLoading == false }"
             @click="setInfiniteLoading(false)"
-            >关闭</span
+            >Tắt</span
           >
           <span
             class="infinite-loading-item"
             :key="1"
             :class="{ selected: infiniteLoading == true }"
             @click="setInfiniteLoading(true)"
-            >开启</span
+            >Bật</span
           >
         </li>
       </ul>
@@ -231,7 +231,7 @@ const setTheme = (theme: number) => {
 }
 
 //预置字体
-const fonts = ref(['雅黑', '宋体', '楷书'])
+const fonts = ref(['雅黑', '宋体', '楷书', 'Literata'])
 const setFont = (font: number) => {
   store.config.font = font
 }
@@ -249,19 +249,19 @@ const setCustomFont = () => {
 // 加载网络字体
 const loadFontFromURL = () => {
   customFontSavePopVisible.value = false
-  ElMessageBox.prompt('请输入 字体网络链接', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.prompt('Nhập link phông chữ', 'Gợi ý', {
+    confirmButtonText: 'OK',
+    cancelButtonText: 'Hủy',
     inputPattern: /^https?:.+$/,
-    inputErrorMessage: 'url 形式不正确',
+    inputErrorMessage: 'URL không đúng định dạng',
     beforeClose: (action, instance, done) => {
       if (action === 'confirm') {
         instance.confirmButtonLoading = true
-        instance.confirmButtonText = '下载中……'
+        instance.confirmButtonText = 'Đang tải...'
         // instance.inputValue
         const url = instance.inputValue
         if (typeof FontFace !== 'function') {
-          ElMessage.error('浏览器不支持FontFace')
+          ElMessage.error('Trình duyệt không hỗ trợ FontFace')
           return done()
         }
         const fontface = new FontFace(customFontName.value, `url("${url}")`)
@@ -271,14 +271,14 @@ const loadFontFromURL = () => {
           //API.getBookShelf()
           .then(function () {
             instance.confirmButtonLoading = false
-            ElMessage.info('字体加载成功！')
+            ElMessage.info('Tải phông chữ thành công!')
             setCustomFont()
             done()
           })
           .catch(function (error) {
             instance.confirmButtonLoading = false
-            instance.confirmButtonText = '确定'
-            ElMessage.error('下载失败，请检查您输入的 url')
+            instance.confirmButtonText = 'OK'
+            ElMessage.error('Tải thất bại, kiểm tra lại URL')
             throw error
           })
       } else {

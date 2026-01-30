@@ -18,10 +18,10 @@ let config: SourceConfig
 
 if (/bookSource/i.test(location.href)) {
   config = bookSourceConfig as SourceConfig
-  document.title = '书源管理'
+  document.title = 'Quản lý Nguồn Sách'
 } else {
   config = rssSourceConfig as SourceConfig
-  document.title = '订阅源管理'
+  document.title = 'Quản lý Nguồn RSS'
 }
 </script>
 <style lang="scss" scoped>

@@ -9,7 +9,7 @@
       {{ button.name }}
     </el-button>
     <el-button size="large" @click="() => (hotkeysDialogVisible = true)"
-      >快捷键</el-button
+      >Phím tắt</el-button
     >
   </div>
   <el-dialog
@@ -20,16 +20,16 @@
     <template #header="{ titleClass, titleId }">
       <div class="hotkeys-header flex-space-between">
         <div :id="titleId" :class="titleClass">
-          快捷键设置
+          Cài đặt phím tắt
           <span v-if="recordKeyDowning">
-            <el-text> / 录入中 </el-text>
+            <el-text> / Đang nhập... </el-text>
           </span>
         </div>
         <el-button
           :disabled="recordKeyDowning"
           @click="saveHotKeys"
           :icon="CircleCheckFilled"
-          >保存</el-button
+          >Lưu</el-button
         >
       </div>
     </template>
@@ -50,14 +50,14 @@
               <el-text>+</el-text>
             </span>
           </div>
-          <span v-if="button.hotKeys.length == 0">未设置</span>
+          <span v-if="button.hotKeys.length == 0">Chưa thiết lập</span>
         </div>
         <el-button
           :disabled="recordKeyDowning"
           text
           :icon="Edit"
           @click="recordKeyDown(buttonIndex)"
-          >编辑</el-button
+          >Sửa</el-button
         >
       </div>
     </div>
@@ -73,7 +73,7 @@ import { getSourceName, isInvaildSource, normalizeSource } from '../utils/souce'
 const store = useSourceStore()
 const pull = () => {
   const loadingMsg = ElMessage({
-    message: '加载中……',
+    message: 'Đang tải...',
     showClose: true,
     duration: 0,
   })
@@ -83,12 +83,12 @@ const pull = () => {
         store.changeTabName('editList')
         store.saveSources(data.data)
         ElMessage({
-          message: `成功拉取${data.data.length}条源`,
+          message: `Đã tải thành công ${data.data.length} nguồn`,
           type: 'success',
         })
       } else {
         ElMessage({
-          message: data.errorMsg ?? '后端错误',
+          message: data.errorMsg ?? 'Lỗi backend',
           type: 'error',
         })
       }
@@ -101,12 +101,12 @@ const push = () => {
   store.changeTabName('editList')
   if (sources.length === 0) {
     return ElMessage({
-      message: '空空如也',
+      message: 'Trống rỗng',
       type: 'info',
     })
   }
   ElMessage({
-    message: '正在推送中',
+    message: 'Đang đẩy lên...',
     type: 'info',
   })
   API.saveSources(sources).then(({ data }) => {
@@ -115,21 +115,21 @@ const push = () => {
       if (Array.isArray(okData)) {
         let failMsg = ``
         if (sources.length > okData.length) {
-          failMsg = '\n推送失败的源将用红色字体标注!'
+          failMsg = '\nNguồn đẩy lên thất bại sẽ được tô đỏ!'
           store.setPushReturnSources(okData)
         }
         ElMessage({
-          message: `批量推送源到「阅读3.0APP」\n共计: ${
+          message: `Đẩy hàng loạt nguồn lên "Legado 3.0 APP"\nTlổng cộng: ${
             sources.length
-          } 条\n成功: ${okData.length} 条\n失败: ${
+          } \nThành công: ${okData.length} \nThất bại: ${
             sources.length - okData.length
-          } 条${failMsg}`,
+          } ${failMsg}`,
           type: 'success',
         })
       }
     } else {
       ElMessage({
-        message: `批量推送源失败!\nErrorMsg: ${data.errorMsg}`,
+        message: `Đẩy hàng loạt nguồn thất bại!\nErrorMsg: ${data.errorMsg}`,
         type: 'error',
       })
     }
@@ -151,7 +151,7 @@ const undo = () => {
 const clearEdit = () => {
   store.clearEdit()
   ElMessage({
-    message: '已清除',
+    message: 'Đã xóa',
     type: 'success',
   })
 }
@@ -160,7 +160,7 @@ const redo = () => {
   store.clearEdit()
   store.clearAllHistory()
   ElMessage({
-    message: '已清除所有历史记录',
+    message: 'Đã xóa tất cả lịch sử',
     type: 'success',
   })
 }
@@ -173,21 +173,21 @@ const saveSource = () => {
       const sourceName = getSourceName(source)
       if (data.isSuccess) {
         ElMessage({
-          message: `源《${sourceName}》已成功保存到「阅读3.0APP」`,
+          message: `Nguồn "${sourceName}" đã được lưu vào "Legado 3.0 APP"`,
           type: 'success',
         })
         //save to store
         store.saveCurrentSource()
       } else {
         ElMessage({
-          message: `源《${sourceName}》保存失败!\nErrorMsg: ${data.errorMsg}`,
+          message: `Lưu nguồn "${sourceName}" thất bại!\nErrorMsg: ${data.errorMsg}`,
           type: 'error',
         })
       }
     })
   } else {
     ElMessage({
-      message: `请检查<必填>项是否全部填写`,
+      message: `Vui lòng kiểm tra các mục <bắt buộc> đã điền đủ chưa`,
       type: 'error',
     })
   }
@@ -199,15 +199,15 @@ const debug = () => {
 
 const buttons = ref<{ name: string; hotKeys: string[]; action: () => void }[]>(
   Array.of(
-    { name: '⇈推送源', hotKeys: [], action: push },
-    { name: '⇊拉取源', hotKeys: [], action: pull },
-    { name: '⋙生成源', hotKeys: [], action: conver2Tab },
-    { name: '⋘编辑源', hotKeys: [], action: conver2Source },
-    { name: '✗清空表单', hotKeys: [], action: clearEdit },
-    { name: '↶撤销操作', hotKeys: [], action: undo },
-    { name: '↷重做操作', hotKeys: [], action: redo },
-    { name: '⇏调试源', hotKeys: [], action: debug },
-    { name: '✓保存源', hotKeys: [], action: saveSource },
+    { name: '⇈Đẩy nguồn', hotKeys: [], action: push },
+    { name: '⇊Tải nguồn', hotKeys: [], action: pull },
+    { name: '⋙Tạo nguồn', hotKeys: [], action: conver2Tab },
+    { name: '⋘Sửa nguồn', hotKeys: [], action: conver2Source },
+    { name: '✗Xóa form', hotKeys: [], action: clearEdit },
+    { name: '↶Hoàn tác', hotKeys: [], action: undo },
+    { name: '↷Làm lại', hotKeys: [], action: redo },
+    { name: '⇏Debug nguồn', hotKeys: [], action: debug },
+    { name: '✓Lưu nguồn', hotKeys: [], action: saveSource },
   ),
 )
 const hotkeysDialogVisible = ref(true)
@@ -252,7 +252,7 @@ watch(
 const recordKeyDown = (index: number) => {
   recordKeyDowning.value = true
   ElMessage({
-    message: '按ESC键或者点击空白处结束录入',
+    message: 'Nhấn ESC hoặc click ra ngoài để kết thúc nhập',
     type: 'info',
   })
   buttons.value[index].hotKeys = []
@@ -296,7 +296,7 @@ function readHotkeysConfig() {
     buttons.value.forEach((button, index) => (button.hotKeys = config[index]))
     return true
   } catch {
-    ElMessage({ message: '快捷键配置错误', type: 'error' })
+    ElMessage({ message: 'Lỗi cấu hình phím tắt', type: 'error' })
     localStorage.removeItem('legado_web_hotkeys')
   }
   return false

@@ -3,7 +3,7 @@
     id="source-json"
     v-model="sourceString"
     type="textarea"
-    placeholder="这里输出序列化的JSON数据,可直接导入'阅读'APP"
+    placeholder="Dữ liệu JSON được xuất ở đây, có thể nhập trực tiếp vào app 'Legado'"
     :rows="30"
     @change="update"
     style="margin-bottom: 4px"
@@ -19,7 +19,7 @@ const update = async (string: string) => {
     store.changeEditTabSource(JSON.parse(string))
   } catch {
     ElMessage({
-      message: '粘贴的源格式错误',
+      message: 'Định dạng nguồn dán vào bị lỗi',
       type: 'error',
     })
   }

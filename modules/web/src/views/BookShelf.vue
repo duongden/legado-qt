@@ -2,12 +2,12 @@
   <div :class="{ 'index-wrapper': true, night: isNight, day: !isNight }">
     <div class="navigation-wrapper">
       <div class="navigation-title-wrapper">
-        <div class="navigation-title">阅读</div>
-        <div class="navigation-sub-title">清风不识字，何故乱翻书</div>
+        <div class="navigation-title">Đọc sách</div>
+        <div class="navigation-sub-title">Thư thái tâm hồn, đắm mình trong trang sách</div>
       </div>
       <div class="search-wrapper">
         <el-input
-          placeholder="搜索书籍，在线书籍自动加入书架"
+          placeholder="Tìm kiếm sách, sách online tự động thêm vào kệ"
           v-model="searchWord"
           class="search-input"
           :prefix-icon="SearchIcon"
@@ -17,7 +17,7 @@
       </div>
       <div class="bottom-wrapper">
         <div class="recent-wrapper">
-          <div class="recent-title">最近阅读</div>
+          <div class="recent-title">Đọc gần đây</div>
           <div class="reading-recent">
             <el-tag
               :type="
@@ -43,7 +43,7 @@
           </div>
         </div>
         <div class="setting-wrapper">
-          <div class="setting-title">基本设定</div>
+          <div class="setting-title">Cài đặt cơ bản</div>
           <div class="setting-item">
             <el-tag
               :type="connectType"
@@ -103,12 +103,12 @@ const applyReadConfig = (config?: webReadConfig) => {
   try {
     if (config !== undefined) store.setConfig(config)
   } catch {
-    ElMessage.info('阅读界面配置解析错误')
+    ElMessage.info('Lỗi phân tích cấu hình giao diện đọc')
   }
 }
 
 const readingRecent = ref<typeof store.readingBook>({
-  name: '尚无阅读记录',
+  name: 'Chưa có lịch sử đọc',
   author: '',
   bookUrl: '',
   chapterIndex: 0,
@@ -120,7 +120,7 @@ const shelfWrapper = ref<HTMLElement>()
 //const shelfWrapper = useTemplateRef<HTMLElement>("shelfWrapper")
 const { showLoading, closeLoading, loadingWrapper, isLoading } = useLoading(
   shelfWrapper,
-  '正在获取书籍信息',
+  'Đang lấy thông tin sách',
 )
 
 // 书架书籍和在线书籍搜索
@@ -161,14 +161,14 @@ const searchBook = () => {
         books.value = store.searchBooks
         //store.searchBooks.forEach((item) => books.value.push(item));
       } catch (e) {
-        ElMessage.error('后端数据错误')
+        ElMessage.error('Dữ liệu backend lỗi')
         throw e
       }
     },
     () => {
       closeLoading()
       if (books.value.length == 0) {
-        ElMessage.info('搜索结果为空')
+        ElMessage.info('Kết quả tìm kiếm trống')
       }
     },
   )
@@ -252,7 +252,7 @@ const toDetail = (
   isSeachBook: boolean | undefined = false,
   fromReadRecentClick = false,
 ) => {
-  if (bookName === '尚无阅读记录') return
+  if (bookName === 'Chưa có lịch sử đọc') return
   // 最近书籍不再书架上 自动搜索
   if (
     fromReadRecentClick &&

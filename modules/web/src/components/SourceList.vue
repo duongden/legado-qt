@@ -3,30 +3,30 @@
     v-model="searchKey"
     class="search"
     :prefix-icon="Search"
-    placeholder="筛选源"
+    placeholder="Lọc nguồn"
   />
   <div class="tool">
-    <el-button @click="importSourceFile" :icon="Folder">打开</el-button>
+    <el-button @click="importSourceFile" :icon="Folder">Mở</el-button>
     <el-button
       :disabled="sourcesFiltered.length === 0"
       @click="outExport"
       :icon="Download"
     >
-      导出</el-button
+      Xuất</el-button
     >
     <el-button
       type="danger"
       :icon="Delete"
       @click="deleteSelectSources"
       :disabled="sourceSelect.length === 0"
-      >删除</el-button
+      >Xóa</el-button
     >
     <el-button
       type="danger"
       :icon="Delete"
       @click="clearAllSources"
       :disabled="sources.length === 0"
-      >清空</el-button
+      >Làm sạch</el-button
     >
   </div>
   <el-checkbox-group id="source-list" v-model="sourceUrlSelect">
@@ -105,7 +105,7 @@ const importSourceFile = () => {
   input.addEventListener('change', () => {
     const files = input.files
     if (files === null) {
-      return ElMessage.info('未选择文件')
+      return ElMessage.info('Chưa chọn tệp')
     }
     const reader = new FileReader()
     reader.readAsText(files[0])
@@ -114,7 +114,7 @@ const importSourceFile = () => {
         const jsonData = JSON.parse(reader.result as string)
         store.saveSources(jsonData)
       } catch (e: unknown) {
-        ElMessage.error('上传的源格式错误: ' + (e as Error).message)
+        ElMessage.error('Định dạng nguồn tải lên bị lỗi: ' + (e as Error).message)
       }
     }
   })

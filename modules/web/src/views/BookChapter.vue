@@ -19,7 +19,7 @@
           <template #reference>
             <div class="tool-icon" :class="{ 'no-point': false }">
               <div class="iconfont">&#58905;</div>
-              <div class="icon-text">目录</div>
+              <div class="icon-text">Mục lục</div>
             </div>
           </template>
         </el-popover>
@@ -35,17 +35,17 @@
           <template #reference>
             <div class="tool-icon" :class="{ 'no-point': noPoint }">
               <div class="iconfont">&#58971;</div>
-              <div class="icon-text">设置</div>
+              <div class="icon-text">Cài đặt</div>
             </div>
           </template>
         </el-popover>
         <div class="tool-icon" @click="toShelf">
           <div class="iconfont">&#58892;</div>
-          <div class="icon-text">书架</div>
+          <div class="icon-text">Kệ sách</div>
         </div>
         <div class="tool-icon" :class="{ 'no-point': noPoint }" @click="toTop">
           <div class="iconfont">&#58914;</div>
-          <div class="icon-text">顶部</div>
+          <div class="icon-text">Đầu trang</div>
         </div>
         <div
           class="tool-icon"
@@ -53,7 +53,7 @@
           @click="toBottom"
         >
           <div class="iconfont">&#58915;</div>
-          <div class="icon-text">底部</div>
+          <div class="icon-text">Cuối trang</div>
         </div>
       </div>
     </div>
@@ -65,14 +65,14 @@
           @click="toPreChapter"
         >
           <div class="iconfont">&#58920;</div>
-          <span v-if="miniInterface">上一章</span>
+          <span v-if="miniInterface">Chương trước</span>
         </div>
         <div
           class="tool-icon"
           :class="{ 'no-point': noPoint }"
           @click="toNextChapter"
         >
-          <span v-if="miniInterface">下一章</span>
+          <span v-if="miniInterface">Chương sau</span>
           <div class="iconfont">&#58913;</div>
         </div>
       </div>
@@ -116,7 +116,7 @@ import { isNullOrBlank } from '@/utils/utils'
 
 const content = ref()
 // loading spinner
-const { isLoading, loadingWrapper } = useLoading(content, '正在获取信息')
+const { isLoading, loadingWrapper } = useLoading(content, 'Đang lấy thông tin')
 const store = useBookStore()
 
 const {
@@ -320,7 +320,7 @@ const getContent = (index: number, reloadChapter = true, chapterPos = 0) => {
         }
       },
       err => {
-        const content = ['获取章节内容失败！']
+        const content = ['Lấy nội dung chương thất bại！']
         chapterData.value.push({ index, content, title })
         store.setShowContent(true)
         throw err
@@ -384,14 +384,14 @@ const toNextChapter = () => {
   const index = chapterIndex.value + 1
   if (typeof catalog.value[index] !== 'undefined') {
     ElMessage({
-      message: '下一章',
+      message: 'Chương sau',
       type: 'info',
     })
     getContent(index)
     store.saveBookProgress()
   } else {
     ElMessage({
-      message: '本章是最后一章',
+      message: 'Đây là chương cuối',
       type: 'error',
     })
   }
@@ -401,14 +401,14 @@ const toPreChapter = () => {
   const index = chapterIndex.value - 1
   if (typeof catalog.value[index] !== 'undefined') {
     ElMessage({
-      message: '上一章',
+      message: 'Chương trước',
       type: 'info',
     })
     getContent(index)
     store.saveBookProgress()
   } else {
     ElMessage({
-      message: '本章是第一章',
+      message: 'Đây là chương đầu',
       type: 'error',
     })
   }
@@ -433,7 +433,7 @@ const handleKeyPress = (event: KeyboardEvent) => {
       event.stopPropagation()
       event.preventDefault()
       if (document.documentElement.scrollTop === 0) {
-        ElMessage.warning('已到达页面顶部')
+        ElMessage.warning('Đã đến đầu trang')
       } else {
         canJump = false
         jump(0 - document.documentElement.clientHeight + 100, {
@@ -450,7 +450,7 @@ const handleKeyPress = (event: KeyboardEvent) => {
           document.documentElement.scrollTop ===
         document.documentElement.scrollHeight
       ) {
-        ElMessage.warning('已到达页面底部')
+        ElMessage.warning('Đã đến cuối trang')
       } else {
         canJump = false
         jump(document.documentElement.clientHeight - 100, {
@@ -480,7 +480,7 @@ onMounted(async () => {
   const chapterPos = Number(sessionStorage.getItem('chapterPos') || 0)
   const isSeachBook = sessionStorage.getItem('isSeachBook') === 'true'
   if (isNullOrBlank(bookUrl) || isNullOrBlank(name) || author === null) {
-    ElMessage.warning('书籍信息为空，即将自动返回书架页面...')
+    ElMessage.warning('Thông tin sách trống, sắp tự động về kệ sách...')
     return setTimeout(toShelf, 500)
   }
   const book: typeof store.readingBook = {
@@ -531,9 +531,9 @@ const addToBookShelfConfirm = async () => {
   const book = store.readingBook
   // 阅读的是搜索的书籍 并未在书架
   if (book.isSeachBook === true) {
-    await ElMessageBox.confirm(`是否将《${book.name}》放入书架？`, '放入书架', {
-      confirmButtonText: '确认',
-      cancelButtonText: '否',
+    await ElMessageBox.confirm(`Có muốn thêm "${book.name}" vào kệ không?`, 'Thêm vào kệ', {
+      confirmButtonText: 'Xác nhận',
+      cancelButtonText: 'Không',
       type: 'info',
       /*
         ElMessageBox.confirm默认在触发hashChange事件时自动关闭

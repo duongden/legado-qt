@@ -3,7 +3,7 @@
     :class="{ 'cata-wrapper': true, visible: popCataVisible }"
     :style="popupTheme"
   >
-    <div class="title">目录</div>
+    <div class="title">Mục lục</div>
     <virtual-list
       style="height: 300px; overflow: auto"
       :class="{ night: isNight, day: !isNight }"
