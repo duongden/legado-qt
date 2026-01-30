@@ -26,10 +26,10 @@ interface JsEncodeUtils {
     }
 
 
-    //******************对称加密解密************************//
+    //******************Symmetric Encryption/Decryption************************//
 
     /**
-     * 在js中这样使用
+     * Usage in JS
      * java.createSymmetricCrypto(transformation, key, iv).decrypt(data)
      * java.createSymmetricCrypto(transformation, key, iv).decryptStr(data)
 
@@ -38,7 +38,7 @@ interface JsEncodeUtils {
      * java.createSymmetricCrypto(transformation, key, iv).encryptHex(data)
      */
 
-    /* 调用SymmetricCrypto key为null时使用随机密钥*/
+    /* Call SymmetricCrypto use random key when key is null */
     fun createSymmetricCrypto(
         transformation: String,
         key: ByteArray?,
@@ -71,30 +71,30 @@ interface JsEncodeUtils {
             transformation, key.encodeToByteArray(), iv?.encodeToByteArray()
         )
     }
-    //******************非对称加密解密************************//
+    //******************Asymmetric Encryption/Decryption************************//
 
-    /* keys都为null时使用随机密钥 */
+    /* Use random key when keys are all null */
     fun createAsymmetricCrypto(
         transformation: String
     ): AsymmetricCrypto {
         return AsymmetricCrypto(transformation)
     }
 
-    //******************签名************************//
+    //******************Signature************************//
     fun createSign(
         algorithm: String
     ): Sign {
         return Sign(algorithm)
     }
-    //******************对称加密解密old************************//
+    //******************Symmetric Encryption/Decryption Old************************//
 
     /////AES
     /**
-     * AES 解码为 ByteArray
-     * @param str 传入的AES加密的数据
-     * @param key AES 解密的key
-     * @param transformation AES加密的方式
-     * @param iv ECB模式的偏移向量
+     * AES decode to ByteArray
+     * @param str Encrypted AES data
+     * @param key Decryption key
+     * @param transformation AES encryption mode
+     * @param iv ECB mode offset vector
      */
     @Deprecated(
         "过于繁琐弃用",
@@ -107,11 +107,11 @@ interface JsEncodeUtils {
     }
 
     /**
-     * AES 解码为 String
-     * @param str 传入的AES加密的数据
-     * @param key AES 解密的key
-     * @param transformation AES加密的方式
-     * @param iv ECB模式的偏移向量
+     * AES decode to String
+     * @param str Encrypted AES data
+     * @param key Decryption key
+     * @param transformation AES encryption mode
+     * @param iv ECB mode offset vector
      */
     @Deprecated(
         "过于繁琐弃用",
@@ -124,14 +124,14 @@ interface JsEncodeUtils {
     }
 
     /**
-     * AES解码为String，算法参数经过Base64加密
+     * AES decode to String, params Base64 encrypted
      *
-     * @param data 加密的字符串
-     * @param key Base64后的密钥
-     * @param mode 模式
-     * @param padding 补码方式
-     * @param iv Base64后的加盐
-     * @return 解密后的字符串
+     * @param data Encrypted string
+     * @param key Base64 Key
+     * @param mode Mode
+     * @param padding Padding
+     * @param iv Base64 Salt
+     * @return Decrypted string
      */
     @Deprecated(
         "过于繁琐弃用",
@@ -152,11 +152,11 @@ interface JsEncodeUtils {
     }
 
     /**
-     * 已经base64的AES 解码为 ByteArray
-     * @param str 传入的AES Base64加密的数据
-     * @param key AES 解密的key
-     * @param transformation AES加密的方式
-     * @param iv ECB模式的偏移向量
+     * Base64 AES decode into ByteArray
+     * @param str Input data
+     * @param key Key
+     * @param transformation Mode
+     * @param iv Offset
      */
     @Deprecated(
         "过于繁琐弃用",
@@ -169,11 +169,11 @@ interface JsEncodeUtils {
     }
 
     /**
-     * 已经base64的AES 解码为 String
-     * @param str 传入的AES Base64加密的数据
-     * @param key AES 解密的key
-     * @param transformation AES加密的方式
-     * @param iv ECB模式的偏移向量
+     * Base64 AES decode into String
+     * @param str Input data
+     * @param key Key
+     * @param transformation Mode
+     * @param iv Offset
      */
     @Deprecated(
         "过于繁琐弃用",
@@ -186,11 +186,11 @@ interface JsEncodeUtils {
     }
 
     /**
-     * 加密aes为ByteArray
-     * @param data 传入的原始数据
-     * @param key AES加密的key
-     * @param transformation AES加密的方式
-     * @param iv ECB模式的偏移向量
+     * Encrypt aes to ByteArray
+     * @param data Input data
+     * @param key AES key
+     * @param transformation Mode
+     * @param iv ECB offset
      */
     @Deprecated(
         "过于繁琐弃用",
@@ -203,11 +203,11 @@ interface JsEncodeUtils {
     }
 
     /**
-     * 加密aes为String
-     * @param data 传入的原始数据
-     * @param key AES加密的key
-     * @param transformation AES加密的方式
-     * @param iv ECB模式的偏移向量
+     * Encrypt aes to String
+     * @param data Input data
+     * @param key AES key
+     * @param transformation Mode
+     * @param iv ECB offset
      */
     @Deprecated(
         "过于繁琐弃用",
@@ -220,11 +220,11 @@ interface JsEncodeUtils {
     }
 
     /**
-     * 加密aes后Base64化的ByteArray
-     * @param data 传入的原始数据
-     * @param key AES加密的key
-     * @param transformation AES加密的方式
-     * @param iv ECB模式的偏移向量
+     * AES Encrypt then Base64 ByteArray
+     * @param data Input data
+     * @param key AES key
+     * @param transformation Mode
+     * @param iv ECB offset
      */
     @Deprecated(
         "过于繁琐弃用",
@@ -237,11 +237,11 @@ interface JsEncodeUtils {
     }
 
     /**
-     * 加密aes后Base64化的String
-     * @param data 传入的原始数据
-     * @param key AES加密的key
-     * @param transformation AES加密的方式
-     * @param iv ECB模式的偏移向量
+     * AES Encrypt then Base64 String
+     * @param data Input data
+     * @param key AES key
+     * @param transformation Mode
+     * @param iv ECB offset
      */
     @Deprecated(
         "过于繁琐弃用",
@@ -255,14 +255,14 @@ interface JsEncodeUtils {
 
 
     /**
-     * AES加密并转为Base64，算法参数经过Base64加密
+     * AES encrypt and convert to Base64, params Base64 encrypted
      *
-     * @param data 被加密的字符串
-     * @param key Base64后的密钥
-     * @param mode 模式
-     * @param padding 补码方式
-     * @param iv Base64后的加盐
-     * @return 加密后的Base64
+     * @param data Data to encrypt
+     * @param key Base64 Key
+     * @param mode Mode
+     * @param padding Padding
+     * @param iv Base64 Salt
+     * @return Encrypted Base64
      */
     @Deprecated(
         "过于繁琐弃用",
@@ -321,14 +321,14 @@ interface JsEncodeUtils {
 
     //////3DES
     /**
-     * 3DES解密
+     * 3DES decrypt
      *
-     * @param data 加密的字符串
-     * @param key 密钥
-     * @param mode 模式
-     * @param padding 补码方式
-     * @param iv 加盐
-     * @return 解密后的字符串
+     * @param data Encrypted string
+     * @param key Key
+     * @param mode Mode
+     * @param padding Padding
+     * @param iv Salt
+     * @return Decrypted string
      */
     @Deprecated(
         "过于繁琐弃用",
@@ -345,14 +345,14 @@ interface JsEncodeUtils {
     }
 
     /**
-     * 3DES解密，算法参数经过Base64加密
+     * 3DES decrypt, params Base64 encrypted
      *
-     * @param data 加密的字符串
-     * @param key Base64后的密钥
-     * @param mode 模式
-     * @param padding 补码方式
-     * @param iv Base64后的加盐
-     * @return 解密后的字符串
+     * @param data Encrypted string
+     * @param key Base64 Key
+     * @param mode Mode
+     * @param padding Padding
+     * @param iv Base64 Salt
+     * @return Decrypted string
      */
     @Deprecated(
         "过于繁琐弃用",
@@ -374,14 +374,14 @@ interface JsEncodeUtils {
 
 
     /**
-     * 3DES加密并转为Base64
+     * 3DES encrypt and convert to Base64
      *
-     * @param data 被加密的字符串
-     * @param key 密钥
-     * @param mode 模式
-     * @param padding 补码方式
-     * @param iv 加盐
-     * @return 加密后的Base64
+     * @param data Encrypted string
+     * @param key Key
+     * @param mode Mode
+     * @param padding Padding
+     * @param iv Salt
+     * @return Encrypted Base64
      */
     @Deprecated(
         "过于繁琐弃用",
@@ -399,14 +399,14 @@ interface JsEncodeUtils {
     }
 
     /**
-     * 3DES加密并转为Base64，算法参数经过Base64加密
+     * 3DES encrypt and convert to Base64, params Base64 encrypted
      *
-     * @param data 被加密的字符串
-     * @param key Base64后的密钥
-     * @param mode 模式
-     * @param padding 补码方式
-     * @param iv Base64后的加盐
-     * @return 加密后的Base64
+     * @param data Encrypted string
+     * @param key Base64 Key
+     * @param mode Mode
+     * @param padding Padding
+     * @param iv Base64 Salt
+     * @return Encrypted Base64
      */
     @Deprecated(
         "过于繁琐弃用",
@@ -426,14 +426,14 @@ interface JsEncodeUtils {
         ).encryptBase64(data)
     }
 
-//******************消息摘要/散列消息鉴别码************************//
+//******************Message Digest/HMAC************************//
 
     /**
-     * 生成摘要，并转为16进制字符串
+     * Generate digest, convert to hex string
      *
-     * @param data 被摘要数据
-     * @param algorithm 签名算法
-     * @return 16进制字符串
+     * @param data Input data
+     * @param algorithm Signature algorithm
+     * @return Hex string
      */
     fun digestHex(
         data: String,
@@ -443,11 +443,11 @@ interface JsEncodeUtils {
     }
 
     /**
-     * 生成摘要，并转为Base64字符串
+     * Generate digest, convert to Base64 string
      *
-     * @param data 被摘要数据
-     * @param algorithm 签名算法
-     * @return Base64字符串
+     * @param data Input data
+     * @param algorithm Signature algorithm
+     * @return Base64 string
      */
     fun digestBase64Str(
         data: String,
@@ -457,12 +457,12 @@ interface JsEncodeUtils {
     }
 
     /**
-     * 生成散列消息鉴别码，并转为16进制字符串
+     * Generate HMAC, convert to hex string
      *
-     * @param data 被摘要数据
-     * @param algorithm 签名算法
-     * @param key 密钥
-     * @return 16进制字符串
+     * @param data Input data
+     * @param algorithm Signature algorithm
+     * @param key Secret key
+     * @return Hex string
      */
     @Suppress("FunctionName")
     fun HMacHex(
@@ -474,12 +474,12 @@ interface JsEncodeUtils {
     }
 
     /**
-     * 生成散列消息鉴别码，并转为Base64字符串
+     * Generate HMAC, convert to Base64 string
      *
-     * @param data 被摘要数据
-     * @param algorithm 签名算法
-     * @param key 密钥
-     * @return Base64字符串
+     * @param data Input data
+     * @param algorithm Signature algorithm
+     * @param key Secret key
+     * @return Base64 string
      */
     @Suppress("FunctionName")
     fun HMacBase64(

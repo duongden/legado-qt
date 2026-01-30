@@ -28,7 +28,7 @@ object Selector {
     }
 
     /**
-     * 形状ShapeSelector
+     * ShapeSelector
      *
      * @author hjy
      * created at 2017/12/11 22:26

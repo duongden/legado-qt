@@ -114,7 +114,7 @@ object AppWebDav {
                     names.add(name)
                 }
             }
-        } ?: throw NoStackTraceException("webDav没有配置")
+        } ?: throw NoStackTraceException(appCtx.getString(R.string.webdav_not_configured))
         return names
     }
 
@@ -156,8 +156,8 @@ object AppWebDav {
     }
 
     /**
-     * webDav备份
-     * @param fileName 备份文件名
+     * webDav backup
+     * @param fileName Backup filename
      */
     @Throws(Exception::class)
     suspend fun backUpWebDav(fileName: String) {
@@ -169,21 +169,21 @@ object AppWebDav {
     }
 
     /**
-     * 获取云端所有背景名称
+     * Get all cloud background names
      */
     private suspend fun getAllBgWebDavFiles(): Result<List<WebDavFile>> {
         return kotlin.runCatching {
             if (!NetworkUtils.isAvailable())
-                throw NoStackTraceException("网络未连接")
+                throw NoStackTraceException(appCtx.getString(R.string.network_not_connected))
             authorization.let {
-                it ?: throw NoStackTraceException("webDav未配置")
+                it ?: throw NoStackTraceException(appCtx.getString(R.string.webdav_not_configured))
                 WebDav(bgWebDavUrl, it).listFiles()
             }
         }
     }
 
     /**
-     * 上传背景图片
+     * Upload background image
      */
     suspend fun upBgs(files: Array<File>) {
         val authorization = authorization ?: return
@@ -200,7 +200,7 @@ object AppWebDav {
     }
 
     /**
-     * 下载背景图片
+     * Download background image
      */
     suspend fun downBgs() {
         val authorization = authorization ?: return
@@ -215,13 +215,13 @@ object AppWebDav {
         if (!NetworkUtils.isAvailable()) return
         try {
             authorization?.let {
-                // 如果导出的本地文件存在,开始上传
+                // If exported local file exists, start upload
                 val putUrl = exportsWebDavUrl + fileName
                 WebDav(putUrl, it).upload(byteArray, "text/plain")
             }
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()
-            AppLog.put("WebDav导出失败\n${e.localizedMessage}", e, true)
+            AppLog.put(appCtx.getString(R.string.webdav_export_failed, e.localizedMessage), e, true)
         }
     }
 
@@ -229,13 +229,13 @@ object AppWebDav {
         if (!NetworkUtils.isAvailable()) return
         try {
             authorization?.let {
-                // 如果导出的本地文件存在,开始上传
+                // If exported local file exists, start upload
                 val putUrl = exportsWebDavUrl + fileName
                 WebDav(putUrl, it).upload(uri, "text/plain")
             }
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()
-            AppLog.put("WebDav导出失败\n${e.localizedMessage}", e, true)
+            AppLog.put(appCtx.getString(R.string.webdav_export_failed, e.localizedMessage), e, true)
         }
     }
 
@@ -256,7 +256,7 @@ object AppWebDav {
             onSuccess?.invoke()
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()
-            AppLog.put("上传进度失败\n${e.localizedMessage}", e, toast)
+            AppLog.put(appCtx.getString(R.string.upload_progress_failed, e.localizedMessage), e, toast)
         }
     }
 
@@ -271,7 +271,7 @@ object AppWebDav {
             onSuccess?.invoke()
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()
-            AppLog.put("上传进度失败\n${e.localizedMessage}", e)
+            AppLog.put(appCtx.getString(R.string.upload_progress_failed, e.localizedMessage), e)
         }
     }
 
@@ -284,7 +284,7 @@ object AppWebDav {
     }
 
     /**
-     * 获取书籍进度
+     * Get book progress
      */
     suspend fun getBookProgress(book: Book): BookProgress? {
         val url = getProgressUrl(book.name, book.author)
@@ -298,7 +298,7 @@ object AppWebDav {
             }
         }.onFailure {
             currentCoroutineContext().ensureActive()
-            AppLog.put("获取书籍进度失败\n${it.localizedMessage}", it)
+            AppLog.put(appCtx.getString(R.string.get_book_progress_failed, it.localizedMessage), it)
         }
         return null
     }
@@ -316,7 +316,7 @@ object AppWebDav {
             val webDavFile = map[progressFileName]
             webDavFile ?: return
             if (webDavFile.lastModify <= book.syncTime) {
-                //本地同步时间大于上传时间不用同步
+                //Local sync time > upload time, no sync
                 return
             }
             getBookProgress(book)?.let { bookProgress ->

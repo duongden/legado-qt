@@ -101,7 +101,7 @@ class ContentProcessor private constructor(
         var sameTitleRemoved = false
         var effectiveReplaceRules: ArrayList<ReplaceRule>? = null
         if (content != "null") {
-            //去除重复标题
+            //Remove duplicate titles
             val fileName = chapter.getFileName("nr")
             if (!removeSameTitleCache.contains(fileName)) try {
                 val name = Pattern.quote(book.name)
@@ -126,25 +126,25 @@ class ContentProcessor private constructor(
                     }
                 }
             } catch (e: Exception) {
-                AppLog.put("去除重复标题出错\n${e.localizedMessage}", e)
+                AppLog.put(appCtx.getString(io.legado.app.R.string.remove_same_title_error, e.localizedMessage), e)
             }
             if (reSegment && book.getReSegment()) {
-                //重新分段
+                //Re-segment
                 mContent = ContentHelp.reSegment(mContent, chapter.title)
             }
             if (chineseConvert) {
-                //简繁转换
+                //Simplified-Traditional conversion
                 try {
                     when (AppConfig.chineseConverterType) {
                         1 -> mContent = ChineseUtils.t2s(mContent)
                         2 -> mContent = ChineseUtils.s2t(mContent)
                     }
                 } catch (e: Exception) {
-                    appCtx.toastOnUi("简繁转换出错")
+                    appCtx.toastOnUi(io.legado.app.R.string.convert_cc_error)
                 }
             }
             if (useReplace && book.getUseReplaceRule()) {
-                //替换
+                //Replace
                 effectiveReplaceRules = arrayListOf()
                 mContent = mContent.lines().joinToString("\n") { it.trim() }
                 getContentReplaceRules().forEach { item ->
@@ -171,14 +171,14 @@ class ContentProcessor private constructor(
                         mContent = item.name + e.stackTraceStr
                     } catch (_: CancellationException) {
                     } catch (e: Exception) {
-                        AppLog.put("替换净化: 规则 ${item.name}替换出错.\n${mContent}", e)
-                        appCtx.toastOnUi("替换净化: 规则 ${item.name}替换出错")
+                        AppLog.put(appCtx.getString(io.legado.app.R.string.replace_rule_error_msg, item.name, mContent), e)
+                        appCtx.toastOnUi(appCtx.getString(io.legado.app.R.string.replace_rule_error, item.name))
                     }
                 }
             }
         }
         if (includeTitle) {
-            //重新添加标题
+            //Re-add title
             var displayTitle = chapter.getDisplayTitle(
                 getTitleReplaceRules(),
                 useReplace = useReplace && book.getUseReplaceRule()

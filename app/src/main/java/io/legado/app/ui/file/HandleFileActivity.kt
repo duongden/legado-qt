@@ -159,7 +159,7 @@ class HandleFileActivity :
                         }
                     }
 
-                    112 -> checkPermissions { // 手动输入目录路径
+                    112 -> checkPermissions { // Manually enter catalog path
                         showInputDirectoryDialog()
                     }
 
@@ -246,13 +246,13 @@ class HandleFileActivity :
         return if (onlySys) {
             arrayListOf(
                 SelectItem(getString(R.string.sys_folder_picker), HandleFileContract.DIR),
-                SelectItem(getString(R.string.manual_input), 112) // 添加手动输入选项
+                SelectItem(getString(R.string.manual_input), 112) // Add manual input option
             )
         } else {
             arrayListOf(
                 SelectItem(getString(R.string.sys_folder_picker), HandleFileContract.DIR),
                 SelectItem(getString(R.string.app_folder_picker), 10),
-                SelectItem(getString(R.string.manual_input), 112) // 添加手动输入选项
+                SelectItem(getString(R.string.manual_input), 112) // Add manual input option
             )
         }
     }

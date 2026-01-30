@@ -39,6 +39,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import org.apache.commons.text.similarity.JaccardSimilarity
 import splitties.init.appCtx
+import io.legado.app.R
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileNotFoundException
@@ -91,7 +92,7 @@ object BookHelp {
     }
 
     /**
-     * 清除已删除书的缓存 解压缓存
+     * Clear cache/unzip cache of deleted books
      */
     suspend fun clearInvalidCache() {
         withContext(IO) {
@@ -122,19 +123,19 @@ object BookHelp {
         }
     }
 
-    //清除已经看过的漫画数据
+    //Clear read manga data
     private fun clearComicCache(book: Book) {
-        //只处理漫画
-        //为0的时候，不清除已缓存数据
+        //Only process manga
+        //When 0, do not clear cached data
         if (!book.isImage || AppConfig.imageRetainNum == 0) {
             return
         }
-        //向前保留设定数量，向后保留预下载数量
+        //Keep set amount forward, pre-download amount backward
         val startIndex = book.durChapterIndex - AppConfig.imageRetainNum
         val endIndex = book.durChapterIndex + AppConfig.preDownloadNum
         val chapterList = appDb.bookChapterDao.getChapterList(book.bookUrl, startIndex, endIndex)
         val imgNames = hashSetOf<String>()
-        //获取需要保留章节的图片信息
+        //Get image info for kept chapters
         chapterList.forEach {
             val content = getContent(book, it)
             if (content != null) {
@@ -169,7 +170,7 @@ object BookHelp {
             postEvent(EventBus.SAVE_CONTENT, Pair(book, bookChapter))
         } catch (e: Exception) {
             e.printStackTrace()
-            AppLog.put("保存正文失败 ${book.name} ${bookChapter.title}", e)
+            AppLog.put(appCtx.getString(R.string.save_content_failed, book.name, bookChapter.title), e)
         }
     }
 
@@ -179,7 +180,7 @@ object BookHelp {
         content: String
     ) {
         if (content.isEmpty()) return
-        //保存文本
+        //Save text
         FileUtils.createFileIfNotExist(
             downloadDir,
             cacheFolderName,
@@ -237,23 +238,23 @@ object BookHelp {
                 src, source = bookSource, coroutineContext = coroutineContext
             )
             val bytes = analyzeUrl.getByteArrayAwait()
-            //某些图片被加密，需要进一步解密
+            //Some images encrypted, need further decryption
             runScriptWithContext {
                 ImageUtils.decode(
                     src, bytes, isCover = false, bookSource, book
                 )
             }?.let {
                 if (!checkImage(it)) {
-                    // 如果部分图片失效，每次进入正文都会花很长时间再次获取图片数据
-                    // 所以无论如何都要将数据写入到文件里
-                    // throw NoStackTraceException("数据异常")
-                    AppLog.put("${book.name} ${chapter?.title} 图片 $src 下载错误 数据异常")
+                    // If some images invalid, every entry to content takes long time to fetch image data
+                    // So must write data to file anyway
+                    // throw NoStackTraceException("Data exception")
+                    AppLog.put(appCtx.getString(R.string.image_download_error_data_exception, book.name, chapter?.title, src))
                 }
                 writeImage(book, src, it)
             }
         } catch (e: Exception) {
             coroutineContext.ensureActive()
-            val msg = "${book.name} ${chapter?.title} 图片 $src 下载失败\n${e.localizedMessage}"
+            val msg = appCtx.getString(R.string.image_download_failed, book.name, chapter?.title, src, e.localizedMessage)
             AppLog.put(msg, e)
         } finally {
             downloadImages.remove(src)
@@ -292,7 +293,7 @@ object BookHelp {
             val path = FileUtils.getPath(downloadDir, cacheEpubFolderName, book.originName)
             val file = File(path)
             val doc = DocumentFile.fromSingleUri(appCtx, uri)
-                ?: throw IOException("文件不存在")
+                ?: throw IOException(appCtx.getString(R.string.file_not_exist))
             if (!file.exists() || doc.lastModified() > book.latestChapterTime) {
                 LocalBook.getBookInputStream(book).use { inputStream ->
                     FileOutputStream(file).use { outputStream ->
@@ -306,7 +307,7 @@ object BookHelp {
     }
 
     /**
-     * 获取本地书籍文件的ParcelFileDescriptor
+     * Get local book ParcelFileDescriptor
      *
      * @param book
      * @return
@@ -336,7 +337,7 @@ object BookHelp {
     }
 
     /**
-     * 检测该章节是否下载
+     * Check chapter downloaded
      */
     fun hasContent(book: Book, bookChapter: BookChapter): Boolean {
         return if (book.isLocalTxt ||
@@ -353,7 +354,7 @@ object BookHelp {
     }
 
     /**
-     * 检测图片是否下载
+     * Check image downloaded
      */
     fun hasImageContent(book: Book, bookChapter: BookChapter): Boolean {
         if (!hasContent(book, bookChapter)) {
@@ -421,7 +422,7 @@ object BookHelp {
     }
 
     /**
-     * 删除章节内容
+     * Delete chapter content
      */
     fun delContent(book: Book, bookChapter: BookChapter) {
         FileUtils.createFileIfNotExist(
@@ -459,7 +460,7 @@ object BookHelp {
     }
 
     /**
-     * 获取是否去除重复标题
+     * Get remove duplicate title status
      */
     fun removeSameTitle(book: Book, bookChapter: BookChapter): Boolean {
         val path = FileUtils.getPath(
@@ -472,7 +473,7 @@ object BookHelp {
     }
 
     /**
-     * 格式化书名
+     * Format book title
      */
     fun formatBookName(name: String): String {
         return name
@@ -481,7 +482,7 @@ object BookHelp {
     }
 
     /**
-     * 格式化作者
+     * Format author
      */
     fun formatBookAuthor(author: String): String {
         return author
@@ -494,7 +495,7 @@ object BookHelp {
     }
 
     /**
-     * 根据目录名获取当前章节
+     * Get current chapter by catalog name
      */
     fun getDurChapter(
         oldDurChapterIndex: Int,
@@ -584,19 +585,19 @@ object BookHelp {
     }
 
     private val regexOther by lazy {
-        // 所有非字母数字中日韩文字 CJK区+扩展A-F区
+        // All non-alphanumeric CJK chars CJK area + Extension A-F
         @Suppress("RegExpDuplicateCharacterInClass")
         return@lazy "[^\\w\\u4E00-\\u9FEF〇\\u3400-\\u4DBF\\u20000-\\u2A6DF\\u2A700-\\u2EBEF]".toRegex()
     }
 
     @Suppress("RegExpUnnecessaryNonCapturingGroup", "RegExpSimplifiable")
     private val regexB by lazy {
-        //章节序号，排除处于结尾的状况，避免将章节名替换为空字串
+        //Chapter order, exclude end situation, avoid empty string replacement
         return@lazy "^.*?第(?:[\\d零〇一二两三四五六七八九十百千万壹贰叁肆伍陆柒捌玖拾佰仟]+)[章节篇回集话](?!$)|^(?:[\\d零〇一二两三四五六七八九十百千万壹贰叁肆伍陆柒捌玖拾佰仟]+[,:、])*(?:[\\d零〇一二两三四五六七八九十百千万壹贰叁肆伍陆柒捌玖拾佰仟]+)(?:[,:、](?!$)|\\.(?=[^\\d]))".toRegex()
     }
 
     private val regexC by lazy {
-        //前后附加内容，整个章节名都在括号中时只剔除首尾括号，避免将章节名替换为空字串
+        //Pre/Append content, if whole chapter name in brackets only remove outer brackets, avoid empty string replacement
         return@lazy "(?!^)(?:[〖【《〔\\[{(][^〖【《〔\\[{()〕》】〗\\]}]+)?[)〕》】〗\\]}]$|^[〖【《〔\\[{(](?:[^〖【《〔\\[{()〕》】〗\\]}]+[〕》】〗\\]})])?(?!$)".toRegex()
     }
 

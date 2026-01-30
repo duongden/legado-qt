@@ -16,7 +16,7 @@ import io.legado.app.utils.visible
 
 
 /**
- * 适配器
+ * Adapter
  * @author qianfanguojin
  */
 class RemoteBookAdapter(context: Context, val callBack: CallBack) :
@@ -33,7 +33,7 @@ class RemoteBookAdapter(context: Context, val callBack: CallBack) :
     }
 
     /**
-     * 绑定RecycleView 中每一个项的视图和数据
+     * Bind View and Data for item in RecycleView
      */
     override fun convert(
         holder: ItemViewHolder,
@@ -85,7 +85,7 @@ class RemoteBookAdapter(context: Context, val callBack: CallBack) :
                     notifyItemChanged(holder.layoutPosition, true)
                     callBack.upCountView()
                 } else {
-                    /* 点击开始阅读 */
+                    /* Click to start reading */
                     callBack.startRead(it)
                 }
             }

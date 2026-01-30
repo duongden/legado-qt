@@ -169,7 +169,7 @@ class BookSourceDebugActivity : VMBaseActivity<ActivitySourceDebugBinding, BookS
     }
 
     /**
-     * 打开关闭历史界面
+     * Open/Close history UI
      */
     private fun openOrCloseHelp(open: Boolean) {
         if (open) {

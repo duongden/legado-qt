@@ -14,9 +14,9 @@ import splitties.init.appCtx
 import java.io.File
 
 /**
- * 获取自定义路径的SharedPreferences, 用反射生成 SharedPreferences
- * @param dir 目录路径
- * @param fileName 文件名,不需要 '.xml' 后缀
+ * Get SharedPreferences of custom path, generate SharedPreferences using reflection
+ * @param dir Directory path
+ * @param fileName File name, no need for '.xml' suffix
  * @return SharedPreferences
  */
 @SuppressLint("DiscouragedPrivateApi")
@@ -25,19 +25,19 @@ fun Context.getSharedPreferences(
     fileName: String
 ): SharedPreferences? {
     try {
-        // 获取 ContextWrapper对象中的mBase变量。该变量保存了 ContextImpl 对象
+        // Get mBase variable in ContextWrapper object. This variable saves ContextImpl object
         val fieldMBase = ContextWrapper::class.java.getDeclaredField("mBase")
         fieldMBase.isAccessible = true
-        // 获取 mBase变量
+        // Get mBase variable
         val objMBase = fieldMBase.get(this)
-        // 获取 ContextImpl。mPreferencesDir变量，该变量保存了数据文件的保存路径
+        // Get ContextImpl.mPreferencesDir variable, which saves contents path of data file
         val fieldMPreferencesDir = objMBase.javaClass.getDeclaredField("mPreferencesDir")
         fieldMPreferencesDir.isAccessible = true
-        // 创建自定义路径
+        // Create custom path
         val file = File(dir)
-        // 修改mPreferencesDir变量的值
+        // Modify value of mPreferencesDir variable
         fieldMPreferencesDir.set(objMBase, file)
-        // 返回修改路径以后的 SharedPreferences :%FILE_PATH%/%fileName%.xml
+        // Return SharedPreferences after path modification :%FILE_PATH%/%fileName%.xml
         return getSharedPreferences(fileName, Activity.MODE_PRIVATE)
     } catch (e: NoSuchFieldException) {
         e.printOnDebug()

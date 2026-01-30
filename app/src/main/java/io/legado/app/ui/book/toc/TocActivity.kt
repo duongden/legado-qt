@@ -185,7 +185,7 @@ class TocActivity : VMBaseActivity<ActivityChapterListBinding, TocViewModel>(),
                 if (it == null) {
                     ReadBook.upMsg(null)
                 } else {
-                    ReadBook.upMsg("LoadTocError:${it.localizedMessage}")
+                    ReadBook.upMsg(getString(R.string.load_toc_error, it.localizedMessage))
                 }
             }
         }

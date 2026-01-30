@@ -40,17 +40,17 @@ class PaddingConfigDialog : BaseDialogFragment(R.layout.dialog_read_padding) {
     }
 
     private fun initData() = binding.run {
-        //正文
+        //Content body
         dsbPaddingTop.progress = ReadBookConfig.paddingTop
         dsbPaddingBottom.progress = ReadBookConfig.paddingBottom
         dsbPaddingLeft.progress = ReadBookConfig.paddingLeft
         dsbPaddingRight.progress = ReadBookConfig.paddingRight
-        //页眉
+        //Header
         dsbHeaderPaddingTop.progress = ReadBookConfig.headerPaddingTop
         dsbHeaderPaddingBottom.progress = ReadBookConfig.headerPaddingBottom
         dsbHeaderPaddingLeft.progress = ReadBookConfig.headerPaddingLeft
         dsbHeaderPaddingRight.progress = ReadBookConfig.headerPaddingRight
-        //页脚
+        //Footer
         dsbFooterPaddingTop.progress = ReadBookConfig.footerPaddingTop
         dsbFooterPaddingBottom.progress = ReadBookConfig.footerPaddingBottom
         dsbFooterPaddingLeft.progress = ReadBookConfig.footerPaddingLeft
@@ -60,7 +60,7 @@ class PaddingConfigDialog : BaseDialogFragment(R.layout.dialog_read_padding) {
     }
 
     private fun initView() = binding.run {
-        //正文
+        //Content body
         dsbPaddingTop.onChanged = {
             ReadBookConfig.paddingTop = it
             postEvent(EventBus.UP_CONFIG, arrayListOf(10, 5))
@@ -77,7 +77,7 @@ class PaddingConfigDialog : BaseDialogFragment(R.layout.dialog_read_padding) {
             ReadBookConfig.paddingRight = it
             postEvent(EventBus.UP_CONFIG, arrayListOf(10, 5))
         }
-        //页眉
+        //Header
         dsbHeaderPaddingTop.onChanged = {
             ReadBookConfig.headerPaddingTop = it
             postEvent(EventBus.UP_CONFIG, arrayListOf(2))
@@ -94,7 +94,7 @@ class PaddingConfigDialog : BaseDialogFragment(R.layout.dialog_read_padding) {
             ReadBookConfig.headerPaddingRight = it
             postEvent(EventBus.UP_CONFIG, arrayListOf(2))
         }
-        //页脚
+        //Footer
         dsbFooterPaddingTop.onChanged = {
             ReadBookConfig.footerPaddingTop = it
             postEvent(EventBus.UP_CONFIG, arrayListOf(2))

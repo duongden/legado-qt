@@ -215,7 +215,7 @@ class CoverImageView @JvmOverloads constructor(
             var builder = if (fragment != null && lifecycle != null) {
                 ImageLoader.load(fragment, lifecycle, path)
             } else {
-                ImageLoader.load(context, path)//Glide自动识别http://,content://和file://
+                ImageLoader.load(context, path)//Glide auto detects http://, content:// and file://
             }
             builder = builder.apply(options)
                 .placeholder(BookCover.defaultDrawable)

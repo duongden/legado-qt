@@ -41,7 +41,7 @@ class PermissionActivity : AppCompatActivity() {
         val requestCode = intent.getIntExtra(KEY_INPUT_PERMISSIONS_CODE, 1000)
         val permissions = intent.getStringArrayExtra(KEY_INPUT_PERMISSIONS)!!
         when (intent.getIntExtra(KEY_INPUT_REQUEST_TYPE, Request.TYPE_REQUEST_PERMISSION)) {
-            //权限请求
+            //Permission request
             Request.TYPE_REQUEST_PERMISSION -> showSettingDialog(permissions, rationale) {
                 lifecycleScope.launch {
                     try {
@@ -58,11 +58,11 @@ class PermissionActivity : AppCompatActivity() {
                     }
                 }
             }
-            //跳转到设置界面
+            //Jump to settings
             Request.TYPE_REQUEST_SETTING -> showSettingDialog(permissions, rationale) {
                 openSettingsActivity()
             }
-            //所有文件的管理权限
+            //All files management permission
             Request.TYPE_MANAGE_ALL_FILES_ACCESS -> showSettingDialog(permissions, rationale) {
                 try {
                     if (Permissions.isManageExternalStorage()) {
@@ -90,7 +90,7 @@ class PermissionActivity : AppCompatActivity() {
                         ) {
                             onRequestPermissionFinish()
                         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            //这种方案适用于 API 26, 即8.0（含8.0）以上可以用
+                            //Scheme applicable to API 26 (8.0)+
                             val intent = Intent()
                             intent.action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
                             intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)

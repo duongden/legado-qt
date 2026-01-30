@@ -26,8 +26,8 @@ object SourceVerificationHelp {
     private fun getVerificationResultKey(sourceKey: String) = "${sourceKey}_verificationResult"
 
     /**
-     * 获取书源验证结果
-     * 图片验证码 防爬 滑动验证码 点击字符 等等
+     * Get source verification result
+     * Captcha, Anti-crawl, Swipe captcha, Click char etc
      */
     @Synchronized
     fun getVerificationResult(
@@ -59,7 +59,7 @@ object SourceVerificationHelp {
         var waitUserInput = false
         while (getResult(source.getKey()) == null) {
             if (!waitUserInput) {
-                AppLog.putDebug("等待返回验证结果...")
+                AppLog.putDebug(appCtx.getString(io.legado.app.R.string.waiting_verification_result))
                 waitUserInput = true
             }
             LockSupport.parkNanos(this, waitTime)
@@ -68,15 +68,15 @@ object SourceVerificationHelp {
         val result = getResult(source.getKey())!!
         clearResult(source.getKey())
         result.ifBlank {
-            throw NoStackTraceException("验证结果为空")
+            throw NoStackTraceException(appCtx.getString(io.legado.app.R.string.verification_result_empty))
         }
 
         return result
     }
 
     /**
-     * 启动内置浏览器
-     * @param saveResult 保存网页源代码到数据库
+     * Start built-in browser
+     * @param saveResult Save source to database
      */
     fun startBrowser(
         source: BaseSource?,

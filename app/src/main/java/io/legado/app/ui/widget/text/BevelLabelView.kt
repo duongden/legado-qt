@@ -44,7 +44,7 @@ class BevelLabelView @JvmOverloads constructor(
     private var path: Path = Path()
     private var mWidth = 0
     private var mHeight: Int = 0
-    private var mRotate = 45 //因为默认模式是1，所以这时是45度
+    private var mRotate = 45 //Default mode 1, so this is 45 degrees
 
     private var mX: Int = 0
     private var mY: Int = 0
@@ -54,7 +54,7 @@ class BevelLabelView @JvmOverloads constructor(
         mBgColor = typedArray.getColor(
             R.styleable.BevelLabelView_label_bg_color,
             context.accentColor
-        ) //默认红色
+        ) //Default red
         mText = typedArray.getString(R.styleable.BevelLabelView_label_text) ?: ""
         mTextSize =
             typedArray.getDimensionPixelOffset(
@@ -98,11 +98,11 @@ class BevelLabelView @JvmOverloads constructor(
 
     private fun drawBackgroundText(canvas: Canvas) {
         check(mWidth == mHeight) {
-            "width must equal to height" //标签view 是一个正方形，
+            "width must equal to height" //Tag view is a square,
         }
         when (mMode) {
             MODE_LEFT_TOP -> {
-                mCorner = 0 //没有铺满的时候mCorner要归零；
+                mCorner = 0 //mCorner zero when not filled;
                 leftTopMeasure()
                 getLeftTop()
             }
@@ -161,7 +161,7 @@ class BevelLabelView @JvmOverloads constructor(
         mPaint.color = mTextColor
         canvas.translate(mX.toFloat(), mY.toFloat())
         canvas.rotate(mRotate.toFloat())
-        val baseLineY = (-(mPaint.descent() + mPaint.ascent())).toInt() / 2 //基线中间点的y轴计算公式
+        val baseLineY = (-(mPaint.descent() + mPaint.ascent())).toInt() / 2 //Y-axis calculation for baseline midpoint
         canvas.drawText(mText, 0f, baseLineY.toFloat(), mPaint)
     }
 
@@ -189,7 +189,7 @@ class BevelLabelView @JvmOverloads constructor(
         mY = mX
     }
 
-    //左上角铺满
+    //TL fill
     private fun getLeftTopFill() {
         if (mCorner != 0) {
             path.addRoundRect(
@@ -208,7 +208,7 @@ class BevelLabelView @JvmOverloads constructor(
         }
     }
 
-    //左上角不铺满
+    //TL not fill
     private fun getLeftTop() {
         path.moveTo(if (mCorner != 0) mCorner.toFloat() else (mWidth - mLength).toFloat(), 0f)
         path.lineTo(mWidth.toFloat(), 0f)
@@ -217,7 +217,7 @@ class BevelLabelView @JvmOverloads constructor(
         path.close()
     }
 
-    //左下角铺满
+    //BL fill
     private fun getLeftBottomFill() {
         if (mCorner != 0) {
             path.addRoundRect(
@@ -237,7 +237,7 @@ class BevelLabelView @JvmOverloads constructor(
     }
 
 
-    //左下角不铺满
+    //BL not fill
     private fun getLeftBottom() {
         path.moveTo(0f, 0f)
         path.lineTo(mWidth.toFloat(), mHeight.toFloat())
@@ -249,7 +249,7 @@ class BevelLabelView @JvmOverloads constructor(
         path.close()
     }
 
-    //右上角铺满
+    //Top Right fill
     private fun getRightTopFill() {
         if (mCorner != 0) {
             path.addRoundRect(
@@ -268,7 +268,7 @@ class BevelLabelView @JvmOverloads constructor(
         }
     }
 
-    //右上角不铺满
+    //Top Right not fill
     private fun getRightTop() {
         path.moveTo(0f, 0f)
         path.lineTo(if (mCorner != 0) (mWidth - mCorner).toFloat() else mLength.toFloat(), 0f)
@@ -280,7 +280,7 @@ class BevelLabelView @JvmOverloads constructor(
         path.close()
     }
 
-    //右下角铺满
+    //Bottom Right fill
     private fun getRightBottomFill() {
         if (mCorner != 0) {
             path.addRoundRect(
@@ -299,7 +299,7 @@ class BevelLabelView @JvmOverloads constructor(
         }
     }
 
-    //右下角不铺满
+    //Bottom Right not fill
     private fun getRightBottom() {
         path.moveTo(mWidth.toFloat(), 0f)
         path.lineTo(
@@ -316,7 +316,7 @@ class BevelLabelView @JvmOverloads constructor(
 
 
     /**
-     * @param sp 转换大小
+     * @param sp Convert size
      */
     @Suppress("SameParameterValue")
     private fun sp2px(sp: Int): Int {
@@ -329,7 +329,7 @@ class BevelLabelView @JvmOverloads constructor(
     }
 
     /**
-     * @param dip 转换大小
+     * @param dip Convert size
      */
     @Suppress("SameParameterValue")
     private fun dip2px(dip: Int): Int {

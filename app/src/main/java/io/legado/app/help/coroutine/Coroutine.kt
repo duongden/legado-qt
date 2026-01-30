@@ -19,8 +19,8 @@ import kotlinx.coroutines.withTimeout
 import kotlin.coroutines.CoroutineContext
 
 /**
- * 链式协程
- * 注意：如果协程太快完成，回调会不执行
+ * Chained coroutine
+ * Note: If coroutine completes too quickly, callback will not execute
  */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class Coroutine<T>(
@@ -118,7 +118,7 @@ class Coroutine<T>(
     }
 
     /**
-     * 如果协程被取消，不执行
+     * If coroutine cancelled, don't execute
      */
     fun onFinally(
         context: CoroutineContext? = null,
@@ -141,7 +141,7 @@ class Coroutine<T>(
         return this@Coroutine
     }
 
-    //取消当前任务
+    //Cancel current task
     fun cancel(cause: ActivelyCancelException = ActivelyCancelException()) {
         if (!job.isCancelled) {
             job.cancel(cause)

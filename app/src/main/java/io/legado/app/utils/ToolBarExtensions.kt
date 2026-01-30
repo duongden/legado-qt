@@ -11,7 +11,7 @@ import androidx.core.content.ContextCompat
 import io.legado.app.R
 
 /**
- * 设置toolBar更多图标颜色
+ * Set ToolBar more icon color
  */
 @SuppressLint("ObsoleteSdkInt")
 fun Toolbar.setMoreIconColor(color: Int) {

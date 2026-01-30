@@ -53,7 +53,7 @@ import splitties.views.onLongClick
 import java.util.Locale
 
 /**
- * 音频播放
+ * Audio playback
  */
 @SuppressLint("ObsoleteSdkInt")
 class AudioPlayActivity :

@@ -10,7 +10,7 @@ import kotlinx.parcelize.Parcelize
  */
 @Parcelize
 data class SearchRule(
-    /**校验关键字**/
+    /**Validation keyword**/
     var checkKeyWord: String? = null,
     override var bookList: String? = null,
     override var name: String? = null,

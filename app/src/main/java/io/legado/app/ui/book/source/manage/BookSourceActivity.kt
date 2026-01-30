@@ -499,7 +499,7 @@ class BookSourceActivity : VMBaseActivity<ActivityBookSourceBinding, BookSourceV
     private fun checkSource() {
         val dialog = alert(titleResource = R.string.search_book_key) {
             val alertBinding = DialogEditTextBinding.inflate(layoutInflater).apply {
-                editView.hint = "search word"
+                editView.hint = getString(R.string.search_word)
                 editView.setText(CheckSource.keyword)
             }
             customView { alertBinding.root }
@@ -521,7 +521,7 @@ class BookSourceActivity : VMBaseActivity<ActivityBookSourceBinding, BookSourceV
             neutralButton(R.string.check_source_config)
             cancelButton()
         }
-        //手动设置监听 避免点击打开校验设置后对话框关闭
+        //Manual listener setting avoids dialog close after clicking verify settings
         dialog.getButton(AlertDialog.BUTTON_NEUTRAL)?.setOnClickListener {
             showDialogFragment<CheckSourceConfig>()
         }
@@ -635,9 +635,10 @@ class BookSourceActivity : VMBaseActivity<ActivityBookSourceBinding, BookSourceV
                 bundleOf(Pair("checkSourceMessage", null))
             )
             groups.forEach { group ->
-                if (group.contains("失效") && searchView.query.isEmpty()) {
-                    searchView.setQuery("失效", true)
-                    toastOnUi("发现有失效书源，已为您自动筛选！")
+                val invalidStr = getString(R.string.invalid)
+                if (group.contains(invalidStr) && searchView.query.isEmpty()) {
+                    searchView.setQuery(invalidStr, true)
+                    toastOnUi(R.string.auto_filter_invalid_sources)
                 }
             }
         }
@@ -671,7 +672,7 @@ class BookSourceActivity : VMBaseActivity<ActivityBookSourceBinding, BookSourceV
     }
 
     /**
-     * 保持亮屏
+     * Keep screen on
      */
     private fun keepScreenOn(on: Boolean) {
         val isScreenOn =

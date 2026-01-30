@@ -85,7 +85,7 @@ class MyFragment() : BaseFragment(R.layout.fragment_my_config), MainFragmentInte
                 if (!WebService.isRun) {
                     return@onLongClick false
                 }
-                context?.selector(arrayListOf("复制地址", "浏览器打开")) { _, i ->
+                context?.selector(arrayListOf(getString(R.string.copy_address), getString(R.string.open_in_browser))) { _, i ->
                     when (i) {
                         0 -> context?.sendToClip(it.summary.toString())
                         1 -> context?.openUrl(it.summary.toString())

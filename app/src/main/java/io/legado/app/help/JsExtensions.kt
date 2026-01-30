@@ -8,6 +8,7 @@ import com.script.rhino.rhinoContext
 import com.script.rhino.rhinoContextOrNull
 import io.legado.app.constant.AppConst
 import io.legado.app.constant.AppConst.dateFormat
+import io.legado.app.R
 import io.legado.app.constant.AppLog
 import io.legado.app.constant.AppPattern
 import io.legado.app.data.entities.BaseSource
@@ -108,7 +109,7 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * 并发访问网络
+     * Concurrent network access
      */
     fun ajaxAll(urlList: Array<String>): Array<StrResponse> {
         return runBlocking(context) {
@@ -161,11 +162,11 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * 使用webView访问网络
-     * @param html 直接用webView载入的html, 如果html为空直接访问url
-     * @param url html内如果有相对路径的资源不传入url访问不了
-     * @param js 用来取返回值的js语句, 没有就返回整个源代码
-     * @return 返回js获取的内容
+     * Access network using webView
+     * @param html HTML loaded directly, if empty access url
+     * @param url Relative resources need url to access
+     * @param js JS to get return value, else return source
+     * @return Content got by JS
      */
     fun webView(html: String?, url: String?, js: String?): String? {
         if (isMainThread) {
@@ -183,7 +184,7 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * 使用webView获取资源url
+     * Get resource url using webView
      */
     fun webViewGetSource(html: String?, url: String?, js: String?, sourceRegex: String): String? {
         if (isMainThread) {
@@ -202,7 +203,7 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * 使用webView获取跳转url
+     * Get redirect url using webView
      */
     fun webViewGetOverrideUrl(
         html: String?,
@@ -226,9 +227,9 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * 使用内置浏览器打开链接，手动验证网站防爬
-     * @param url 要打开的链接
-     * @param title 浏览器页面的标题
+     * Open link with built-in browser, manual anti-crawler verification
+     * @param url Link to open
+     * @param title Browser page title
      */
     fun startBrowser(url: String, title: String) {
         rhinoContext.ensureActive()
@@ -236,7 +237,7 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * 使用内置浏览器打开链接，并等待网页结果
+     * Open link with built-in browser and wait for result
      */
     fun startBrowserAwait(url: String, title: String, refetchAfterSuccess: Boolean): StrResponse {
         rhinoContext.ensureActive()
@@ -251,7 +252,7 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * 打开图片验证码对话框，等待返回验证结果
+     * Open captcha dialog, await result
      */
     fun getVerificationCode(imageUrl: String): String {
         rhinoContext.ensureActive()
@@ -259,29 +260,29 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * 可从网络，本地文件(阅读私有数据目录相对路径)导入JavaScript脚本
+     * Can import JavaScript script from network, local file (private data dir relative path)
      */
     fun importScript(path: String): String {
         val result = when {
             path.startsWith("http") -> cacheFile(path)
             else -> readTxtFile(path)
         }
-        if (result.isBlank()) throw NoStackTraceException("$path 内容获取失败或者为空")
+        if (result.isBlank()) throw NoStackTraceException(appCtx.getString(R.string.sc_content_get_failed, path))
         return result
     }
 
     /**
-     * 缓存以文本方式保存的文件 如.js .txt等
-     * @param urlStr 网络文件的链接
-     * @return 返回缓存后的文件内容
+     * Cache text files e.g. .js .txt
+     * @param urlStr Network file link
+     * @return Cached content
      */
     fun cacheFile(urlStr: String): String {
         return cacheFile(urlStr, 0)
     }
 
     /**
-     * 缓存以文本方式保存的文件 如.js .txt等
-     * @param saveTime 缓存时间，单位：秒
+     * Cache text files e.g. .js .txt
+     * @param saveTime Cache duration: seconds
      */
     fun cacheFile(urlStr: String, saveTime: Int): String {
         val key = md5Encode16(urlStr)
@@ -291,7 +292,7 @@ interface JsExtensions : JsEncodeUtils {
             !getFile(cachePath).exists()
         ) {
             val path = downloadFile(urlStr)
-            log("首次下载 $urlStr >> $path")
+            log(appCtx.getString(R.string.sc_first_download, urlStr, path))
             CacheManager.put(key, path, saveTime)
             readTxtFile(path)
         } else {
@@ -315,9 +316,9 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * 下载文件
-     * @param url 下载地址:可带参数type
-     * @return 下载的文件相对路径
+     * Download file
+     * @param url Download url: can have type param
+     * @return Relative path of downloaded file
      */
     fun downloadFile(url: String): String {
         rhinoContext.ensureActive()
@@ -345,10 +346,10 @@ interface JsExtensions : JsEncodeUtils {
 
 
     /**
-     * 实现16进制字符串转文件
-     * @param content 需要转成文件的16进制字符串
-     * @param url 通过url里的参数来判断文件类型
-     * @return 相对路径
+     * Convert hex string to file
+     * @param content Hex string
+     * @param url Use params in url to judge file type
+     * @return Relative path
      */
     @Deprecated(
         "Deprecated",
@@ -373,7 +374,7 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * js实现重定向拦截,网络访问get
+     * JS implementation of redirect interception, network get
      */
     fun get(urlStr: String, headers: Map<String, String>): Connection.Response {
         val requestHeaders = if (getSource()?.enabledCookieJar == true) {
@@ -394,7 +395,7 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * js实现重定向拦截,网络访问head,不返回Response Body更省流量
+     * JS implementation of redirect interception, network head, shorter traffic without Response Body
      */
     fun head(urlStr: String, headers: Map<String, String>): Connection.Response {
         val requestHeaders = if (getSource()?.enabledCookieJar == true) {
@@ -415,7 +416,7 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * 网络访问post
+     * Network POST
      */
     fun post(urlStr: String, body: String, headers: Map<String, String>): Connection.Response {
         val requestHeaders = if (getSource()?.enabledCookieJar == true) {
@@ -436,7 +437,7 @@ interface JsExtensions : JsEncodeUtils {
         return response
     }
 
-    /* Str转ByteArray */
+    /* Str to ByteArray */
     fun strToBytes(str: String): ByteArray {
         return str.toByteArray(charset("UTF-8"))
     }
@@ -445,7 +446,7 @@ interface JsExtensions : JsEncodeUtils {
         return str.toByteArray(charset(charset))
     }
 
-    /* ByteArray转Str */
+    /* ByteArray to Str */
     fun bytesToStr(bytes: ByteArray): String {
         return String(bytes, charset("UTF-8"))
     }
@@ -455,7 +456,7 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * js实现base64解码,不能删
+     * JS implementation of base64 decode, cannot delete
      */
     fun base64Decode(str: String?): String {
         return Base64.decodeStr(str)
@@ -491,23 +492,23 @@ interface JsExtensions : JsEncodeUtils {
         return EncoderUtils.base64Encode(str, flags)
     }
 
-    /* HexString 解码为字节数组 */
+    /* Decode HexString to byte array */
     fun hexDecodeToByteArray(hex: String): ByteArray? {
         return HexUtil.decodeHex(hex)
     }
 
-    /* hexString 解码为utf8String*/
+    /* hexString decoded to utf8String */
     fun hexDecodeToString(hex: String): String? {
         return HexUtil.decodeHexStr(hex)
     }
 
-    /* utf8 编码为hexString */
+    /* utf8 encoded as hexString */
     fun hexEncodeToString(utf8: String): String? {
         return HexUtil.encodeHexStr(utf8)
     }
 
     /**
-     * 格式化时间
+     * Format time
      */
     fun timeFormatUTC(time: Long, format: String, sh: Int): String? {
         val utc = SimpleTimeZone(sh, "UTC")
@@ -518,7 +519,7 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * 时间格式化
+     * Time formatting
      */
     fun timeFormat(time: Long): String {
         return dateFormat.format(Date(time))
@@ -556,11 +557,11 @@ interface JsExtensions : JsEncodeUtils {
         return WebSettings.getDefaultUserAgent(appCtx)
     }
 
-//****************文件操作******************//
+//****************File Operations******************//
 
     /**
-     * 获取本地文件
-     * @param path 相对路径
+     * Get local file
+     * @param path Relative path
      * @return File
      */
     fun getFile(path: String): File {
@@ -573,7 +574,7 @@ interface JsExtensions : JsEncodeUtils {
         val file = File(aPath)
         val safePath = appCtx.externalCache.parent!!
         if (!file.canonicalPath.startsWith(safePath)) {
-            throw SecurityException("非法路径")
+            throw SecurityException(appCtx.getString(R.string.sc_illegal_path))
         }
         return file
     }
@@ -604,7 +605,7 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * 删除本地文件
+     * Delete local file
      */
     fun deleteFile(path: String): Boolean {
         val file = getFile(path)
@@ -612,36 +613,36 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * js实现Zip压缩文件解压
-     * @param zipPath 相对路径
-     * @return 相对路径
+     * JS implementation of Zip decompression
+     * @param zipPath Relative path
+     * @return Relative path
      */
     fun unzipFile(zipPath: String): String {
         return unArchiveFile(zipPath)
     }
 
     /**
-     * js实现7Zip压缩文件解压
-     * @param zipPath 相对路径
-     * @return 相对路径
+     * JS implementation of 7Zip decompression
+     * @param zipPath Relative path
+     * @return Relative path
      */
     fun un7zFile(zipPath: String): String {
         return unArchiveFile(zipPath)
     }
 
     /**
-     * js实现Rar压缩文件解压
-     * @param zipPath 相对路径
-     * @return 相对路径
+     * JS implementation of Rar decompression
+     * @param zipPath Relative path
+     * @return Relative path
      */
     fun unrarFile(zipPath: String): String {
         return unArchiveFile(zipPath)
     }
 
     /**
-     * js实现压缩文件解压
-     * @param zipPath 相对路径
-     * @return 相对路径
+     * JS implementation of archive decompression
+     * @param zipPath Relative path
+     * @return Relative path
      */
     fun unArchiveFile(zipPath: String): String {
         if (zipPath.isEmpty()) return ""
@@ -652,9 +653,9 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * js实现文件夹内所有文本文件读取
-     * @param path 文件夹相对路径
-     * @return 所有文件字符串换行连接
+     * JS implementation to read all text files in folder
+     * @param path Folder relative path
+     * @return All file strings joined by newline
      */
     fun getTxtInFolder(path: String): String {
         if (path.isEmpty()) return ""
@@ -675,10 +676,10 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * 获取网络zip文件里面的数据
-     * @param url zip文件的链接或十六进制字符串
-     * @param path 所需获取文件在zip内的路径
-     * @return zip指定文件的数据
+     * Get network zip content
+     * @param url zip link or hex string
+     * @param path Path inside zip
+     * @return Data
      */
     fun getZipStringContent(url: String, path: String): String {
         val byteArray = getZipByteArrayContent(url, path) ?: return ""
@@ -692,10 +693,10 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * 获取网络zip文件里面的数据
-     * @param url zip文件的链接或十六进制字符串
-     * @param path 所需获取文件在zip内的路径
-     * @return zip指定文件的数据
+     * Get network zip content
+     * @param url zip link or hex string
+     * @param path Path inside zip
+     * @return Data
      */
     fun getRarStringContent(url: String, path: String): String {
         val byteArray = getRarByteArrayContent(url, path) ?: return ""
@@ -709,10 +710,10 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * 获取网络7zip文件里面的数据
-     * @param url 7zip文件的链接或十六进制字符串
-     * @param path 所需获取文件在7zip内的路径
-     * @return zip指定文件的数据
+     * Get network 7zip content
+     * @param url 7zip link or hex string
+     * @param path Path inside 7zip
+     * @return Data
      */
     fun get7zStringContent(url: String, path: String): String {
         val byteArray = get7zByteArrayContent(url, path) ?: return ""
@@ -726,10 +727,10 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * 获取网络zip文件里面的数据
-     * @param url zip文件的链接或十六进制字符串
-     * @param path 所需获取文件在zip内的路径
-     * @return zip指定文件的数据
+     * Get network zip content
+     * @param url zip link or hex string
+     * @param path Path inside zip
+     * @return Data
      */
     fun getZipByteArrayContent(url: String, path: String): ByteArray? {
         val bytes = if (url.isAbsUrl()) {
@@ -749,15 +750,15 @@ interface JsExtensions : JsEncodeUtils {
             }
         }
 
-        log("getZipContent 未发现内容")
+        log(appCtx.getString(R.string.sc_content_not_found) + " getZipContent")
         return null
     }
 
     /**
-     * 获取网络Rar文件里面的数据
-     * @param url Rar文件的链接或十六进制字符串
-     * @param path 所需获取文件在Rar内的路径
-     * @return Rar指定文件的数据
+     * Get network Rar content
+     * @param url Rar link or hex string
+     * @param path Path inside Rar
+     * @return Data
      */
     fun getRarByteArrayContent(url: String, path: String): ByteArray? {
         val bytes = if (url.isAbsUrl()) {
@@ -772,10 +773,10 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * 获取网络7zip文件里面的数据
-     * @param url 7zip文件的链接或十六进制字符串
-     * @param path 所需获取文件在7zip内的路径
-     * @return 7zip指定文件的数据
+     * Get network 7zip content
+     * @param url 7zip link or hex string
+     * @param path Path inside 7zip
+     * @return Data
      */
     fun get7zByteArrayContent(url: String, path: String): ByteArray? {
         val bytes = if (url.isAbsUrl()) {
@@ -790,10 +791,10 @@ interface JsExtensions : JsEncodeUtils {
     }
 
 
-//******************文件操作************************//
+//******************File Operations************************//
 
     /**
-     * 解析字体Base64数据,返回字体解析类
+     * Parse font Base64, return font parser
      */
     @Deprecated(
         "Deprecated",
@@ -849,7 +850,7 @@ interface JsExtensions : JsEncodeUtils {
             if (key != null) AppCacheManager.put(key, qTTF)
             return qTTF
         } catch (e: Exception) {
-            AppLog.put("[queryTTF] 获取字体处理类出错", e)
+            AppLog.put(appCtx.getString(R.string.sc_get_font_handler_error), e)
             throw e
         }
     }
@@ -859,10 +860,10 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * @param text 包含错误字体的内容
-     * @param errorQueryTTF 错误的字体
-     * @param correctQueryTTF 正确的字体
-     * @param filter 删除 errorQueryTTF 中不存在的字符
+     * @param text Content containing error font
+     * @param errorQueryTTF Error font
+     * @param correctQueryTTF Correct font
+     * @param filter Delete chars not in errorQueryTTF
      */
     fun replaceFont(
         text: String,
@@ -871,22 +872,22 @@ interface JsExtensions : JsEncodeUtils {
         filter: Boolean
     ): String {
         if (errorQueryTTF == null || correctQueryTTF == null) return text
-        val contentArray = text.toStringArray() //这里不能用toCharArray,因为有些文字占多个字节
+        val contentArray = text.toStringArray() //Cannot use toCharArray, some chars take multiple bytes
         val intArray = IntArray(1)
         contentArray.forEachIndexed { index, s ->
             val oldCode = s.codePointAt(0)
-            // 忽略正常的空白字符
+            // Ignore normal whitespace
             if (errorQueryTTF.isBlankUnicode(oldCode)) {
                 return@forEachIndexed
             }
-            // 删除轮廓数据不存在的字符
-            var glyf = errorQueryTTF.getGlyfByUnicode(oldCode)  // 轮廓数据不存在
-            if (errorQueryTTF.getGlyfIdByUnicode(oldCode) == 0) glyf = null // 轮廓数据指向保留索引0
+            // Delete chars with no contour data
+            var glyf = errorQueryTTF.getGlyfByUnicode(oldCode)  // Contour data does not exist
+            if (errorQueryTTF.getGlyfIdByUnicode(oldCode) == 0) glyf = null // Contour data points to reserved index 0
             if (filter && (glyf == null)) {
                 contentArray[index] = ""
                 return@forEachIndexed
             }
-            // 使用轮廓数据反查Unicode
+            // Reverse lookup Unicode using contour data
             val code = correctQueryTTF.getUnicodeByGlyf(glyf)
             if (code != 0) {
                 intArray[0] = code
@@ -897,9 +898,9 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * @param text 包含错误字体的内容
-     * @param errorQueryTTF 错误的字体
-     * @param correctQueryTTF 正确的字体
+     * @param text Content containing error font
+     * @param errorQueryTTF The wrong font
+     * @param correctQueryTTF The correct font
      */
     fun replaceFont(
         text: String,
@@ -911,7 +912,7 @@ interface JsExtensions : JsEncodeUtils {
 
 
     /**
-     * 章节数转数字
+     * Chapter count to number
      */
     fun toNumChapter(s: String?): String? {
         s ?: return null
@@ -933,7 +934,7 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * 弹窗提示
+     * Popup tip
      */
     fun toast(msg: Any?) {
         rhinoContext.ensureActive()
@@ -941,7 +942,7 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * 弹窗提示 停留时间较长
+     * Popup tip, long duration
      */
     fun longToast(msg: Any?) {
         rhinoContext.ensureActive()
@@ -972,7 +973,7 @@ interface JsExtensions : JsEncodeUtils {
     }
 
     /**
-     * 生成UUID
+     * Generate UUID
      */
     fun randomUUID(): String {
         return UUID.randomUUID().toString()
@@ -986,7 +987,7 @@ interface JsExtensions : JsEncodeUtils {
         openUrl(url, null)
     }
 
-    // 新增 mimeType 参数，默认为 null（保持兼容性）
+    // Add mimeType param, default null (maintain compatibility)
     fun openUrl(url: String, mimeType: String? = null) {
         require(url.length < 64 * 1024) { "openUrl parameter url too long" }
         rhinoContext.ensureActive()

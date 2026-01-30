@@ -15,7 +15,7 @@ import kotlin.math.log10
 import kotlin.math.pow
 
 /**
- * 数据类型转换、单位转换
+ * Data type conversion, unit conversion
  *
  * @author 李玉江[QQ:1023694760]
  * @since 2014-4-18
@@ -63,7 +63,7 @@ object ConvertUtils {
         if (bytes.isNotEmpty()) {
             kotlin.runCatching {
                 val options = BitmapFactory.Options()
-                // 设置让解码器以最佳方式解码
+                // Set decoder to decode in best way
                 options.inPreferredConfig = null
                 if (width > 0 && height > 0) {
                     options.outWidth = width
@@ -87,9 +87,9 @@ object ConvertUtils {
     fun formatFileSize(length: Long): String {
         if (length <= 0) return "0"
         val units = arrayOf("b", "kb", "M", "G", "T")
-        //计算单位的，原理是利用lg,公式是 lg(1024^n) = nlg(1024)，最后 nlg(1024)/lg(1024) = n。
+        // Calculate unit, principle uses lg, formula is lg(1024^n) = nlg(1024), finally nlg(1024)/lg(1024) = n.
         val digitGroups = (log10(length.toDouble()) / log10(1024.0)).toInt()
-        //计算原理是，size/单位值。单位值指的是:比如说b = 1024,KB = 1024^2
+        // Calculation principle is size/unit value. Unit value means: e.g. b=1024, KB=1024^2
         return DecimalFormat("#,##0.##").format(length / 1024.0.pow(digitGroups.toDouble())) + " " + units[digitGroups]
     }
 

@@ -76,7 +76,7 @@ abstract class HorizontalPageDelegate(readView: ReadView) : PageDelegate(readVie
         val div = if (pointerUp) count - 1 else count
         val focusX = sumX / div
         val focusY = sumY / div
-        //判断是否移动了
+        //Check if moved
         if (!isMoved) {
             val deltaX = (focusX - startX).toInt()
             val deltaY = (focusY - startY).toInt()
@@ -84,14 +84,14 @@ abstract class HorizontalPageDelegate(readView: ReadView) : PageDelegate(readVie
             isMoved = distance > slopSquare
             if (isMoved) {
                 if (sumX - startX > 0) {
-                    //如果上一页不存在
+                    //If prev page not exists
                     if (!hasPrev()) {
                         noNext = true
                         return
                     }
                     setDirection(PageDirection.PREV)
                 } else {
-                    //如果不存在表示没有下一页了
+                    //If not exists means no next page
                     if (!hasNext()) {
                         noNext = true
                         return
@@ -104,7 +104,7 @@ abstract class HorizontalPageDelegate(readView: ReadView) : PageDelegate(readVie
         if (isMoved) {
             isCancel = if (mDirection == PageDirection.NEXT) sumX > lastX else sumX < lastX
             isRunning = true
-            //设置触摸点
+            //Set touch point
             readView.setTouchPoint(sumX, sumY)
         }
     }

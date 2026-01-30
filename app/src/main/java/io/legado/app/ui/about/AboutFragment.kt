@@ -76,7 +76,7 @@ class AboutFragment : PreferenceFragmentCompat() {
     }
 
     /**
-     * 显示md文件
+     * Show md file
      */
     private fun showMdFile(title: String, fileName: String) {
         val mdText = String(requireContext().assets.open(fileName).readBytes())
@@ -84,7 +84,7 @@ class AboutFragment : PreferenceFragmentCompat() {
     }
 
     /**
-     * 检测更新
+     * Check updates
      */
     private fun checkUpdate() {
         waitDialog.show()
@@ -104,19 +104,19 @@ class AboutFragment : PreferenceFragmentCompat() {
 
 
     /**
-     * 加入qq群
+     * Join QQ group
      */
     private fun joinQQGroup(key: String): Boolean {
         val intent = Intent()
         intent.data =
             Uri.parse("mqqopensdkapi://bizAgent/qm/qr?url=http%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Ffrom%3Dapp%26p%3Dandroid%26k%3D$key")
-        // 此Flag可根据具体产品需要自定义，如设置，则在加群界面按返回，返回手Q主界面，不设置，按返回会返回到呼起产品界面
+        // This Flag customizable per product. If set, back on group join returns to QQ main. If not, returns to caller interface.
         // intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         kotlin.runCatching {
             startActivity(intent)
             return true
         }.onFailure {
-            toastOnUi("添加失败,请手动添加")
+            toastOnUi(R.string.add_failed_manual)
         }
         return false
     }
@@ -124,43 +124,43 @@ class AboutFragment : PreferenceFragmentCompat() {
     private fun saveLog() {
         Coroutine.async {
             val backupPath = AppConfig.backupPath ?: let {
-                appCtx.toastOnUi("未设置备份目录")
+                appCtx.toastOnUi(R.string.backup_dir_not_set)
                 return@async
             }
             if (!AppConfig.recordLog) {
-                appCtx.toastOnUi("未开启日志记录，请去其他设置里打开记录日志")
+                appCtx.toastOnUi(R.string.log_record_disabled)
                 delay(3000)
             }
             val doc = FileDoc.fromUri(Uri.parse(backupPath), true)
             copyLogs(doc)
             copyHeapDump(doc)
-            appCtx.toastOnUi("已保存至备份目录")
+            appCtx.toastOnUi(R.string.saved_to_backup_dir)
         }.onError {
-            AppLog.put("保存日志出错\n${it.localizedMessage}", it, true)
+            AppLog.put(getString(R.string.save_log_error, it.localizedMessage), it, true)
         }
     }
 
     private fun createHeapDump() {
         Coroutine.async {
             val backupPath = AppConfig.backupPath ?: let {
-                appCtx.toastOnUi("未设置备份目录")
+                appCtx.toastOnUi(R.string.backup_dir_not_set)
                 return@async
             }
             if (!AppConfig.recordHeapDump) {
-                appCtx.toastOnUi("未开启堆转储记录，请去其他设置里打开记录堆转储")
+                appCtx.toastOnUi(R.string.heap_dump_record_disabled)
                 delay(3000)
             }
-            appCtx.toastOnUi("开始创建堆转储")
+            appCtx.toastOnUi(R.string.start_create_heap_dump)
             System.gc()
             CrashHandler.doHeapDump(true)
             val doc = FileDoc.fromUri(Uri.parse(backupPath), true)
             if (!copyHeapDump(doc)) {
-                appCtx.toastOnUi("未找到堆转储文件")
+                appCtx.toastOnUi(R.string.heap_dump_not_found)
             } else {
-                appCtx.toastOnUi("已保存至备份目录")
+                appCtx.toastOnUi(R.string.saved_to_backup_dir)
             }
         }.onError {
-            AppLog.put("保存堆转储失败\n${it.localizedMessage}", it)
+            AppLog.put(getString(R.string.save_heap_dump_error, it.localizedMessage), it)
         }
     }
 
@@ -207,7 +207,8 @@ class AboutFragment : PreferenceFragmentCompat() {
                 process.inputStream.copyTo(it)
             }
         } catch (e: Exception) {
-            AppLog.put("保存Logcat失败\n$e", e)
+        } catch (e: Exception) {
+            AppLog.put(getString(R.string.save_logcat_error, e.localizedMessage), e)
         }
     }
 

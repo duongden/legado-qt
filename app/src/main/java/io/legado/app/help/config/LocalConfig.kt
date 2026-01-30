@@ -17,7 +17,7 @@ by appCtx.getSharedPreferences("local", Context.MODE_PRIVATE) {
     private const val versionCodeKey = "appVersionCode"
 
     /**
-     * 本地密码,用来对需要备份的敏感信息加密,如 webdav 配置等
+     * Local password, encrypt backup sensitive info e.g. webdav config
      */
     var password: String?
         get() = getString("password", null)

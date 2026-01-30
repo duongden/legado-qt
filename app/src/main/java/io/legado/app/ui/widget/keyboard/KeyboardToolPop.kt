@@ -32,7 +32,7 @@ import splitties.systemservices.windowManager
 import kotlin.math.abs
 
 /**
- * 键盘帮助浮窗
+ * Keyboard help floating window
  */
 class KeyboardToolPop(
     private val context: Context,
@@ -55,7 +55,7 @@ class KeyboardToolPop(
         isTouchable = true
         isOutsideTouchable = false
         isFocusable = false
-        inputMethodMode = INPUT_METHOD_NEEDED //解决遮盖输入法
+        inputMethodMode = INPUT_METHOD_NEEDED //Solve covering input method
         initRecyclerView()
         upAdapterData()
     }
@@ -70,13 +70,13 @@ class KeyboardToolPop(
 
     override fun onGlobalLayout() {
         val rect = Rect()
-        // 获取当前页面窗口的显示范围
+        // Get current page window display range
         rootView.getWindowVisibleDisplayFrame(rect)
         val screenHeight = windowManager.windowSize.heightPixels
-        val keyboardHeight = screenHeight - rect.bottom // 输入法的高度
+        val keyboardHeight = screenHeight - rect.bottom // Input method height
         val preShowing = mIsSoftKeyBoardShowing
         if (abs(keyboardHeight) > screenHeight / 5) {
-            mIsSoftKeyBoardShowing = true // 超过屏幕五分之一则表示弹出了输入法
+            mIsSoftKeyBoardShowing = true // Over 1/5th screen means input method popped up
             rootView.setPadding(0, 0, 0, initialPadding + contentView.measuredHeight)
             if (!isShowing) {
                 showAtLocation(rootView, Gravity.BOTTOM, 0, 0)
@@ -106,7 +106,7 @@ class KeyboardToolPop(
     fun upAdapterData() {
         scope.launch {
             appDb.keyboardAssistsDao.flowByType(0).catch {
-                AppLog.put("键盘帮助浮窗获取数据失败\n${it.localizedMessage}", it)
+                AppLog.put(context.getString(R.string.error_get_keyboard_data, it.localizedMessage), it)
             }.flowOn(IO).collect {
                 adapter.setItems(it)
             }

@@ -36,86 +36,86 @@ import kotlin.math.max
     indices = [Index(value = ["name", "author"], unique = true)]
 )
 data class Book(
-    // 详情页Url(本地书源存储完整文件路径)
+    // Detail page Url (Local source stores full path)
     @PrimaryKey
     @ColumnInfo(defaultValue = "")
     override var bookUrl: String = "",
-    // 目录页Url (toc=table of Contents)
+    // Catalog page Url (toc=table of Contents)
     @ColumnInfo(defaultValue = "")
     var tocUrl: String = "",
-    // 书源URL(默认BookType.local)
+    // Source URL (Default BookType.local)
     @ColumnInfo(defaultValue = BookType.localTag)
     var origin: String = BookType.localTag,
-    //书源名称 or 本地书籍文件名
+    //Source name or local book filename
     @ColumnInfo(defaultValue = "")
     var originName: String = "",
-    // 书籍名称(书源获取)
+    // Book title (from source)
     @ColumnInfo(defaultValue = "")
     override var name: String = "",
-    // 作者名称(书源获取)
+    // Author name (from source)
     @ColumnInfo(defaultValue = "")
     override var author: String = "",
-    // 分类信息(书源获取)
+    // Category info (from source)
     override var kind: String? = null,
-    // 分类信息(用户修改)
+    // Category info (user modified)
     var customTag: String? = null,
-    // 封面Url(书源获取)
+    // Cover Url (from source)
     var coverUrl: String? = null,
-    // 封面Url(用户修改)
+    // Cover Url (user modified)
     var customCoverUrl: String? = null,
-    // 简介内容(书源获取)
+    // Intro content (from source)
     var intro: String? = null,
-    // 简介内容(用户修改)
+    // Intro content (user modified)
     var customIntro: String? = null,
-    // 自定义字符集名称(仅适用于本地书籍)
+    // Custom charset name (Local books only)
     var charset: String? = null,
-    // 类型,详见BookType
+    // Type, see BookType
     @ColumnInfo(defaultValue = "0")
     var type: Int = BookType.text,
-    // 自定义分组索引号
+    // Custom group index
     @ColumnInfo(defaultValue = "0")
     var group: Long = 0,
-    // 最新章节标题
+    // Latest chapter title
     var latestChapterTitle: String? = null,
-    // 最新章节标题更新时间
+    // Latest chapter title update time
     @ColumnInfo(defaultValue = "0")
     var latestChapterTime: Long = System.currentTimeMillis(),
-    // 最近一次更新书籍信息的时间
+    // Time of last book info update
     @ColumnInfo(defaultValue = "0")
     var lastCheckTime: Long = System.currentTimeMillis(),
-    // 最近一次发现新章节的数量
+    // Count of new chapters found last time
     @ColumnInfo(defaultValue = "0")
     var lastCheckCount: Int = 0,
-    // 书籍目录总数
+    // Total book chapters
     @ColumnInfo(defaultValue = "0")
     var totalChapterNum: Int = 0,
-    // 当前章节名称
+    // Current chapter name
     var durChapterTitle: String? = null,
-    // 当前章节索引
+    // Current chapter index
     @ColumnInfo(defaultValue = "0")
     var durChapterIndex: Int = 0,
-    // 当前阅读的进度(首行字符的索引位置)
+    // Current reading progress (index position of first line char)
     @ColumnInfo(defaultValue = "0")
     var durChapterPos: Int = 0,
-    // 最近一次阅读书籍的时间(打开正文的时间)
+    // Time of last book read (open content time)
     @ColumnInfo(defaultValue = "0")
     var durChapterTime: Long = System.currentTimeMillis(),
-    //字数
+    //Word count
     override var wordCount: String? = null,
-    // 刷新书架时更新书籍信息
+    // Update book info when refreshing bookshelf
     @ColumnInfo(defaultValue = "1")
     var canUpdate: Boolean = true,
-    // 手动排序
+    // Manual sort
     @ColumnInfo(defaultValue = "0")
     var order: Int = 0,
-    //书源排序
+    //Source sort
     @ColumnInfo(defaultValue = "0")
     var originOrder: Int = 0,
-    // 自定义书籍变量信息(用于书源规则检索书籍信息)
+    // Custom book variable info (for source rule book info retrieval)
     override var variable: String? = null,
-    //阅读设置
+    //Reading settings
     var readConfig: ReadConfig? = null,
-    //同步时间
+    //Sync time
     @ColumnInfo(defaultValue = "0")
     var syncTime: Long = 0L
 ) : Parcelable, BaseBook {
@@ -166,7 +166,7 @@ data class Book(
 
     fun getDisplayIntro() = if (customIntro.isNullOrEmpty()) intro else customIntro
 
-    //自定义简介有自动更新的需求时，可通过更新intro再调用upCustomIntro()完成
+    //When custom intro needs auto update, update intro then call upCustomIntro()
     @Suppress("unused")
     fun upCustomIntro() {
         customIntro = intro
@@ -202,7 +202,7 @@ data class Book(
         if (useReplaceRule != null) {
             return useReplaceRule
         }
-        //图片类书源 epub本地 默认关闭净化
+        //Image source epub local default disable purification
         if (isImage || isEpub) {
             return false
         }
@@ -254,7 +254,7 @@ data class Book(
         return config.splitLongChapter
     }
 
-    // readSimulating 的 setter 和 getter
+    // readSimulating setter and getter
     fun setReadSimulating(readSimulating: Boolean) {
         config.readSimulating = readSimulating
     }
@@ -263,7 +263,7 @@ data class Book(
         return config.readSimulating
     }
 
-    // startDate 的 setter 和 getter
+    // startDate setter and getter
     fun setStartDate(startDate: LocalDate?) {
         config.startDate = startDate
     }
@@ -275,7 +275,7 @@ data class Book(
         return config.startDate
     }
 
-    // startChapter 的 setter 和 getter
+    // startChapter setter and getter
     fun setStartChapter(startChapter: Int) {
         config.startChapter = startChapter
     }
@@ -285,7 +285,7 @@ data class Book(
         return this.durChapterIndex
     }
 
-    // dailyChapters 的 setter 和 getter
+    // dailyChapters setter and getter
     fun setDailyChapters(dailyChapters: Int) {
         config.dailyChapters = dailyChapters
     }
@@ -310,7 +310,7 @@ data class Book(
         folderName?.let {
             return it
         }
-        //防止书名过长,只取9位
+        //Prevent title too long, take 9 chars
         folderName = getFolderNameNoCache()
         return folderName!!
     }
@@ -395,14 +395,14 @@ data class Book(
         var pageAnim: Int? = null,
         var reSegment: Boolean = false,
         var imageStyle: String? = null,
-        var useReplaceRule: Boolean? = null,// 正文使用净化替换规则
-        var delTag: Long = 0L,//去除标签
+        var useReplaceRule: Boolean? = null,// Content uses purification replacement rules
+        var delTag: Long = 0L,//Remove tags
         var ttsEngine: String? = null,
         var splitLongChapter: Boolean = true,
         var readSimulating: Boolean = false,
         var startDate: LocalDate? = null,
-        var startChapter: Int? = null,     // 用户设置的起始章节
-        var dailyChapters: Int = 3    // 用户设置的每日更新章节数
+        var startChapter: Int? = null,     // User set start chapter
+        var dailyChapters: Int = 3    // User set daily update chapter count
     ) : Parcelable
 
     class Converters {

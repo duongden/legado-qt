@@ -127,7 +127,7 @@ class ReplaceEditActivity :
 
     override fun helpActions(): List<SelectItem<String>> {
         return arrayListOf(
-            SelectItem("正则教程", "regexHelp")
+            SelectItem(getString(R.string.sc_regex_tutorial), "regexHelp")
         )
     }
 
@@ -143,14 +143,14 @@ class ReplaceEditActivity :
         if (view is EditText) {
             val start = view.selectionStart
             val end = view.selectionEnd
-            //获取EditText的文字
+            //Get EditText text
             val edit = view.editableText
             if (start < 0 || start >= edit.length) {
                 edit.append(text)
             } else if (start > end) {
                 edit.replace(end, start, text)
             } else {
-                //光标所在位置插入文字
+                //Insert text at cursor position
                 edit.replace(start, end, text)
             }
         }

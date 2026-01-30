@@ -8,7 +8,7 @@ import io.legado.app.utils.showDialogFragment
 import io.legado.app.utils.viewbindingdelegate.viewBinding
 
 /**
- * 验证码
+ * Verification code
  */
 class VerificationCodeActivity :
     BaseActivity<ActivityTranslucenceBinding>() {

@@ -163,7 +163,7 @@ object TranslateUtils {
         // Step 3: Translate and PhienAm
         val translatedWords = ArrayList<String>()
         for (token in tokens) {
-            // Filter: skip '的', '了', '著'
+            // Filter: skip 'de', 'le', 'zhu'
             if (token == "的" || token == "了" || token == "著") {
                 continue
             }

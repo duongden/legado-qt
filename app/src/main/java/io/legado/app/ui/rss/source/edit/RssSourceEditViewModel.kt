@@ -55,7 +55,7 @@ class RssSourceEditViewModel(application: Application) : BaseViewModel(applicati
             }
             rssSource?.let {
                 appDb.rssSourceDao.delete(it)
-                //更新收藏的源地址
+                //Update saved source url
                 if (it.sourceUrl != source.sourceUrl) {
                     appDb.rssStarDao.updateOrigin(source.sourceUrl, it.sourceUrl)
                     appDb.rssArticleDao.updateOrigin(source.sourceUrl, it.sourceUrl)
@@ -87,7 +87,7 @@ class RssSourceEditViewModel(application: Application) : BaseViewModel(applicati
             if (it != null) {
                 onSuccess(it)
             } else {
-                context.toastOnUi("格式不对")
+                context.toastOnUi(R.string.invalid_format)
             }
         }
     }

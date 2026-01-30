@@ -5,17 +5,17 @@ import io.legado.app.ui.book.read.page.entities.TextPage
 interface LayoutProgressListener {
 
     /**
-     * 单页排版完成
+     * Single page layout complete
      */
     fun onLayoutPageCompleted(index: Int, page: TextPage) {}
 
     /**
-     * 全部排版完成
+     * Layout complete
      */
     fun onLayoutCompleted() {}
 
     /**
-     * 排版出现异常
+     * Layout exception
      */
     fun onLayoutException(e: Throwable) {}
 

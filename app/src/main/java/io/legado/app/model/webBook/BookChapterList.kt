@@ -74,7 +74,7 @@ object BookChapterList {
                         ruleData = book,
                         coroutineContext = coroutineContext
                     )
-                    val res = analyzeUrl.getStrResponseAwait() //控制并发访问
+                    val res = analyzeUrl.getStrResponseAwait() //Control concurrent access
                     res.body?.let { nextBody ->
                         chapterData = analyzeChapterList(
                             book, nextUrl, nextUrl,
@@ -103,7 +103,7 @@ object BookChapterList {
                         ruleData = book,
                         coroutineContext = coroutineContext
                     )
-                    val res = analyzeUrl.getStrResponseAwait() //控制并发访问
+                    val res = analyzeUrl.getStrResponseAwait() //Control concurrent access
                     analyzeChapterList(
                         book, urlStr, res.url,
                         res.body!!, tocRule, listRule, bookSource, false
@@ -120,7 +120,7 @@ object BookChapterList {
             chapterList.reverse()
         }
         coroutineContext.ensureActive()
-        //去重
+        //Deduplicate
         val lh = LinkedHashSet(chapterList)
         val list = ArrayList(lh)
         if (!book.getReverseToc()) {
@@ -182,12 +182,12 @@ object BookChapterList {
         analyzeRule.setContent(body).setBaseUrl(baseUrl)
         analyzeRule.setRedirectUrl(redirectUrl)
         analyzeRule.setCoroutineContext(coroutineContext)
-        //获取目录列表
+        //Get catalog list
         val chapterList = arrayListOf<BookChapter>()
         Debug.log(bookSource.bookSourceUrl, "┌获取目录列表", log)
         val elements = analyzeRule.getElements(listRule)
         Debug.log(bookSource.bookSourceUrl, "└列表大小:${elements.size}", log)
-        //获取下一页链接
+        //Get next page link
         val nextUrlList = arrayListOf<String>()
         val nextTocRule = tocRule.nextTocUrl
         if (getNextUrl && !nextTocRule.isNullOrEmpty()) {

@@ -78,7 +78,7 @@ class ImportBookAdapter(context: Context, val callBack: CallBack) :
                     notifyItemChanged(holder.layoutPosition, true)
                     callBack.upCountView()
                 } else {
-                    /* 点击开始阅读 */
+                    /* Click to start reading */
                     callBack.startRead(it.file)
                 }
             }

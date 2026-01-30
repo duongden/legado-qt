@@ -19,7 +19,7 @@ class AllBookmarkViewModel(application: Application) : BaseViewModel(application
 
 
     /**
-     * 导出书签
+     * Export bookmark
      */
     fun exportBookmark(treeUri: Uri) {
         execute {

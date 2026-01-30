@@ -27,17 +27,17 @@ class CronetCoroutineInterceptor(private val cookieJar: CookieJar) : Interceptor
             throw IOException("Canceled")
         }
         val original: Request = chain.request()
-        //Cronet未初始化
+        //Cronet not initialized
         return if (!CronetLoader.install() || cronetEngine == null) {
             chain.proceed(original)
         } else try {
             val builder: Request.Builder = original.newBuilder()
-            //移除Keep-Alive,手动设置会导致400 BadRequest
+            //Remove Keep-Alive, manual set causes 400 BadRequest
             builder.removeHeader("Keep-Alive")
             builder.removeHeader("Accept-Encoding")
             if (cookieJar != CookieJar.NO_COOKIES) {
                 val cookieStr = getCookie(original.url)
-                //设置Cookie
+                //Set Cookie
                 if (cookieStr.length > 3) {
                     builder.addHeader("Cookie", cookieStr)
                 }
@@ -60,8 +60,8 @@ class CronetCoroutineInterceptor(private val cookieJar: CookieJar) : Interceptor
             }
 
         } catch (e: Exception) {
-            //不能抛出错误,抛出错误会导致应用崩溃
-            //遇到Cronet处理有问题时的情况，如证书过期等等，回退到okhttp处理
+            //Cannot throw error, throwing error crashes app
+            //Cronet issue (e.g. cert expired), fallback to okhttp
             if (!e.message.toString().contains("ERR_CERT_", true)
                 && !e.message.toString().contains("ERR_SSL_", true)
             ) {

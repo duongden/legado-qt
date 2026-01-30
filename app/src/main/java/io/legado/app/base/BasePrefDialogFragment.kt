@@ -25,7 +25,7 @@ abstract class BasePrefDialogFragment(
                 it.setBackgroundDrawableResource(R.color.transparent)
             }
 
-            // 修改gravity的时机一般在子类的onStart方法中, 因此需要在onStart之后执行.
+            // Modify gravity timing usually in subclass onStart, so execute after onStart.
             lifecycle.addObserver(LifecycleEventObserver { _, event ->
                 if (event == Lifecycle.Event.ON_START) {
                     when (dialog?.window?.attributes?.gravity) {

@@ -113,7 +113,7 @@ class MangaMenu @JvmOverloads constructor(
         }
         upBrightnessVwPos()
         /**
-         * 确保视图不被导航栏遮挡
+         * Ensure view is not covered by navigation bar
          */
         bottomMenu.applyNavigationBarPadding()
     }

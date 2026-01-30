@@ -239,7 +239,7 @@ class TitleBar @JvmOverloads constructor(
 
     override fun setBackgroundColor(color: Int) {
         if (color.alpha < 255) {
-            //这里不能改为0f,改为0f在横屏模式下文字和图标颜色会变
+            //Cannot change to 0f, 0f allows text/icon color change in landscape
             elevation = 0.1f
         }
         super.setBackgroundColor(color)
@@ -248,7 +248,7 @@ class TitleBar @JvmOverloads constructor(
     override fun setBackground(background: Drawable?) {
         if (background is ColorDrawable) {
             if (background.alpha < 255) {
-                //这里不能改为0f,改为0f在横屏模式下文字和图标颜色会变
+                //Cannot change to 0f, 0f allows text/icon color change in landscape
                 elevation = 0.1f
             }
         }

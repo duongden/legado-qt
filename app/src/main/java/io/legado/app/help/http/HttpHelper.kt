@@ -34,7 +34,7 @@ val cookieJar by lazy {
 
         override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
             if (cookies.isEmpty()) return
-            //临时保存 书源启用cookie选项再添加到数据库
+            //Temp save Source enable cookie option then add to DB
             val cookieBuilder = StringBuilder()
             cookies.forEachIndexed { index, cookie ->
                 if (index > 0) cookieBuilder.append(";")
@@ -152,8 +152,8 @@ fun getProxyClient(proxy: String? = null): OkHttpClient {
     val r = Regex("(http|socks4|socks5)://(.*):(\\d{2,5})(@.*@.*)?")
     val ms = r.findAll(proxy)
     val group = ms.first()
-    var username = ""       //代理服务器验证用户名
-    var password = ""       //代理服务器验证密码
+    var username = ""       //Proxy server auth username
+    var password = ""       //Proxy server auth password
     val type = if (group.groupValues[1] == "http") "http" else "socks"
     val host = group.groupValues[2]
     val port = group.groupValues[3].toInt()
@@ -169,7 +169,7 @@ fun getProxyClient(proxy: String? = null): OkHttpClient {
             builder.proxy(Proxy(Proxy.Type.SOCKS, InetSocketAddress(host, port)))
         }
         if (username != "" && password != "") {
-            builder.proxyAuthenticator { _, response -> //设置代理服务器账号密码
+            builder.proxyAuthenticator { _, response -> //Set proxy server auth
                 val credential: String = Credentials.basic(username, password)
                 response.request.newBuilder()
                     .header("Proxy-Authorization", credential)

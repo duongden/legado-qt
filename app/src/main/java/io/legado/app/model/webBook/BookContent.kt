@@ -95,7 +95,7 @@ object BookContent {
                     ruleData = book,
                     coroutineContext = coroutineContext
                 )
-                val res = analyzeUrl.getStrResponseAwait() //控制并发访问
+                val res = analyzeUrl.getStrResponseAwait() //Control concurrent access
                 res.body?.let { nextBody ->
                     contentData = analyzeContent(
                         book, nextUrl, res.url, nextBody, contentRule,
@@ -122,7 +122,7 @@ object BookContent {
                     ruleData = book,
                     coroutineContext = coroutineContext
                 )
-                val res = analyzeUrl.getStrResponseAwait() //控制并发访问
+                val res = analyzeUrl.getStrResponseAwait() //Control concurrent access
                 analyzeContent(
                     book, urlStr, res.url, res.body!!, contentRule,
                     bookChapter, bookSource, mNextChapterUrl,
@@ -135,7 +135,7 @@ object BookContent {
             }
         }
         var contentStr = contentList.joinToString("\n")
-        //全文替换
+        //Global replace
         val replaceRegex = contentRule.replaceRegex
         if (!replaceRegex.isNullOrEmpty()) {
             contentStr = contentStr.split(AppPattern.LFRegex).joinToString("\n") { it.trim() }
@@ -175,13 +175,13 @@ object BookContent {
         analyzeRule.setNextChapterUrl(nextChapterUrl)
         val nextUrlList = arrayListOf<String>()
         analyzeRule.setChapter(chapter)
-        //获取正文
+        //Get content body
         var content = analyzeRule.getString(contentRule.content, unescape = false)
         content = HtmlFormatter.formatKeepImg(content, rUrl)
         if (content.indexOf('&') > -1) {
             content = StringEscapeUtils.unescapeHtml4(content)
         }
-        //获取下一页链接
+        //Get next page link
         if (getNextPageUrl) {
             val nextUrlRule = contentRule.nextContentUrl
             if (!nextUrlRule.isNullOrEmpty()) {

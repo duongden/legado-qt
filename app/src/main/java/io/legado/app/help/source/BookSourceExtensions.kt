@@ -19,7 +19,7 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * 采用md5作为key可以在分类修改后自动重新计算,不需要手动刷新
+ * Using md5 as key can automatically recalculate after category modification, no manual refresh needed
  */
 
 private val mutexMap by lazy { hashMapOf<String, Mutex>() }

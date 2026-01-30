@@ -55,7 +55,7 @@ import java.io.FileOutputStream
 import kotlin.coroutines.coroutineContext
 
 /**
- * 阅读界面数据处理
+ * Reading interface data processing
  */
 class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     val permissionDenialLiveData = MutableLiveData<Int>()
@@ -79,7 +79,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * 初始化
+     * Initialize
      */
     fun initData(intent: Intent, success: (() -> Unit)? = null) {
         execute {
@@ -132,7 +132,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
             ReadBook.loadOrUpContent()
         }
         if (ReadBook.chapterChanged) {
-            // 有章节跳转不同步阅读进度
+            // Chapter jump does not sync reading progress
             ReadBook.chapterChanged = false
         } else if (!isSameBook || !BaseReadAloudService.isRun) {
             if (AppConfig.syncBookProgressPlus) {
@@ -161,7 +161,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * 加载详情页
+     * Load detail page
      */
     private suspend fun loadBookInfo(book: Book): Boolean {
         val source = ReadBook.bookSource ?: return true
@@ -176,7 +176,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * 加载目录
+     * Load catalog
      */
     fun loadChapterList(book: Book) {
         execute {
@@ -235,7 +235,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * 同步进度
+     * Sync progress
      */
     fun syncBookProgress(
         book: Book,
@@ -261,7 +261,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * 换源
+     * Change source
      */
     fun changeTo(book: Book, toc: List<BookChapter>) {
         changeSourceCoroutine?.cancel()
@@ -284,7 +284,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * 自动换源
+     * Auto change source
      */
     private fun autoChangeSource(name: String, author: String) {
         if (!AppConfig.autoChangeSource) return
@@ -384,7 +384,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * 保存内容
+     * Save content
      */
     fun saveContent(book: Book, content: String) {
         execute {
@@ -397,7 +397,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * 反转内容
+     * Reverse content
      */
     fun reverseContent(book: Book) {
         execute {
@@ -414,7 +414,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * 内容搜索跳转
+     * Content search jump
      */
     fun searchResultPositions(
         textChapter: TextChapter,
@@ -476,7 +476,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * 翻转删除重复标题
+     * Reverse delete duplicate titles
      */
     fun reverseRemoveSameTitle() {
         execute {
@@ -490,7 +490,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * 刷新图片
+     * Refresh image
      */
     fun refreshImage(src: String) {
         execute {
@@ -505,7 +505,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * 保存图片
+     * Save image
      */
     fun saveImage(src: String?, uri: Uri) {
         src ?: return
@@ -535,7 +535,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * 替换规则变化
+     * Replace rule change
      */
     fun replaceRuleChanged() {
         execute {

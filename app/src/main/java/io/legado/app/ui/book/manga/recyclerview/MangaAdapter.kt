@@ -76,7 +76,7 @@ class MangaAdapter(private val context: Context) :
 
     fun isNotEmpty() = !isEmpty()
 
-    //全部替换数据
+    //Replace all data
     fun submitList(contents: List<Any>, runnable: Runnable? = null) {
         mDiffer.submitList(contents, runnable)
     }
@@ -268,7 +268,7 @@ class MangaAdapter(private val context: Context) :
         }
     }
 
-    //开启灰色图片
+    //Enable gray image
     fun enableGray(enable: Boolean) {
         mTransformation = if (enable) {
             GrayscaleTransformation()

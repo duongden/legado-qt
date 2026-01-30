@@ -13,7 +13,7 @@ import kotlin.math.max
 object SvgUtils {
 
     /**
-     * 从Svg中解码bitmap
+     * Decode bitmap from Svg
      */
     
     fun createBitmap(filePath: String, width: Int, height: Int? = null): Bitmap? {
@@ -30,7 +30,7 @@ object SvgUtils {
         }.getOrNull()
     }
 
-    //获取svg图片大小
+    // Get svg image size
     fun getSize(filePath: String): Size? {
         return kotlin.runCatching {
             val inputStream = FileInputStream(filePath)
@@ -50,7 +50,7 @@ object SvgUtils {
         val size = getSize(svg)
         val wRatio = width?.let { size.width / it } ?: -1
         val hRatio = height?.let { size.height / it } ?: -1
-        //如果超出指定大小，则缩小相应的比例
+        // If exceeds specified size, shrink by corresponding ratio
         val ratio = when {
             wRatio > 1 && hRatio > 1 -> max(wRatio, hRatio)
             wRatio > 1 -> wRatio

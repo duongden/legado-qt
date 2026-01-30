@@ -23,7 +23,7 @@ import kotlin.math.min
 class ScrollTextView(context: Context, attrs: AttributeSet?) :
     AppCompatTextView(context, attrs) {
 
-    //是否到顶或者到底的标志
+    //Flag reached top or bottom
     private var disallowIntercept = true
 
     private val scrollStateIdle = 0
@@ -38,7 +38,7 @@ class ScrollTextView(context: Context, attrs: AttributeSet?) :
     private var mMinFlingVelocity: Int = 0
     private var mMaxFlingVelocity: Int = 0
 
-    //滑动距离的最大边界
+    //Max swipe distance boundary
     private var mOffsetHeight: Int = 0
 
     //f(x) = (x-1)^5 + 1
@@ -65,7 +65,7 @@ class ScrollTextView(context: Context, attrs: AttributeSet?) :
                 val y = scrollY + distanceY
                 if (y < 0 || y > mOffsetHeight) {
                     disallowIntercept = false
-                    //这里触发父布局或祖父布局的滑动事件
+                    //Trigger parent/grandparent swipe event
                     parent.requestDisallowInterceptTouchEvent(false)
                 } else {
                     disallowIntercept = true
@@ -150,7 +150,7 @@ class ScrollTextView(context: Context, attrs: AttributeSet?) :
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val result = super.onTouchEvent(event)
-        //如果是需要拦截，则再拦截，这个方法会在onScrollChanged方法之后再调用一次
+        //Intercept if needed, this method called again after onScrollChanged
         if (disallowIntercept && lineCount > maxLines) {
             parent.requestDisallowInterceptTouchEvent(true)
         }
@@ -165,19 +165,19 @@ class ScrollTextView(context: Context, attrs: AttributeSet?) :
     private fun initOffsetHeight() {
         val mLayoutHeight: Int
 
-        //获得内容面板
+        //Get content panel
         val mLayout = layout ?: return
-        //获得内容面板的高度
+        //Get content panel height
         mLayoutHeight = mLayout.height
-        //获取上内边距
+        //Get top padding
         val paddingTop: Int = totalPaddingTop
-        //获取下内边距
+        //Get bottom padding
         val paddingBottom: Int = totalPaddingBottom
 
-        //获得控件的实际高度
+        //Get widget actual height
         val mHeight: Int = measuredHeight
 
-        //计算滑动距离的边界
+        //Calc swipe distance boundary
         mOffsetHeight = mLayoutHeight + paddingTop + paddingBottom - mHeight
         if (mOffsetHeight <= 0) {
             scrollTo(0, 0)
@@ -199,7 +199,7 @@ class ScrollTextView(context: Context, attrs: AttributeSet?) :
     }
 
     /**
-     * 惯性滚动
+     * Inertial scrolling
      */
     private inner class ViewFling : Runnable {
 

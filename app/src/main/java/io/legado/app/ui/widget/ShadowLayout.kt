@@ -57,8 +57,8 @@ class ShadowLayout @JvmOverloads constructor(
 
 
     init {
-        setLayerType(View.LAYER_TYPE_SOFTWARE, null) // 关闭硬件加速
-        setWillNotDraw(false) // 调用此方法后，才会执行 onDraw(Canvas) 方法
+        setLayerType(View.LAYER_TYPE_SOFTWARE, null) // Disable hardware acceleration
+        setWillNotDraw(false) // onDraw(Canvas) called only after this method
         val typedArray =
             context.obtainStyledAttributes(attrs, R.styleable.ShadowLayout)
         mShadowColor = typedArray.getColor(
@@ -124,7 +124,7 @@ class ShadowLayout @JvmOverloads constructor(
     }
 
     /**
-     * 真正绘制阴影的方法
+     * Real shadow draw method
      */
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -161,10 +161,10 @@ class ShadowLayout @JvmOverloads constructor(
     }
 
     /**
-     * dip2px dp 值转 px 值
+     * dip2px dp to px
      *
-     * @param dpValue dp 值
-     * @return px 值
+     * @param dpValue dp value
+     * @return px value
      */
     private fun dip2px(dpValue: Float): Float {
         val dm = context.resources.displayMetrics

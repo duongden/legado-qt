@@ -35,7 +35,7 @@ object ImageProvider {
     }
 
     /**
-     * 缓存bitmap LruCache实现
+     * LruCache implementation for bitmap
      * filePath bitmap
      */
     private const val M = 1024 * 1024
@@ -70,7 +70,7 @@ object ImageProvider {
                     removeCount++
                 }
             }
-            //错误图片不能释放,占位用,防止一直重复获取图片
+            //Error image cannot release, placeholder, prevent repeated fetch
             if (oldValue != errorBitmap) {
                 oldValue.recycle()
                 //putDebug("ImageProvider: trigger bitmap recycle. URI: $filePath")
@@ -159,7 +159,7 @@ object ImageProvider {
     ): Size {
         val file = cacheImage(book, src, bookSource)
         val op = BitmapFactory.Options()
-        // inJustDecodeBounds如果设置为true,仅仅返回图片实际的宽和高,宽和高是赋值给opts.outWidth,opts.outHeight;
+        // If inJustDecodeBounds set to true, only return actual image width/height, assigned to opts.outWidth, opts.outHeight
         op.inJustDecodeBounds = true
         BitmapFactory.decodeFile(file.absolutePath, op)
         if (op.outWidth < 1 && op.outHeight < 1) {
@@ -167,7 +167,7 @@ object ImageProvider {
             val size = SvgUtils.getSize(file.absolutePath)
             if (size != null) return size
             putDebug("ImageProvider: $src Unsupported image type")
-            //file.delete() 重复下载
+            //file.delete() duplicate download
             return Size(errorBitmap.width, errorBitmap.height)
         }
         return Size(op.outWidth, op.outHeight)
@@ -182,15 +182,15 @@ object ImageProvider {
         width: Int,
         height: Int? = null
     ): Bitmap {
-        //src为空白时 可能被净化替换掉了 或者规则失效
+        //src blank maybe purification replaced it or rule failed
         if (book.getUseReplaceRule() && src.isBlank()) {
             book.setUseReplaceRule(false)
             appCtx.toastOnUi(R.string.error_image_url_empty)
         }
         val vFile = BookHelp.getImage(book, src)
         if (!vFile.exists()) return errorBitmap
-        //epub文件提供图片链接是相对链接，同时阅读多个epub文件，缓存命中错误
-        //bitmapLruCache的key同一改成缓存文件的路径
+        //epub image links are relative, reading multiple epubs causes cache hit error
+        //bitmapLruCache key unified to cache file path
         val cacheBitmap = getNotRecycled(vFile.absolutePath)
         if (cacheBitmap != null) return cacheBitmap
         return kotlin.runCatching {
@@ -200,7 +200,7 @@ object ImageProvider {
             put(vFile.absolutePath, bitmap)
             bitmap
         }.onFailure {
-            //错误图片占位,防止重复获取
+            //Error image placeholder, prevent repeated fetch
             put(vFile.absolutePath, errorBitmap)
         }.getOrDefault(errorBitmap)
     }

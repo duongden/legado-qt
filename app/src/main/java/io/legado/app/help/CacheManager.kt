@@ -51,7 +51,7 @@ object AppCacheManager {
 object CacheManager {
 
     /**
-     * saveTime 单位为秒
+     * saveTime in seconds
      */
     @JvmOverloads
     fun put(key: String, value: Any, saveTime: Int = 0) {
@@ -70,7 +70,7 @@ object CacheManager {
         memoryLruCache.put(key, value)
     }
 
-    //从内存中获取数据 使用lruCache
+    //Get data from memory using lruCache
     fun getFromMemory(key: String): Any? {
         return memoryLruCache[key]
     }

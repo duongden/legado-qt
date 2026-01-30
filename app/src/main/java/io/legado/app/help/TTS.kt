@@ -88,17 +88,17 @@ class TTS {
             text?.splitNotBlank("\n")?.forEachIndexed { i, s ->
                 result = tts.speak(s, TextToSpeech.QUEUE_ADD, null, tag + i)
                 if (result == TextToSpeech.ERROR) {
-                    AppLog.put("tts朗读出错:$text")
+                    AppLog.put(appCtx.getString(R.string.tts_speak_error, text))
                 }
             }
         }.onFailure {
-            AppLog.put("tts朗读出错", it)
+            AppLog.put(appCtx.getString(R.string.tts_speak_error, it.localizedMessage), it)
             appCtx.toastOnUi(it.localizedMessage)
         }
     }
 
     /**
-     * 初始化监听
+     * Init listener
      */
     private inner class InitListener : TextToSpeech.OnInitListener {
 
@@ -115,18 +115,18 @@ class TTS {
     }
 
     /**
-     * 朗读监听
+     * Read aloud listener
      */
     private inner class TTSUtteranceListener : UtteranceProgressListener() {
 
         override fun onStart(utteranceId: String?) {
-            //开始朗读取消释放资源任务
+            //Start reading cancel resource release task
             handler.removeCallbacks(clearTtsRunnable)
             speakStateListener?.onStart()
         }
 
         override fun onDone(utteranceId: String?) {
-            //一分钟没有朗读释放资源
+            //Release resources after 1 min no reading
             handler.postDelayed(clearTtsRunnable, 60000L)
             speakStateListener?.onDone()
         }

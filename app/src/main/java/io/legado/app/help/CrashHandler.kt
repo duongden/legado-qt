@@ -35,21 +35,21 @@ import java.util.concurrent.TimeUnit
 class CrashHandler(val context: Context) : Thread.UncaughtExceptionHandler {
 
     /**
-     * 系统默认UncaughtExceptionHandler
+     * System default UncaughtExceptionHandler
      */
     private var mDefaultHandler = Thread.getDefaultUncaughtExceptionHandler()
 
     init {
-        //设置该CrashHandler为系统默认的
+        //Set this CrashHandler as system default
         Thread.setDefaultUncaughtExceptionHandler(this)
     }
 
     /**
-     * uncaughtException 回调函数
+     * uncaughtException callback
      */
     override fun uncaughtException(thread: Thread, ex: Throwable) {
         if (shouldAbsorb(ex)) {
-            AppLog.put("发生未捕获的异常\n${ex.localizedMessage}", ex)
+            AppLog.put(appCtx.getString(io.legado.app.R.string.uncaught_exception, ex.localizedMessage), ex)
             Looper.loop()
         } else {
             ReadAloud.stop(context)
@@ -71,12 +71,12 @@ class CrashHandler(val context: Context) : Thread.UncaughtExceptionHandler {
     }
 
     /**
-     * 处理该异常
+     * Handle this exception
      */
     private fun handleException(ex: Throwable?) {
         if (ex == null) return
         LocalConfig.appCrash = true
-        //保存日志文件
+        //Save log file
         saveCrashInfo2File(ex)
         if ((ex is OutOfMemoryError || ex.cause is OutOfMemoryError) && AppConfig.recordHeapDump) {
             doHeapDump()
@@ -87,12 +87,12 @@ class CrashHandler(val context: Context) : Thread.UncaughtExceptionHandler {
 
     companion object {
         /**
-         * 存储异常和参数信息
+         * Store exception and parameter info
          */
         private val paramsMap by lazy {
             val map = LinkedHashMap<String, String>()
             kotlin.runCatching {
-                //获取系统信息
+                //Get system info
                 map["MANUFACTURER"] = Build.MANUFACTURER
                 map["BRAND"] = Build.BRAND
                 map["MODEL"] = Build.MODEL
@@ -105,7 +105,7 @@ class CrashHandler(val context: Context) : Thread.UncaughtExceptionHandler {
                 }
                 map["packageName"] = appCtx.packageName
                 map["heapSize"] = Runtime.getRuntime().maxMemory().toString()
-                //获取app版本信息
+                //Get app version info
                 AppConst.appInfo.let {
                     map["versionName"] = it.versionName
                     map["versionCode"] = it.versionCode.toString()
@@ -115,13 +115,13 @@ class CrashHandler(val context: Context) : Thread.UncaughtExceptionHandler {
         }
 
         /**
-         * 格式化时间
+         * Format time
          */
         @SuppressLint("SimpleDateFormat")
         private val format = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss")
 
         /**
-         * 保存错误信息到文件中
+         * Save error info to file
          */
         fun saveCrashInfo2File(ex: Throwable) {
             val sb = StringBuilder()
@@ -146,7 +146,7 @@ class CrashHandler(val context: Context) : Thread.UncaughtExceptionHandler {
             val fileName = "crash-$time-$timestamp.log"
             try {
                 val backupPath = AppConfig.backupPath
-                    ?: throw NoStackTraceException("备份路径未配置")
+                    ?: throw NoStackTraceException(appCtx.getString(io.legado.app.R.string.backup_path_not_configured))
                 val uri = Uri.parse(backupPath)
                 val fileDoc = FileDoc.fromUri(uri, true)
                 fileDoc.createFileIfNotExist(fileName, "crash")
@@ -168,7 +168,7 @@ class CrashHandler(val context: Context) : Thread.UncaughtExceptionHandler {
         }
 
         /**
-         * 进行堆转储
+         * Perform heap dump
          */
         fun doHeapDump(manually: Boolean = false) {
             val heapDir = appCtx

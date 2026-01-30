@@ -3,6 +3,8 @@ package io.legado.app.api.controller
 
 import android.text.TextUtils
 import io.legado.app.api.ReturnData
+import io.legado.app.R
+import splitties.init.appCtx
 import io.legado.app.data.appDb
 import io.legado.app.data.entities.RssSource
 import io.legado.app.help.source.SourceHelp
@@ -17,18 +19,18 @@ object RssSourceController {
             val source = appDb.rssSourceDao.all
             val returnData = ReturnData()
             return if (source.isEmpty()) {
-                returnData.setErrorMsg("源列表为空")
+                returnData.setErrorMsg(appCtx.getString(R.string.source_list_empty))
             } else returnData.setData(source)
         }
 
     fun saveSource(postData: String?): ReturnData {
         val returnData = ReturnData()
-        postData ?: return returnData.setErrorMsg("数据不能为空")
+        postData ?: return returnData.setErrorMsg(appCtx.getString(R.string.data_not_empty))
         GSON.fromJsonObject<RssSource>(postData).onFailure {
-            returnData.setErrorMsg("转换源失败${it.localizedMessage}")
+            returnData.setErrorMsg(appCtx.getString(R.string.source_convert_failed_msg, it.localizedMessage))
         }.onSuccess { source ->
             if (TextUtils.isEmpty(source.sourceName) || TextUtils.isEmpty(source.sourceUrl)) {
-                returnData.setErrorMsg("源名称和URL不能为空")
+                returnData.setErrorMsg(appCtx.getString(R.string.source_name_url_not_empty))
             } else {
                 appDb.rssSourceDao.insert(source)
                 returnData.setData("")
@@ -38,11 +40,11 @@ object RssSourceController {
     }
 
     fun saveSources(postData: String?): ReturnData {
-        postData ?: return ReturnData().setErrorMsg("数据不能为空")
+        postData ?: return ReturnData().setErrorMsg(appCtx.getString(R.string.data_not_empty))
         val okSources = arrayListOf<RssSource>()
         val source = GSON.fromJsonArray<RssSource>(postData).getOrNull()
         if (source.isNullOrEmpty()) {
-            return ReturnData().setErrorMsg("转换源失败")
+            return ReturnData().setErrorMsg(appCtx.getString(R.string.source_convert_failed))
         }
         for (rssSource in source) {
             if (rssSource.sourceName.isBlank() || rssSource.sourceUrl.isBlank()) {
@@ -58,20 +60,20 @@ object RssSourceController {
         val url = parameters["url"]?.firstOrNull()
         val returnData = ReturnData()
         if (url.isNullOrEmpty()) {
-            return returnData.setErrorMsg("参数url不能为空，请指定书源地址")
+            return returnData.setErrorMsg(appCtx.getString(R.string.error_url_empty_specify_source))
         }
         val source = appDb.rssSourceDao.getByKey(url)
-            ?: return returnData.setErrorMsg("未找到源，请检查源地址")
+            ?: return returnData.setErrorMsg(appCtx.getString(R.string.error_source_not_found_check_url))
         return returnData.setData(source)
     }
 
     fun deleteSources(postData: String?): ReturnData {
-        postData ?: return ReturnData().setErrorMsg("没有传递数据")
+        postData ?: return ReturnData().setErrorMsg(appCtx.getString(R.string.no_data_passed))
         GSON.fromJsonArray<RssSource>(postData).onFailure {
-            return ReturnData().setErrorMsg("格式不对")
+            return ReturnData().setErrorMsg(appCtx.getString(R.string.invalid_format))
         }.onSuccess {
             SourceHelp.deleteRssSources(it)
         }
-        return ReturnData().setData("已执行"/*okSources*/)
+        return ReturnData().setData(appCtx.getString(R.string.executed)/*okSources*/)
     }
 }

@@ -19,7 +19,7 @@ class RandomColor(alpha: Int, lower: Int, upper: Int) {
         setUpper(upper)
     }
 
-    //随机数是前闭  后开
+    // Random number is closed start, open end
     fun build(): Int {
         val red = getLower() + Random().nextInt(getUpper() - getLower() + 1)
         val green = getLower() + Random().nextInt(getUpper() - getLower() + 1)

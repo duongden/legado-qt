@@ -40,7 +40,7 @@ class UpdateDialog() : BaseDialogFragment(R.layout.dialog_update) {
         binding.toolBar.title = arguments?.getString("newVersion")
         val updateBody = arguments?.getString("updateBody")
         if (updateBody == null) {
-            toastOnUi("没有数据")
+            toastOnUi(R.string.no_data)
             dismiss()
             return
         }

@@ -40,9 +40,9 @@ class ThemeBottomNavigationVIew(context: Context, attrs: AttributeSet) :
     }
 
     fun addBadgeView(index: Int): BadgeView {
-        //获取底部菜单view
+        //Get bottom menu view
         val menuView = getChildAt(0) as ViewGroup
-        //获取第index个itemView
+        //Get index-th itemView
         val itemView = menuView.getChildAt(index) as ViewGroup
         val badgeBinding = ViewNavigationBadgeBinding.inflate(LayoutInflater.from(context))
         itemView.addView(badgeBinding.root)

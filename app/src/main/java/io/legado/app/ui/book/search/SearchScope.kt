@@ -65,7 +65,7 @@ data class SearchScope(private var scope: String) {
         }
 
     /**
-     * 搜索范围显示
+     * Search scope display
      */
     val displayNames: List<String>
         get() {
@@ -99,7 +99,7 @@ data class SearchScope(private var scope: String) {
     }
 
     /**
-     * 搜索范围书源
+     * Search scope source
      */
     fun getBookSourceParts(): List<BookSourcePart> {
         val list = hashSetOf<BookSourcePart>()

@@ -12,7 +12,7 @@ class ConcurrentRateLimiter(val source: BaseSource?) {
     }
 
     /**
-     * 开始访问,并发判断
+     * Start access, concurrency check
      */
     @Throws(ConcurrentException::class)
     private fun fetchStart(): ConcurrentRecord? {
@@ -36,12 +36,12 @@ class ConcurrentRateLimiter(val source: BaseSource?) {
         val waitTime: Int = synchronized(fetchRecord!!) {
             try {
                 if (!fetchRecord.isConcurrent) {
-                    //并发控制非 次数/毫秒
+                    //Concurrency control non-count/ms
                     if (fetchRecord.frequency > 0) {
-                        //已经有访问线程,直接等待
+                        //Access thread exists, wait directly
                         return@synchronized concurrentRate.toInt()
                     }
-                    //没有线程访问,判断还剩多少时间可以访问
+                    //No thread access, check time remaining for access
                     val nextTime = fetchRecord.time + concurrentRate.toInt()
                     if (System.currentTimeMillis() >= nextTime) {
                         fetchRecord.time = System.currentTimeMillis()
@@ -50,11 +50,11 @@ class ConcurrentRateLimiter(val source: BaseSource?) {
                     }
                     return@synchronized (nextTime - System.currentTimeMillis()).toInt()
                 } else {
-                    //并发控制为 次数/毫秒
+                    //Concurrency control count/ms
                     val sj = concurrentRate.substring(rateIndex + 1)
                     val nextTime = fetchRecord.time + sj.toInt()
                     if (System.currentTimeMillis() >= nextTime) {
-                        //已经过了限制时间,重置开始时间
+                        //Limit time passed, reset start time
                         fetchRecord.time = System.currentTimeMillis()
                         fetchRecord.frequency = 1
                         return@synchronized 0
@@ -92,7 +92,7 @@ class ConcurrentRateLimiter(val source: BaseSource?) {
     }
 
     /**
-     * 获取并发记录，若处于并发限制状态下则会等待
+     * Get concurrency record, wait if limited
      */
     suspend fun getConcurrentRecord(): ConcurrentRecord? {
         while (true) {

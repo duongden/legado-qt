@@ -6,6 +6,8 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import cn.hutool.core.lang.Validator
 import io.legado.app.constant.AppLog
+import io.legado.app.R
+import splitties.init.appCtx
 import okhttp3.internal.publicsuffix.PublicSuffixDatabase
 import splitties.systemservices.connectivityManager
 import java.net.InetAddress
@@ -19,7 +21,7 @@ import java.util.Enumeration
 object NetworkUtils {
 
     /**
-     * 判断是否联网
+     * Check network connection
      */
     @SuppressLint("ObsoleteSdkInt")
     @Suppress("DEPRECATION")
@@ -29,9 +31,9 @@ object NetworkUtils {
             if (mWiFiNetworkInfo != null) {
                 // WIFI
                 return mWiFiNetworkInfo.type == ConnectivityManager.TYPE_WIFI ||
-                        // 移动数据
+                        // Mobile Data
                         mWiFiNetworkInfo.type == ConnectivityManager.TYPE_MOBILE ||
-                        // 以太网
+                        // Ethernet
                         mWiFiNetworkInfo.type == ConnectivityManager.TYPE_ETHERNET ||
                         // VPN
                         mWiFiNetworkInfo.type == ConnectivityManager.TYPE_VPN
@@ -43,9 +45,9 @@ object NetworkUtils {
                 if (nc != null) {
                     // WIFI
                     return nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-                            // 移动数据
+                            // Mobile Data
                             nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
-                            // 以太网
+                            // Ethernet
                             nc.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) ||
                             // VPN
                             nc.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
@@ -90,10 +92,10 @@ object NetworkUtils {
     }
 
     /**
-     * 支持JAVA的URLEncoder.encode出来的string做判断。 即: 将' '转成'+'
-     * 0-9a-zA-Z保留 <br></br>
-     * ! * ' ( ) ; : @ & = + $ , / ? # [ ] 保留
-     * 其他字符转成%XX的格式，X是16进制的大写字符，范围是[0-9A-F]
+     * Support checking string encoded by JAVA URLEncoder. i.e.: convert ' ' to '+'
+     * 0-9a-zA-Z reserved <br></br>
+     * ! * ' ( ) ; : @ & = + $ , / ? # [ ] reserved
+     * Other characters converted to %XX format, X is hex uppercase char, range [0-9A-F]
      */
     fun encodedQuery(str: String): Boolean {
         var needEncode = false
@@ -105,7 +107,7 @@ object NetworkUtils {
                 continue
             }
             if (c == '%' && i + 2 < str.length) {
-                // 判断是否符合urlEncode规范
+                // Check if conforms to urlEncode spec
                 val c1 = str[++i]
                 val c2 = str[++i]
                 if (isDigit16Char(c1) && isDigit16Char(c2)) {
@@ -113,7 +115,7 @@ object NetworkUtils {
                     continue
                 }
             }
-            // 其他字符，肯定需要urlEncode
+            // Other chars definitely need urlEncode
             needEncode = true
             break
         }
@@ -131,7 +133,7 @@ object NetworkUtils {
                 continue
             }
             if (c == '%' && i + 2 < str.length) {
-                // 判断是否符合urlEncode规范
+                // Check if conforms to urlEncode spec
                 val c1 = str[++i]
                 val c2 = str[++i]
                 if (isDigit16Char(c1) && isDigit16Char(c2)) {
@@ -139,7 +141,7 @@ object NetworkUtils {
                     continue
                 }
             }
-            // 其他字符，肯定需要urlEncode
+            // Other chars definitely need urlEncode
             needEncode = true
             break
         }
@@ -148,14 +150,14 @@ object NetworkUtils {
     }
 
     /**
-     * 判断c是否是16进制的字符
+     * Check if c is hex char
      */
     private fun isDigit16Char(c: Char): Boolean {
         return c in '0'..'9' || c in 'A'..'F' || c in 'a'..'f'
     }
 
     /**
-     * 获取绝对地址
+     * Get absolute path
      */
     fun getAbsoluteURL(baseURL: String?, relativePath: String): String {
         if (baseURL.isNullOrEmpty()) return relativePath.trim()
@@ -169,7 +171,7 @@ object NetworkUtils {
     }
 
     /**
-     * 获取绝对地址
+     * Get absolute path
      */
     fun getAbsoluteURL(baseURL: URL?, relativePath: String): String {
         val relativePathTrim = relativePath.trim()
@@ -183,7 +185,7 @@ object NetworkUtils {
             relativeUrl = parseUrl.toString()
             return relativeUrl
         } catch (e: Exception) {
-            AppLog.put("网址拼接出错\n${e.localizedMessage}", e)
+            AppLog.put(appCtx.getString(R.string.url_concat_error, e.localizedMessage), e)
         }
         return relativeUrl
     }
@@ -202,7 +204,7 @@ object NetworkUtils {
     }
 
     /**
-     * 获取域名，供cookie保存和读取，处理失败返回传入的url
+     * Get domain for cookie storage and retrieval, return original url if failed
      * http://1.2.3.4 => 1.2.3.4
      * https://www.example.com =>  example.com
      * http://www.biquge.com.cn => biquge.com.cn
@@ -214,9 +216,9 @@ object NetworkUtils {
             val mURL = URL(baseUrl)
             val host: String = mURL.host
             //mURL.scheme https/http
-            //判断是否为ip
+            //Check if ip
             if (isIPAddress(host)) return host
-            //PublicSuffixDatabase处理域名
+            //PublicSuffixDatabase handles domain names
             PublicSuffixDatabase.get().getEffectiveTldPlusOne(host) ?: host
         }.getOrDefault(baseUrl)
     }
@@ -227,9 +229,9 @@ object NetworkUtils {
             val mURL = URL(baseUrl)
             val host: String = mURL.host
             //mURL.scheme https/http
-            //判断是否为ip
+            //Check if ip
             if (isIPAddress(host)) return host
-            //PublicSuffixDatabase处理域名
+            //PublicSuffixDatabase handles domain names
             PublicSuffixDatabase.get().getEffectiveTldPlusOne(host) ?: host
         }.getOrDefault(null)
     }

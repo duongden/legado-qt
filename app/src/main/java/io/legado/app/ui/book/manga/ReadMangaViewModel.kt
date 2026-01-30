@@ -41,7 +41,7 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
     private var changeSourceCoroutine: Coroutine<*>? = null
 
     /**
-     * 初始化
+     * Initialize
      */
     fun initData(intent: Intent, success: (() -> Unit)? = null) {
         execute {
@@ -88,7 +88,7 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
             return
         }
 
-        //开始加载内容
+        //Start loading content
         if (!isSameBook) {
             ReadManga.loadContent()
         } else {
@@ -96,7 +96,7 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
         }
 
         if (ReadManga.chapterChanged) {
-            // 有章节跳转不同步阅读进度
+            // Chapter jump does not sync reading progress
             ReadManga.chapterChanged = false
         } else {
             if (AppConfig.syncBookProgressPlus) {
@@ -107,7 +107,7 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
             }
         }
 
-        //自动换源
+        //Auto change source
         if (!book.isLocal && ReadManga.bookSource == null) {
             autoChangeSource(book.name, book.author)
             return
@@ -129,7 +129,7 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
             ReadManga.onChapterListUpdated(book)
             return true
         }.onFailure {
-            //加载章节出错
+            //Load chapter error
             ReadManga.mCallback?.loadFail(appCtx.getString(R.string.error_load_toc))
             return false
         }
@@ -137,7 +137,7 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
     }
 
     /**
-     * 加载详情页
+     * Load detail page
      */
     private suspend fun loadBookInfo(book: Book): Boolean {
         val source = ReadManga.bookSource ?: return true
@@ -151,7 +151,7 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
     }
 
     /**
-     * 自动换源
+     * Auto change source
      */
     private fun autoChangeSource(name: String, author: String) {
         if (!AppConfig.autoChangeSource) return
@@ -164,7 +164,7 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
                     }
                 }
             }.onStart {
-                // 自动换源
+                // Auto change source
 
             }.mapParallelSafe(AppConfig.threadCount) { source ->
                 val book = WebBook.preciseSearchAwait(source, name, author).getOrThrow()
@@ -190,7 +190,7 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
             }.onEmpty {
                 throw NoStackTraceException("没有合适书源")
             }.onCompletion {
-                // 换源完成
+                // Change source complete
             }.catch {
                 AppLog.put("自动换源失败\n${it.localizedMessage}", it)
                 context.toastOnUi("自动换源失败\n${it.localizedMessage}")
@@ -199,7 +199,7 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
     }
 
     /**
-     * 同步进度
+     * Sync progress
      */
     fun syncBookProgress(
         book: Book,
@@ -225,12 +225,12 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
     }
 
     /**
-     * 换源
+     * Change source
      */
     fun changeTo(book: Book, toc: List<BookChapter>) {
         changeSourceCoroutine?.cancel()
         changeSourceCoroutine = execute {
-            //换源中
+            //Values source changing
             ReadManga.book?.migrateTo(book, toc)
             book.removeType(BookType.updateError)
             ReadManga.book?.delete()

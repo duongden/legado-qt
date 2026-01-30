@@ -37,6 +37,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import splitties.init.appCtx
+import io.legado.app.R
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -115,7 +116,7 @@ object Backup {
                     }
                 }
             }.onError {
-                AppLog.put("自动备份失败\n${it.localizedMessage}")
+                AppLog.put(appCtx.getString(R.string.auto_backup_failed, it.localizedMessage))
             }
         }
     }
@@ -230,7 +231,7 @@ object Backup {
             try {
                 AppWebDav.backUpWebDav(zipFileName)
             } catch (e: Exception) {
-                AppLog.put("上传备份至webdav失败\n$e", e)
+                AppLog.put(appCtx.getString(R.string.upload_backup_webdav_failed, e.toString()), e)
             }
         }
         FileUtils.delete(backupPath)
@@ -269,9 +270,9 @@ object Backup {
         val treeDoc = DocumentFile.fromTreeUri(context, uri)!!
         treeDoc.findFile(fileName)?.delete()
         val fileDoc = treeDoc.createFile("", fileName)
-            ?: throw NoStackTraceException("创建文件失败")
+            ?: throw NoStackTraceException(appCtx.getString(R.string.create_file_failed))
         val outputS = fileDoc.openOutputStream()
-            ?: throw NoStackTraceException("打开OutputStream失败")
+            ?: throw NoStackTraceException(appCtx.getString(R.string.open_output_stream_failed))
         outputS.use {
             FileInputStream(zipFilePath).use { inputS ->
                 inputS.copyTo(outputS)

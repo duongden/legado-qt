@@ -12,6 +12,8 @@ import com.google.gson.ToNumberPolicy
 import com.google.gson.internal.LinkedTreeMap
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonWriter
+import io.legado.app.R
+import splitties.init.appCtx
 import io.legado.app.data.entities.rule.BookInfoRule
 import io.legado.app.data.entities.rule.ContentRule
 import io.legado.app.data.entities.rule.ExploreRule
@@ -61,7 +63,7 @@ inline fun <reified T> genericType(): Type = object : TypeToken<T>() {}.type
 inline fun <reified T> Gson.fromJsonObject(json: String?): Result<T> {
     return kotlin.runCatching {
         if (json == null) {
-            throw JsonSyntaxException("解析字符串为空")
+            throw JsonSyntaxException(appCtx.getString(R.string.sc_parsing_string_is_empty))
         }
         fromJson(json, genericType<T>()) as T
     }
@@ -76,7 +78,7 @@ inline fun <reified T> Gson.fromJsonArray(json: String?): Result<List<T>> {
         val list = fromJson(json, type) as List<T?>
         if (list.contains(null)) {
             throw JsonSyntaxException(
-                "列表不能存在null元素，可能是json格式错误，通常为列表存在多余的逗号所致"
+                appCtx.getString(R.string.sc_list_cannot_contain_null)
             )
         }
         @Suppress("UNCHECKED_CAST")
@@ -87,7 +89,7 @@ inline fun <reified T> Gson.fromJsonArray(json: String?): Result<List<T>> {
 inline fun <reified T> Gson.fromJsonObject(inputStream: InputStream?): Result<T> {
     return kotlin.runCatching {
         if (inputStream == null) {
-            throw JsonSyntaxException("解析流为空")
+            throw JsonSyntaxException(appCtx.getString(R.string.sc_parsing_stream_is_empty))
         }
         val reader = InputStreamReader(inputStream)
         fromJson(reader, genericType<T>()) as T
@@ -97,14 +99,14 @@ inline fun <reified T> Gson.fromJsonObject(inputStream: InputStream?): Result<T>
 inline fun <reified T> Gson.fromJsonArray(inputStream: InputStream?): Result<List<T>> {
     return kotlin.runCatching {
         if (inputStream == null) {
-            throw JsonSyntaxException("解析流为空")
+            throw JsonSyntaxException(appCtx.getString(R.string.sc_parsing_stream_is_empty))
         }
         val reader = InputStreamReader(inputStream)
         val type = TypeToken.getParameterized(List::class.java, T::class.java).type
         val list = fromJson(reader, type) as List<T?>
         if (list.contains(null)) {
             throw JsonSyntaxException(
-                "列表不能存在null元素，可能是json格式错误，通常为列表存在多余的逗号所致"
+                appCtx.getString(R.string.sc_list_cannot_contain_null)
             )
         }
         @Suppress("UNCHECKED_CAST")
@@ -149,7 +151,7 @@ class StringJsonDeserializer : JsonDeserializer<String?> {
 }
 
 /**
- * int类型转化失败时跳过
+ * Skip when int type conversion fails
  */
 class IntJsonDeserializer : JsonDeserializer<Int?> {
 
@@ -175,7 +177,7 @@ class IntJsonDeserializer : JsonDeserializer<Int?> {
 }
 
 /**
- * 修复Int变为Double的问题
+ * Fix the issue of Int becoming Double
  */
 class MapDeserializerDoubleAsIntFix :
     JsonDeserializer<Map<String, Any?>?> {

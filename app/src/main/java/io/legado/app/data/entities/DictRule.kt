@@ -35,7 +35,7 @@ data class DictRule(
     }
 
     /**
-     * 搜索字典
+     * Search dictionary
      */
     suspend fun search(word: String): String {
         val analyzeUrl = AnalyzeUrl(urlRule, key = word, coroutineContext = coroutineContext)

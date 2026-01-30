@@ -37,7 +37,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 
 /**
- * 辅助按键配置
+ * Auxiliary key configuration
  */
 class KeyboardAssistsConfig : BaseDialogFragment(R.layout.dialog_recycler_view),
     Toolbar.OnMenuItemClickListener {

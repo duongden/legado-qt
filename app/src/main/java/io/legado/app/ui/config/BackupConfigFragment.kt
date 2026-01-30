@@ -88,7 +88,7 @@ class BackupConfigFragment : PreferenceFragment(),
     }
     private val restoreDoc = registerForActivityResult(HandleFileContract()) {
         it.uri?.let { uri ->
-            waitDialog.setText("恢复中…")
+            waitDialog.setText(getString(R.string.restoring))
             waitDialog.show()
             val task = Coroutine.async {
                 Restore.restore(appCtx, uri)
@@ -241,7 +241,7 @@ class BackupConfigFragment : PreferenceFragment(),
     }
 
     /**
-     * 备份忽略设置
+     * Backup ignore settings
      */
     private fun backupIgnore() {
         val checkedItems = BooleanArray(BackupConfig.ignoreKeys.size) {
@@ -281,7 +281,7 @@ class BackupConfigFragment : PreferenceFragment(),
     }
 
     private fun backup(backupPath: String) {
-        waitDialog.setText("备份中…")
+        waitDialog.setText(getString(R.string.backing_up))
         waitDialog.setOnCancelListener {
             backupJob?.cancel()
         }
@@ -293,7 +293,7 @@ class BackupConfigFragment : PreferenceFragment(),
                 appCtx.toastOnUi(R.string.backup_success)
             } catch (e: Throwable) {
                 ensureActive()
-                AppLog.put("备份出错\n${e.localizedMessage}", e)
+                AppLog.put(getString(R.string.backup_error, e.localizedMessage), e)
                 appCtx.toastOnUi(
                     appCtx.getString(
                         R.string.backup_fail,
@@ -327,13 +327,13 @@ class BackupConfigFragment : PreferenceFragment(),
             restoreJob = coroutineContext[Job]
             showRestoreDialog(requireContext())
         }.onError {
-            AppLog.put("恢复备份出错WebDavError\n${it.localizedMessage}", it)
+            AppLog.put(getString(R.string.restore_webdav_error, it.localizedMessage), it)
             if (context == null) {
                 return@onError
             }
             alert {
                 setTitle(R.string.restore)
-                setMessage("WebDavError\n${it.localizedMessage}\n将从本地备份恢复。")
+                setMessage(getString(R.string.webdav_error_local_restore, it.localizedMessage))
                 okButton {
                     restoreFromLocal()
                 }
@@ -347,7 +347,7 @@ class BackupConfigFragment : PreferenceFragment(),
     private suspend fun showRestoreDialog(context: Context) {
         val names = withContext(IO) { AppWebDav.getBackupNames() }
         if (AppWebDav.isJianGuoYun && names.size > 700) {
-            context.toastOnUi("由于坚果云限制列出文件数量，部分备份可能未显示，请及时清理旧备份")
+            context.toastOnUi(R.string.jianguoyun_limit_warning)
         }
         if (names.isNotEmpty()) {
             currentCoroutineContext().ensureActive()
@@ -369,13 +369,13 @@ class BackupConfigFragment : PreferenceFragment(),
     }
 
     private fun restoreWebDav(name: String) {
-        waitDialog.setText("恢复中…")
+        waitDialog.setText(getString(R.string.restoring))
         waitDialog.show()
         val task = Coroutine.async {
             AppWebDav.restoreWebDav(name)
         }.onError {
-            AppLog.put("WebDav恢复出错\n${it.localizedMessage}", it)
-            appCtx.toastOnUi("WebDav恢复出错\n${it.localizedMessage}")
+            AppLog.put(getString(R.string.webdav_restore_error, it.localizedMessage), it)
+            appCtx.toastOnUi(getString(R.string.webdav_restore_error, it.localizedMessage))
         }.onFinally {
             waitDialog.dismiss()
         }

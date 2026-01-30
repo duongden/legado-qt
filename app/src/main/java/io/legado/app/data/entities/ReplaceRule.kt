@@ -24,37 +24,37 @@ import java.util.regex.PatternSyntaxException
 data class ReplaceRule(
     @PrimaryKey(autoGenerate = true)
     var id: Long = System.currentTimeMillis(),
-    //名称
+    //Name
     @ColumnInfo(defaultValue = "")
     var name: String = "",
-    //分组
+    //Group
     var group: String? = null,
-    //替换内容
+    //Replace content
     @ColumnInfo(defaultValue = "")
     var pattern: String = "",
-    //替换为
+    //Replace with
     @ColumnInfo(defaultValue = "")
     var replacement: String = "",
-    //作用范围
+    //Scope
     var scope: String? = null,
-    //作用于标题
+    //Apply to title
     @ColumnInfo(defaultValue = "0")
     var scopeTitle: Boolean = false,
-    //作用于正文
+    //Apply to body
     @ColumnInfo(defaultValue = "1")
     var scopeContent: Boolean = true,
-    //排除范围
+    //Exclude range
     var excludeScope: String? = null,
-    //是否启用
+    //Is enabled
     @ColumnInfo(defaultValue = "1")
     var isEnabled: Boolean = true,
-    //是否正则
+    //Is Regex
     @ColumnInfo(defaultValue = "1")
     var isRegex: Boolean = true,
-    //超时时间
+    //Timeout
     @ColumnInfo(defaultValue = "3000")
     var timeoutMillisecond: Long = 3000L,
-    //排序
+    //Sort
     @ColumnInfo(name = "sortOrder", defaultValue = "0")
     var order: Int = Int.MIN_VALUE
 ) : Parcelable {
@@ -89,7 +89,7 @@ data class ReplaceRule(
         if (TextUtils.isEmpty(pattern)) {
             return false
         }
-        //判断正则表达式是否正确
+        //Check if regex correct
         if (isRegex) {
             try {
                 Pattern.compile(pattern)
@@ -97,7 +97,7 @@ data class ReplaceRule(
                 AppLog.put("正则语法错误或不支持：${ex.localizedMessage}", ex)
                 return false
             }
-            // Pattern.compile测试通过，但是部分情况下会替换超时，报错，一般发生在修改表达式时漏删了
+            // Pattern.compile passed test, but sometimes replacement times out, error, usually happens when modifying expression and missed deletion
             if (pattern.endsWith('|') && !pattern.endsWith("\\|")) {
                 return false
             }

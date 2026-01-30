@@ -3,6 +3,8 @@ package io.legado.app.utils
 import android.annotation.SuppressLint
 import android.text.TextUtils.isEmpty
 import android.util.Base64
+import io.legado.app.R
+import splitties.init.appCtx
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -51,7 +53,7 @@ object StringUtils {
         }
 
     /**
-     * 将日期转换成昨天、今天、明天
+     * Convert date to yesterday, today, tomorrow
      */
     fun dateConvert(source: String, pattern: String): String {
         val format = SimpleDateFormat(pattern, Locale.getDefault())
@@ -60,18 +62,18 @@ object StringUtils {
             val date = format.parse(source) ?: return ""
             val curTime = calendar.timeInMillis
             calendar.time = date
-            //将MISC 转换成 sec
+            // Convert MILLISEC to sec
             val difSec = abs((curTime - date.time) / 1000)
             val difMin = difSec / 60
             val difHour = difMin / 60
             val difDate = difHour / 60
             val oldHour = calendar.get(Calendar.HOUR)
-            //如果没有时间
+            // If no time
             if (oldHour == 0) {
-                //比日期:昨天今天和明天
+                // Compare dates: yesterday, today and tomorrow
                 return when {
-                    difDate == 0L -> "今天"
-                    difDate < DAY_OF_YESTERDAY -> "昨天"
+                    difDate == 0L -> appCtx.getString(R.string.today)
+                    difDate < DAY_OF_YESTERDAY -> appCtx.getString(R.string.yesterday)
                     else -> {
                         @SuppressLint("SimpleDateFormat")
                         val convertFormat = SimpleDateFormat("yyyy-MM-dd")
@@ -81,10 +83,10 @@ object StringUtils {
             }
 
             return when {
-                difSec < TIME_UNIT -> difSec.toString() + "秒前"
-                difMin < TIME_UNIT -> difMin.toString() + "分钟前"
-                difHour < HOUR_OF_DAY -> difHour.toString() + "小时前"
-                difDate < DAY_OF_YESTERDAY -> "昨天"
+                difSec < TIME_UNIT -> appCtx.getString(R.string.seconds_ago, difSec.toString())
+                difMin < TIME_UNIT -> appCtx.getString(R.string.minutes_ago, difMin.toString())
+                difHour < HOUR_OF_DAY -> appCtx.getString(R.string.hours_ago, difHour.toString())
+                difDate < DAY_OF_YESTERDAY -> appCtx.getString(R.string.yesterday)
                 else -> {
                     @SuppressLint("SimpleDateFormat")
                     val convertFormat = SimpleDateFormat("yyyy-MM-dd")
@@ -98,7 +100,7 @@ object StringUtils {
     }
 
     /**
-     * 首字母大写
+     * First letter to uppercase
      */
     @SuppressLint("DefaultLocale")
     fun toFirstCapital(str: String): String {
@@ -106,36 +108,36 @@ object StringUtils {
     }
 
     /**
-     * 将文本中的半角字符，转换成全角字符
+     * Convert half-width characters to full-width characters
      */
     fun halfToFull(input: String): String {
         val c = input.toCharArray()
         for (i in c.indices) {
             if (c[i].code == 32)
-            //半角空格
+            // Half-width space
             {
                 c[i] = 12288.toChar()
                 continue
             }
-            //根据实际情况，过滤不需要转换的符号
-            //if (c[i] == 46) //半角点号，不转换
+            // Filter symbols that don't need conversion based on actual situation
+            //if (c[i] == 46) // Half-width dot, do not convert
             // continue;
 
             if (c[i].code in 33..126)
-            //其他符号都转换为全角
+            // Convert other symbols to full-width
                 c[i] = (c[i].code + 65248).toChar()
         }
         return String(c)
     }
 
     /**
-     * 字符串全角转换为半角
+     * Full-width characters to half-width characters
      */
     fun fullToHalf(input: String): String {
         val c = input.toCharArray()
         for (i in c.indices) {
             if (c[i].code == 12288)
-            //全角空格
+            // Full-width space
             {
                 c[i] = 32.toChar()
                 continue
@@ -148,7 +150,7 @@ object StringUtils {
     }
 
     /**
-     * 中文大写数字转数字
+     * Chinese uppercase number to int
      */
     fun chineseNumToInt(chNum: String): Int {
         var result = 0
@@ -156,7 +158,7 @@ object StringUtils {
         var billion = 0
         val cn = chNum.toCharArray()
 
-        // "一零二五" 形式
+        // "One Zero Two Five" format
         if (cn.size > 1 && chNum.matches("^[〇零一二三四五六七八九壹贰叁肆伍陆柒捌玖]$".toRegex())) {
             for (i in cn.indices) {
                 cn[i] = (48 + ChnMap[cn[i]]!!).toChar()
@@ -164,7 +166,7 @@ object StringUtils {
             return Integer.parseInt(String(cn))
         }
 
-        // "一千零二十五", "一千二" 形式
+        // "One Thousand Zero Twenty Five", "One Thousand Two" format
         return kotlin.runCatching {
             for (i in cn.indices) {
                 val tmpNum = ChnMap[cn[i]]!!
@@ -204,7 +206,7 @@ object StringUtils {
     }
 
     /**
-     * 字符串转数字
+     * String to int
      */
     fun stringToInt(str: String?): Int {
         if (str != null) {
@@ -219,7 +221,7 @@ object StringUtils {
     }
 
     /**
-     * 是否包含数字
+     * Check if contains number
      */
     fun isContainNumber(company: String): Boolean {
         val p = Pattern.compile("[0-9]+")
@@ -228,7 +230,7 @@ object StringUtils {
     }
 
     /**
-     * 是否数字
+     * Check if numeric
      */
     fun isNumeric(str: String): Boolean {
         val pattern = Pattern.compile("-?[0-9]+")
@@ -241,9 +243,9 @@ object StringUtils {
         if (words > 0) {
             if (words > 10000) {
                 val df = wordCountFormatter
-                wordsS = df.format(words * 1.0f / 10000f.toDouble()) + "万字"
+                wordsS = df.format(words * 1.0f / 10000f.toDouble()) + appCtx.getString(R.string.ten_thousand_words)
             } else {
-                wordsS = words.toString() + "字"
+                wordsS = words.toString() + appCtx.getString(R.string.word_unit)
             }
         }
         return wordsS
@@ -257,9 +259,9 @@ object StringUtils {
             if (words > 0) {
                 if (words > 10000) {
                     val df = wordCountFormatter
-                    wordsS = df.format(words * 1.0f / 10000f.toDouble()) + "万字"
+                    wordsS = df.format(words * 1.0f / 10000f.toDouble()) + appCtx.getString(R.string.ten_thousand_words)
                 } else {
-                    wordsS = words.toString() + "字"
+                    wordsS = words.toString() + appCtx.getString(R.string.word_unit)
                 }
             }
         } else {
@@ -269,7 +271,7 @@ object StringUtils {
     }
 
     /**
-     * 移除字符串首尾空字符的高效方法(利用ASCII值判断,包括全角空格)
+     * Efficient trim (ASCII check, includes full-width space)
      */
     fun trim(s: String): String {
         if (isEmpty(s)) return ""
@@ -298,7 +300,7 @@ object StringUtils {
     }
 
     /**
-     * 移除UTF头
+     * Remove UTF header
      */
     fun removeUTFCharacters(data: String?): String? {
         if (data == null) return null
@@ -314,7 +316,7 @@ object StringUtils {
     }
 
     /**
-     * 压缩字符串
+     * Compress string
      */
     fun compress(str: String): Result<String> {
         return kotlin.runCatching {
@@ -339,7 +341,7 @@ object StringUtils {
     }
 
     /**
-     * 解压字符串
+     * Unzip string
      */
     @Throws(IOException::class)
     fun unCompress(str: String): Result<String> {

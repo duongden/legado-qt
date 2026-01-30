@@ -66,7 +66,7 @@ class DirectLinkUploadConfig : BaseDialogFragment(R.layout.dialog_direct_link_up
                     upView(rule)
                 }
             }.onFailure {
-                toastOnUi("剪贴板为空或格式不对")
+                toastOnUi(R.string.sc_clipboard_empty_or_format_error)
             }
         }
         return true
@@ -85,15 +85,15 @@ class DirectLinkUploadConfig : BaseDialogFragment(R.layout.dialog_direct_link_up
         val summary = binding.editSummary.text?.toString()
         val compress = binding.cbCompress.isChecked
         if (uploadUrl.isNullOrBlank()) {
-            toastOnUi("上传Url不能为空")
+            toastOnUi(R.string.sc_upload_url_cannot_be_empty)
             return null
         }
         if (downloadUrlRule.isNullOrBlank()) {
-            toastOnUi("下载Url规则不能为空")
+            toastOnUi(R.string.sc_download_url_rule_cannot_be_empty)
             return null
         }
         if (summary.isNullOrBlank()) {
-            toastOnUi("注释不能为空")
+            toastOnUi(R.string.sc_comment_cannot_be_empty)
             return null
         }
         return DirectLinkUpload.Rule(uploadUrl, downloadUrlRule, summary, compress)

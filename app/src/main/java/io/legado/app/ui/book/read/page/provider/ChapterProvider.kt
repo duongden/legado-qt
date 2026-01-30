@@ -45,10 +45,10 @@ import java.util.Locale
  */
 @Suppress("DEPRECATION", "ConstPropertyName")
 object ChapterProvider {
-    //用于图片字的替换
+    //For image text replacement
     const val srcReplaceChar = "▩"
 
-    //用于评论按钮的替换
+    //For comment button replacement
     const val reviewChar = "▨"
 
     const val indentChar = "　"
@@ -158,7 +158,7 @@ object ChapterProvider {
     }
 
     /**
-     * 获取拆分完的章节数据
+     * Get split chapter data
      */
     suspend fun getTextChapter(
         book: Book,
@@ -174,7 +174,7 @@ object ChapterProvider {
         var durY = 0f
         textPages.add(TextPage())
         if (ReadBookConfig.titleMode != 2 || bookChapter.isVolume) {
-            //标题非隐藏
+            //Title not hidden
             displayTitle.splitNotBlank("\n").forEach { text ->
                 setTypeText(
                     book, absStartX, durY,
@@ -198,7 +198,7 @@ object ChapterProvider {
         }
         contents.forEach { content ->
             if (book.getImageStyle().equals(Book.imgStyleText, true)) {
-                //图片样式为文字嵌入类型
+                //Image style is text embedded
                 var text = content.replace(srcReplaceChar, "▣")
                 val srcList = LinkedList<String>()
                 val sb = StringBuffer()
@@ -340,7 +340,7 @@ object ChapterProvider {
     }
 
     /**
-     * 排版图片
+     * Layout image
      */
     private suspend fun setTypeImage(
         book: Book,
@@ -384,11 +384,11 @@ object ChapterProvider {
                     if (durY > 0f) {
                         val textPage = textPages.last()
                         if (doublePage && absStartX < viewWidth / 2) {
-                            //当前页面左列结束
+                            //Current page left column end
                             textPage.leftLineSize = textPage.lineSize
                             absStartX = viewWidth / 2 + paddingLeft
                         } else {
-                            //当前页面结束
+                            //Current page end
                             if (textPage.leftLineSize == 0) {
                                 textPage.leftLineSize = textPage.lineSize
                             }
@@ -396,17 +396,17 @@ object ChapterProvider {
                             stringBuilder.clear()
                             textPages.add(TextPage())
                         }
-                        // 双页的 durY 不正确，可能会小于实际高度
+                        // Double page durY incorrect, might be less than actual height
                         if (textPage.height < durY) {
                             textPage.height = durY
                         }
                         durY = 0f
                     }
 
-                    // 图片竖直方向居中：调整 Y 坐标
+                    // Image vertical center: adjust Y coordinate
                     if (height < visibleHeight) {
                         val adjustHeight = (visibleHeight - height) / 2f
-                        durY = adjustHeight // 将 Y 坐标设置为居中位置
+                        durY = adjustHeight // Set Y coordinate to center
                     }
                 }
 
@@ -422,11 +422,11 @@ object ChapterProvider {
                     if (durY + height > visibleHeight) {
                         val textPage = textPages.last()
                         if (doublePage && absStartX < viewWidth / 2) {
-                            //当前页面左列结束
+                            //Current page left column end
                             textPage.leftLineSize = textPage.lineSize
                             absStartX = viewWidth / 2 + paddingLeft
                         } else {
-                            //当前页面结束
+                            //Current page end
                             if (textPage.leftLineSize == 0) {
                                 textPage.leftLineSize = textPage.lineSize
                             }
@@ -434,7 +434,7 @@ object ChapterProvider {
                             stringBuilder.clear()
                             textPages.add(TextPage())
                         }
-                        // 双页的 durY 不正确，可能会小于实际高度
+                        // Double page durY incorrect, might be less than actual height
                         if (textPage.height < durY) {
                             textPage.height = durY
                         }
@@ -456,14 +456,14 @@ object ChapterProvider {
                 ImageColumn(start = x + start, end = x + end, src = src)
             )
             calcTextLinePosition(textPages, textLine, stringBuilder.length)
-            stringBuilder.append(" ") // 确保翻页时索引计算正确
+            stringBuilder.append(" ") // Ensure correct index calculation during page turn
             textPages.last().addLine(textLine)
         }
         return absStartX to durY + textHeight * paragraphSpacing / 10f
     }
 
     /**
-     * 排版文字
+     * Layout text
      */
     private suspend fun setTypeText(
         book: Book,
@@ -490,7 +490,7 @@ object ChapterProvider {
             StaticLayout(text, textPaint, visibleWidth, Layout.Alignment.ALIGN_NORMAL, 0f, 0f, true)
         }
         var durY = when {
-            //标题y轴居中
+            //Title Y-axis centered
             emptyContent && textPages.size == 1 -> {
                 val textPage = textPages.last()
                 if (textPage.lineSize == 0) {
@@ -521,16 +521,16 @@ object ChapterProvider {
             if (durY + textHeight > visibleHeight) {
                 val textPage = textPages.last()
                 if (doublePage && absStartX < viewWidth / 2) {
-                    //当前页面左列结束
+                    //Current page left column end
                     textPage.leftLineSize = textPage.lineSize
                     absStartX = viewWidth / 2 + paddingLeft
                 } else {
-                    //当前页面结束,设置各种值
+                    //Current page end, set values
                     if (textPage.leftLineSize == 0) {
                         textPage.leftLineSize = textPage.lineSize
                     }
                     textPage.text = stringBuilder.toString()
-                    //新建页面
+                    //New page
                     textPages.add(TextPage())
                     stringBuilder.clear()
                     absStartX = paddingLeft
@@ -547,7 +547,7 @@ object ChapterProvider {
             val desiredWidth = widths.fastSum()
             when {
                 lineIndex == 0 && layout.lineCount > 1 && !isTitle -> {
-                    //第一行 非标题
+                    //First line Non-title
                     textLine.text = lineText
                     addCharsToLineFirst(
                         book, absStartX, textLine, words,
@@ -556,9 +556,9 @@ object ChapterProvider {
                 }
 
                 lineIndex == layout.lineCount - 1 -> {
-                    //最后一行
+                    //Last line
                     textLine.text = lineText
-                    //标题x轴居中
+                    //Title X-axis centered
                     val startX = if (
                         isTitle &&
                         (ReadBookConfig.isMiddleTitle || emptyContent || isVolumeTitle)
@@ -578,14 +578,14 @@ object ChapterProvider {
                         isTitle &&
                         (ReadBookConfig.isMiddleTitle || emptyContent || isVolumeTitle)
                     ) {
-                        //标题居中
+                        //Title centered
                         val startX = (visibleWidth - desiredWidth) / 2
                         addCharsToLineNatural(
                             book, absStartX, textLine, words,
                             startX, false, widths, srcList
                         )
                     } else {
-                        //中间行
+                        //Middle line
                         textLine.text = lineText
                         addCharsToLineMiddle(
                             book, absStartX, textLine, words,
@@ -634,14 +634,14 @@ object ChapterProvider {
     }
 
     /**
-     * 有缩进,两端对齐
+     * Indented, justified
      */
     private suspend fun addCharsToLineFirst(
         book: Book,
         absStartX: Int,
         textLine: TextLine,
         words: List<String>,
-        /**自然排版长度**/
+        /**Natural layout length**/
         desiredWidth: Float,
         textWidths: List<Float>,
         srcList: LinkedList<String>?
@@ -678,16 +678,16 @@ object ChapterProvider {
     }
 
     /**
-     * 无缩进,两端对齐
+     * No indent, justify
      */
     private suspend fun addCharsToLineMiddle(
         book: Book,
         absStartX: Int,
         textLine: TextLine,
         words: List<String>,
-        /**自然排版长度**/
+        /**Natural layout length**/
         desiredWidth: Float,
-        /**起始x坐标**/
+        /**Start x coordinate**/
         startX: Float,
         textWidths: List<Float>,
         srcList: LinkedList<String>?
@@ -737,7 +737,7 @@ object ChapterProvider {
     }
 
     /**
-     * 自然排列
+     * Natural sort
      */
     private suspend fun addCharsToLineNatural(
         book: Book,
@@ -765,7 +765,7 @@ object ChapterProvider {
     }
 
     /**
-     * 添加字符
+     * Add character
      */
     private suspend fun addCharToLine(
         book: Book,
@@ -848,7 +848,7 @@ object ChapterProvider {
     }
 
     /**
-     * 更新样式
+     * Update style
      */
     fun upStyle() {
         typeface = getTypeface(ReadBookConfig.textFont)
@@ -859,7 +859,7 @@ object ChapterProvider {
 //            reviewPaint.textSize = contentPaint.textSize * 0.45f
 //            reviewPaint.textAlign = Paint.Align.CENTER
         }
-        //间距
+        //Spacing
         lineSpacingExtra = ReadBookConfig.lineSpacingExtra / 10f
         paragraphSpacing = ReadBookConfig.paragraphSpacing
         titleTopSpacing = ReadBookConfig.titleTopSpacing.dpToPx()
@@ -911,7 +911,7 @@ object ChapterProvider {
     }
 
     private fun getPaints(typeface: Typeface?): Pair<TextPaint, TextPaint> {
-        // 字体统一处理
+        // Font unified processing
         val bold = Typeface.create(typeface, Typeface.BOLD)
         val normal = Typeface.create(typeface, Typeface.NORMAL)
         val (titleFont, textFont) = when (ReadBookConfig.textBold) {
@@ -932,7 +932,7 @@ object ChapterProvider {
             else -> Pair(bold, normal)
         }
 
-        //标题
+        //Title
         val tPaint = TextPaint()
         tPaint.color = ReadBookConfig.textColor
         tPaint.letterSpacing = ReadBookConfig.letterSpacing
@@ -942,7 +942,7 @@ object ChapterProvider {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q && AppConfig.optimizeRender) {
             tPaint.isLinearText = true
         }
-        //正文
+        //Content body
         val cPaint = TextPaint()
         cPaint.color = ReadBookConfig.textColor
         cPaint.letterSpacing = ReadBookConfig.letterSpacing
@@ -956,7 +956,7 @@ object ChapterProvider {
     }
 
     /**
-     * 更新View尺寸
+     * Update View size
      */
     fun upViewSize(width: Int, height: Int) {
         if (width <= 0 || height <= 0) {
@@ -985,7 +985,7 @@ object ChapterProvider {
     }
 
     /**
-     * 更新绘制尺寸
+     * Update draw size
      */
     fun upLayout() {
         when (AppConfig.doublePageHorizontal) {
@@ -1015,7 +1015,7 @@ object ChapterProvider {
         } else {
             viewWidth - paddingLeft - paddingRight
         }
-        //留1dp画最后一行下划线
+        //Leave 1dp for last line underline
         visibleHeight = viewHeight - paddingTop - paddingBottom
         visibleRight = viewWidth - paddingRight
         visibleBottom = paddingTop + visibleHeight
@@ -1044,7 +1044,7 @@ object ChapterProvider {
         } else {
             viewWidth - paddingLeft - paddingRight
         }
-        //留1dp画最后一行下划线
+        //Leave 1dp for last line underline
         visibleHeight = viewHeight - paddingTop - paddingBottom
         visibleRight = viewWidth - paddingRight
         visibleBottom = paddingTop + visibleHeight

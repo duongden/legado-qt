@@ -158,7 +158,7 @@ class DividerNoLast(context: Context, orientation: Int) :
         } else {
             val childAdapterPosition = parent.getChildAdapterPosition(view)
             val lastCount = parent.adapter!!.itemCount - 1
-            //如果不是最后一条 正常赋值 如果是最后一条 赋值为0
+            //If not last item assign normal, if last assign 0
             if (childAdapterPosition != lastCount) {
                 outRect[0, 0, mDivider!!.intrinsicWidth] = 0
             } else {

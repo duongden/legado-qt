@@ -54,13 +54,13 @@ abstract class BaseImportBookActivity<VM : ViewModel> :
             localBookTreeSelectListener = null
             block.resume(it)
         }
-        //测试书籍保存位置是否设置
+        //Test book save location set
         if (!AppConfig.defaultBookTreeUri.isNullOrBlank()) {
             localBookTreeSelectListener = null
             block.resume(true)
             return@sc
         }
-        //测试读写??
+        //Test R/W??
         val storageHelp = String(assets.open("storageHelp.md").readBytes())
         val hint = getString(R.string.select_book_folder)
         alert(hint, storageHelp) {
@@ -115,7 +115,7 @@ abstract class BaseImportBookActivity<VM : ViewModel> :
         }
     }
 
-    /* 添加压缩包内指定文件到书架 */
+    /* Add specified file in archive to bookshelf */
     private inline fun addArchiveToBookShelf(
         fileDoc: FileDoc,
         fileName: String,
@@ -128,7 +128,7 @@ abstract class BaseImportBookActivity<VM : ViewModel> :
         }
     }
 
-    /* 提示是否重新导入所点击的压缩文件 */
+    /* Prompt whether to re-import the clicked compressed file */
     private fun showImportAlert(fileDoc: FileDoc, fileName: String) {
         alert(
             R.string.draw,

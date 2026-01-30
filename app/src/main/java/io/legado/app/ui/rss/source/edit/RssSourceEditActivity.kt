@@ -267,7 +267,7 @@ class RssSourceEditActivity :
                 EditEntity(
                     "shouldOverrideUrlLoading",
                     rs.shouldOverrideUrlLoading,
-                    "url跳转拦截(js, 返回true拦截,js变量url,可以通过js打开url,比如调用阅读搜索,添加书架等,简化规则写法,不用webView js注入)"
+                    getString(R.string.url_redirect_intercept_help)
                 )
             )
         }
@@ -344,7 +344,7 @@ class RssSourceEditActivity :
         viewModel.save(getRssSource()) { source ->
             lifecycleScope.launch {
                 val comment =
-                    source.getDisplayVariableComment("源变量可在js中通过source.getVariable()获取")
+                    source.getDisplayVariableComment(getString(R.string.source_variable_help))
                 val variable = withContext(Dispatchers.IO) { source.getVariable() }
                 showDialogFragment(
                     VariableDialog(
@@ -364,11 +364,11 @@ class RssSourceEditActivity :
 
     override fun helpActions(): List<SelectItem<String>> {
         return arrayListOf(
-            SelectItem("插入URL参数", "urlOption"),
-            SelectItem("订阅源教程", "ruleHelp"),
-            SelectItem("js教程", "jsHelp"),
-            SelectItem("正则教程", "regexHelp"),
-            SelectItem("选择文件", "selectFile"),
+            SelectItem(getString(R.string.insert_url_parameter), "urlOption"),
+            SelectItem(getString(R.string.rss_source_tutorial), "ruleHelp"),
+            SelectItem(getString(R.string.js_tutorial), "jsHelp"),
+            SelectItem(getString(R.string.regex_tutorial), "regexHelp"),
+            SelectItem(getString(R.string.select_file), "selectFile"),
         )
     }
 
@@ -393,13 +393,13 @@ class RssSourceEditActivity :
         if (view is EditText) {
             val start = view.selectionStart
             val end = view.selectionEnd
-            val edit = view.editableText//获取EditText的文字
+            val edit = view.editableText//Get EditText text
             if (start < 0 || start >= edit.length) {
                 edit.append(text)
             } else if (start > end) {
                 edit.replace(end, start, text)
             } else {
-                edit.replace(start, end, text)//光标所在位置插入文字
+                edit.replace(start, end, text)//Insert text at cursor position
             }
         }
     }

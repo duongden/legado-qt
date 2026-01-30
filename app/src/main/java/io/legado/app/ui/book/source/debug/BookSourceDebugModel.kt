@@ -18,7 +18,7 @@ class BookSourceDebugModel(application: Application) : BaseViewModel(application
 
     fun init(sourceUrl: String?, finally: () -> Unit) {
         sourceUrl?.let {
-            //优先使用这个，不会抛出异常
+            //Prioritize this, wont throw exception
             execute {
                 bookSource = appDb.bookSourceDao.getBookSource(sourceUrl)
             }.onFinally {

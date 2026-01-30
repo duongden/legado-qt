@@ -27,7 +27,7 @@ fun Menu.applyTint(context: Context, theme: Theme = Theme.Auto): Menu = this.let
     val tintColor = MenuExtensions.getMenuColor(context, theme)
     menu.forEach { item ->
         (item as MenuItemImpl).let { impl ->
-            //overflow：展开的item
+            //overflow: expanded item
             impl.icon?.setTintMutate(
                 if (impl.requiresOverflow()) defaultTextColor else tintColor
             )
@@ -38,7 +38,7 @@ fun Menu.applyTint(context: Context, theme: Theme = Theme.Auto): Menu = this.let
 
 @SuppressLint("RestrictedApi")
 fun Menu.applyOpenTint(context: Context) {
-    //展开菜单显示图标
+    //Expand menu to show icons
     if (this.javaClass.simpleName.equals("MenuBuilder", ignoreCase = true)) {
         val defaultTextColor = context.getCompatColor(R.color.primaryText)
         kotlin.runCatching {

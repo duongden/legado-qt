@@ -187,7 +187,7 @@ class SearchContentActivity :
 
     @SuppressLint("SetTextI18n")
     fun startContentSearch(query: String) {
-        // 按章节搜索内容
+        // Search content by chapter
         if (query.isBlank()) return
         searchJob?.cancel()
         adapter.clearItems()

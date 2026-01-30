@@ -2,7 +2,7 @@ package io.legado.app.utils
 
 
 /**
- * 排序比较
+ * Sort comparison
  */
 object AlphanumComparator : Comparator<String> {
 

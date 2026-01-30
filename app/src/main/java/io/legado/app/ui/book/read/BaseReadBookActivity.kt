@@ -50,7 +50,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 /**
- * 阅读界面
+ * Reading interface
  */
 abstract class BaseReadBookActivity :
     VMBaseActivity<ActivityBookReadBinding, ReadBookViewModel>(imageBg = false) {
@@ -142,7 +142,7 @@ abstract class BaseReadBookActivity :
     }
 
     /**
-     * 屏幕方向
+     * Screen orientation
      */
     @SuppressLint("SourceLockedOrientationActivity")
     fun setOrientation() {
@@ -156,7 +156,7 @@ abstract class BaseReadBookActivity :
     }
 
     /**
-     * 更新状态栏,导航栏
+     * Update status bar, nav bar
      */
     fun upSystemUiVisibility(
         isInMultiWindow: Boolean,
@@ -234,7 +234,7 @@ abstract class BaseReadBookActivity :
     }
 
     /**
-     * 保持亮屏
+     * Keep screen on
      */
     fun keepScreenOn(on: Boolean) {
         val isScreenOn =
@@ -295,17 +295,17 @@ abstract class BaseReadBookActivity :
             editStart.setText(book.getStartChapter().toString())
             editNum.setText(book.getDailyChapters().toString())
             startDate.setText(book.getStartDate()?.format(dateFormatter))
-            startDate.isFocusable = false // 设置为false，不允许获得焦点
-            startDate.isCursorVisible = false // 不显示光标
+            startDate.isFocusable = false // Set false, disallow focus
+            startDate.isCursorVisible = false // Do not show cursor
             startDate.setOnClickListener {
-                // 获取当前日期
+                // Get current date
                 val localStartDate = LocalDate.parse(startDate.text)
-                // 创建 DatePickerDialog
+                // Create DatePickerDialog
                 val datePickerDialog = DatePickerDialog(
                     root.context,
                     { _, yy, mm, dayOfMonth ->
-                        // 使用Java 8的日期和时间API来格式化日期
-                        val date = LocalDate.of(yy, mm + 1, dayOfMonth) // Java 8的LocalDate，月份从1开始
+                        // Use Java 8 Date and Time API to format date
+                        val date = LocalDate.of(yy, mm + 1, dayOfMonth) // Java 8 LocalDate, month starts from 1
                         val formattedDate = date.format(dateFormatter)
                         startDate.setText(formattedDate)
                     }, localStartDate.year,

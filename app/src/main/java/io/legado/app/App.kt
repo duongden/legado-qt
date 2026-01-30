@@ -82,7 +82,7 @@ class App : Application() {
             LogUtils.init(this@App)
             LogUtils.d("App", "onCreate")
             LogUtils.logDeviceInfo()
-            //预下载Cronet so
+            // Pre-download Cronet so
             Cronet.preDownload()
             createNotificationChannels()
             LiveEventBus.config()
@@ -96,9 +96,9 @@ class App : Application() {
             URL.setURLStreamHandlerFactory(ObsoleteUrlFactory(okHttpClient))
             launch { installGmsTlsProvider(appCtx) }
             initRhino()
-            //初始化封面
+            // Initialize cover
             BookCover.toString()
-            //清除过期数据
+            // Clear expired data
             appDb.cacheDao.clearDeadline(System.currentTimeMillis())
             if (getPrefBoolean(PreferKey.autoClearExpired, true)) {
                 val clearTime = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)
@@ -109,7 +109,7 @@ class App : Application() {
             Backup.clearCache()
             ReadBookConfig.clearBgAndCache()
             ThemeConfig.clearBg()
-            //初始化简繁转换引擎
+            // Initialize traditional/simplified conversion engine
             when (AppConfig.chineseConverterType) {
                 1 -> {
                     ChineseUtils.fixT2sDict()
@@ -118,9 +118,9 @@ class App : Application() {
 
                 2 -> ChineseUtils.preLoad(true, TransType.SIMPLE_TO_TRADITIONAL)
             }
-            //调整排序序号
+            // Adjust sort order
             SourceHelp.adjustSortNumber()
-            //同步阅读记录
+            // Sync reading progress
             if (AppConfig.syncBookProgress) {
                 AppWebDav.downloadAllBookProgress()
             }
@@ -141,9 +141,9 @@ class App : Application() {
     }
 
     /**
-     * 尝试在安装了GMS的设备上(GMS或者MicroG)使用GMS内置的Conscrypt
-     * 作为首选JCE提供程序，而使Okhttp在低版本Android上
-     * 能够启用TLSv1.3
+     * Attempt to use the GMS built-in Conscrypt on devices with GMS installed (GMS or MicroG)
+     * as the preferred JCE provider, enabling Okhttp to support TLSv1.3
+     * on lower versions of Android.
      * https://f-droid.org/zh_Hans/2020/05/29/android-updates-and-tls-connections.html
      * https://developer.android.google.cn/reference/javax/net/ssl/SSLSocket
      *
@@ -174,7 +174,7 @@ class App : Application() {
     }
 
     /**
-     * 创建通知ID
+     * Create notification channels
      */
     private fun createNotificationChannels() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
@@ -211,7 +211,7 @@ class App : Application() {
             lockscreenVisibility = Notification.VISIBILITY_PUBLIC
         }
 
-        //向notification manager 提交channel
+        //Submit channel to notification manager
         notificationManager.createNotificationChannels(
             listOf(
                 downloadChannel,

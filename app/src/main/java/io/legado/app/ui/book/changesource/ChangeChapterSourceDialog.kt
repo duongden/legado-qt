@@ -372,7 +372,7 @@ class ChangeChapterSourceDialog() : BaseDialogFragment(R.layout.dialog_chapter_c
     }
 
     /**
-     * 更新分组菜单
+     * Update group menu
      */
     private fun upGroupMenu() {
         binding.toolBar.menu.findItem(R.id.menu_group)?.subMenu?.transaction { menu ->

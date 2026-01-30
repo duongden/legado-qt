@@ -1,7 +1,7 @@
 package io.legado.app.constant
 
 /**
- * 通知ID不能重复,统一规划通知ID
+ * Notification ID cannot repeat, uniform planning of Notification ID
  */
 @Suppress("ConstPropertyName")
 object NotificationId {

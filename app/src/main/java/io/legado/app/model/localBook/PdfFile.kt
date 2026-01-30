@@ -26,7 +26,7 @@ class PdfFile(var book: Book) {
         private var pFile: PdfFile? = null
 
         /**
-         * pdf分页尺寸
+         * pdf pagination size
          */
         const val PAGE_SIZE = 10
 
@@ -101,7 +101,7 @@ class PdfFile(var book: Book) {
     }
 
     /**
-     * 关闭pdf文件
+     * Close pdf file
      *
      */
     private fun closePdf() {
@@ -111,8 +111,8 @@ class PdfFile(var book: Book) {
 
 
     /**
-     * 渲染PDF页面
-     * 根据index打开pdf页面,并渲染到Bitmap
+     * Render PDF page
+     * Open pdf page by index, render to Bitmap
      *
      * @param renderer
      * @param index

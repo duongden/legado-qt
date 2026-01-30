@@ -95,7 +95,7 @@ class ReplaceRuleActivity : VMBaseActivity<ActivityReplaceRuleBinding, ReplaceRu
                 )
             }
         }.onFailure {
-            toastOnUi("readTextError:${it.localizedMessage}")
+            toastOnUi(getString(R.string.read_text_error, it.localizedMessage))
         }
     }
     private val exportResult = registerForActivityResult(HandleFileContract()) {
@@ -205,7 +205,7 @@ class ReplaceRuleActivity : VMBaseActivity<ActivityReplaceRuleBinding, ReplaceRu
                     appDb.replaceRuleDao.flowSearch("%$searchKey%")
                 }
             }.catch {
-                AppLog.put("替换规则管理界面更新数据出错", it)
+                AppLog.put(getString(R.string.error_update_replace_rule), it)
             }.flowOn(IO).conflate().collect {
                 if (dataInit) {
                     setResult(Activity.RESULT_OK)
@@ -284,7 +284,7 @@ class ReplaceRuleActivity : VMBaseActivity<ActivityReplaceRuleBinding, ReplaceRu
             ?.toMutableList() ?: mutableListOf()
         alert(titleResource = R.string.import_on_line) {
             val alertBinding = DialogEditTextBinding.inflate(layoutInflater).apply {
-                editView.hint = "url"
+                editView.hint = getString(R.string.url_hint)
                 editView.setFilterValues(cacheUrls)
                 editView.delCallBack = {
                     cacheUrls.remove(it)

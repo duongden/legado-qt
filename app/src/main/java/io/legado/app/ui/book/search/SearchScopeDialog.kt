@@ -250,7 +250,7 @@ class SearchScopeDialog : BaseDialogFragment(R.layout.dialog_search_scope) {
     interface Callback {
 
         /**
-         * 搜索范围确认
+         * Search range confirmation
          */
         fun onSearchScopeOk(searchScope: SearchScope)
 

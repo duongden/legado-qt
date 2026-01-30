@@ -112,7 +112,7 @@ class RssArticlesFragment() : VMBaseFragment<RssArticlesViewModel>(R.layout.frag
         articlesFlowJob?.cancel()
         articlesFlowJob = viewLifecycleOwner.lifecycleScope.launch {
             appDb.rssArticleDao.flowByOriginSort(rssUrl, viewModel.sortName).catch {
-                AppLog.put("订阅文章界面获取数据失败\n${it.localizedMessage}", it)
+                AppLog.put(getString(R.string.error_get_rss_article_data, it.localizedMessage), it)
             }.flowOn(IO).collect {
                 adapter.setItems(it)
             }

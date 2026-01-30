@@ -84,7 +84,7 @@ object BookCover {
     }
 
     /**
-     * 加载封面
+     * Load cover
      */
     fun load(
         context: Context,
@@ -133,7 +133,7 @@ object BookCover {
     }
 
     /**
-     * 加载漫画图片
+     * Load manga image
      */
     fun loadManga(
         context: Context,
@@ -178,7 +178,7 @@ object BookCover {
     }
 
     /**
-     * 加载模糊封面
+     * Load blurred cover
      */
     fun loadBlur(
         context: Context,

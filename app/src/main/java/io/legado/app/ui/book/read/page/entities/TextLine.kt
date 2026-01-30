@@ -115,10 +115,10 @@ data class TextLine(
         val visibleTop = ChapterProvider.paddingTop
         val visibleBottom = ChapterProvider.visibleBottom
         val visible = when {
-            // 完全可视
+            // Fully visible
             top >= visibleTop && bottom <= visibleBottom -> true
             top <= visibleTop && bottom >= visibleBottom -> true
-            // 上方第一行部分可视
+            // Top first line partially visible
             top < visibleTop && bottom > visibleTop && bottom < visibleBottom -> {
                 if (isImage) {
                     true
@@ -127,7 +127,7 @@ data class TextLine(
                     visibleRate > 0.6
                 }
             }
-            // 下方第一行部分可视
+            // Bottom first line partially visible
             top > visibleTop && top < visibleBottom && bottom > visibleBottom -> {
                 if (isImage) {
                     true
@@ -136,7 +136,7 @@ data class TextLine(
                     visibleRate > 0.6
                 }
             }
-            // 不可视
+            // Invisible
             else -> false
         }
         return visible
@@ -161,7 +161,7 @@ data class TextLine(
             }
         }
 
-        // 墨水屏模式下的朗读和搜索下划线
+        // Read aloud and search underline in E-ink mode
         if (AppConfig.isEInkMode && (isReadAloud || searchResultColumnCount > 0)) {
             val underlinePaint = PaintPool.obtain()
             underlinePaint.set(ChapterProvider.contentPaint)
@@ -213,7 +213,7 @@ data class TextLine(
     }
 
     /**
-     * 绘制下划线
+     * Draw underline
      */
     private fun drawUnderline(canvas: Canvas) {
         val lineY = height - 1.dpToPx()

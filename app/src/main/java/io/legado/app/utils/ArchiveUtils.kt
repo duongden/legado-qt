@@ -7,13 +7,13 @@ import io.legado.app.utils.compress.LibArchiveUtils
 import splitties.init.appCtx
 import java.io.File
 
-/* 自动判断压缩文件后缀 然后再调用具体的实现 */
+/* Automatically determine compressed file suffix and then call specific implementation */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 object ArchiveUtils {
 
     const val TEMP_FOLDER_NAME = "ArchiveTemp"
 
-    // 临时目录 下次启动自动删除
+    // Temporary directory, automatically deleted on next startup
     val TEMP_PATH: String by lazy {
         appCtx.externalCache.getFile(TEMP_FOLDER_NAME).createFolderReplace().absolutePath
     }
@@ -67,7 +67,7 @@ object ArchiveUtils {
 
     }
 
-    /* 遍历目录获取文件名 */
+    /* Traverse directory to get file names */
     fun getArchiveFilesName(fileUri: Uri, filter: ((String) -> Boolean)? = null): List<String> =
         getArchiveFilesName(FileDoc.fromUri(fileUri, false), filter)
 

@@ -83,7 +83,7 @@ class TTSReadAloudService : BaseReadAloudService(), TextToSpeech.OnInitListener 
         if (!ttsInitFinish) return
         if (!requestFocus()) return
         if (contentList.isEmpty()) {
-            AppLog.putDebug("朗读列表为空")
+            AppLog.put(getString(R.string.read_aloud_list_empty))
             ReadBook.readAloud()
             return
         }
@@ -109,11 +109,11 @@ class TTSReadAloudService : BaseReadAloudService(), TextToSpeech.OnInitListener 
                     val result = tts.runCatching {
                         speak(text, TextToSpeech.QUEUE_FLUSH, null, AppConst.APP_TAG + i)
                     }.getOrElse {
-                        AppLog.put("tts出错\n${it.localizedMessage}", it, true)
+                        AppLog.put(getString(R.string.tts_error, it.localizedMessage), it, true)
                         TextToSpeech.ERROR
                     }
                     if (result == TextToSpeech.ERROR) {
-                        AppLog.put("tts出错 尝试重新初始化")
+                        AppLog.put(getString(R.string.tts_error_reinit))
                         clearTTS()
                         initTts()
                         return@execute
@@ -122,11 +122,11 @@ class TTSReadAloudService : BaseReadAloudService(), TextToSpeech.OnInitListener 
                     val result = tts.runCatching {
                         speak(text, TextToSpeech.QUEUE_ADD, null, AppConst.APP_TAG + i)
                     }.getOrElse {
-                        AppLog.put("tts出错\n${it.localizedMessage}", it, true)
+                        AppLog.put(getString(R.string.tts_error, it.localizedMessage), it, true)
                         TextToSpeech.ERROR
                     }
                     if (result == TextToSpeech.ERROR) {
-                        AppLog.put("tts朗读出错:$text")
+                        AppLog.put(getString(R.string.tts_read_error, text))
                     }
                 }
                 isAddedText = true
@@ -138,7 +138,7 @@ class TTSReadAloudService : BaseReadAloudService(), TextToSpeech.OnInitListener 
                 nextChapter()
             }
         }.onError {
-            AppLog.put("tts朗读出错\n${it.localizedMessage}", it, true)
+            AppLog.put(getString(R.string.tts_read_error_msg, it.localizedMessage), it, true)
         }
     }
 
@@ -149,7 +149,7 @@ class TTSReadAloudService : BaseReadAloudService(), TextToSpeech.OnInitListener 
     }
 
     /**
-     * 更新朗读速度
+     * Update read speed
      */
     override fun upSpeechRate(reset: Boolean) {
         if (AppConfig.ttsFlowSys) {
@@ -164,7 +164,7 @@ class TTSReadAloudService : BaseReadAloudService(), TextToSpeech.OnInitListener 
     }
 
     /**
-     * 暂停朗读
+     * Pause reading
      */
     override fun pauseReadAloud(abandonFocus: Boolean) {
         super.pauseReadAloud(abandonFocus)
@@ -175,7 +175,7 @@ class TTSReadAloudService : BaseReadAloudService(), TextToSpeech.OnInitListener 
     }
 
     /**
-     * 恢复朗读
+     * Resume reading aloud
      */
     override fun resumeReadAloud() {
         super.resumeReadAloud()
@@ -183,7 +183,7 @@ class TTSReadAloudService : BaseReadAloudService(), TextToSpeech.OnInitListener 
     }
 
     /**
-     * 朗读监听
+     * Read aloud listener
      */
     private inner class TTSUtteranceListener : UtteranceProgressListener() {
 
@@ -235,7 +235,7 @@ class TTSReadAloudService : BaseReadAloudService(), TextToSpeech.OnInitListener 
         }
 
         private fun nextParagraph() {
-            //跳过全标点段落
+            //Skip full punctuation paragraph
             do {
                 readAloudNumber += contentList[nowSpeak].length + 1 - paragraphStartPos
                 paragraphStartPos = 0

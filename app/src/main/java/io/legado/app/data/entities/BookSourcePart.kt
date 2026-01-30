@@ -15,27 +15,27 @@ import io.legado.app.utils.splitNotBlank
     viewName = "book_sources_part"
 )
 data class BookSourcePart(
-    // 地址，包括 http/https
+    // Address, including http/https
     var bookSourceUrl: String = "",
-    // 名称
+    // Name
     var bookSourceName: String = "",
-    // 分组
+    // Group
     var bookSourceGroup: String? = null,
-    // 手动排序编号
+    // Manual sort number
     var customOrder: Int = 0,
-    // 是否启用
+    // Is Enabled
     var enabled: Boolean = true,
-    // 启用发现
+    // Enable Explore
     var enabledExplore: Boolean = true,
-    // 是否有登录地址
+    // Has Login URL
     var hasLoginUrl: Boolean = false,
-    // 最后更新时间，用于排序
+    // Last update time, for sorting
     var lastUpdateTime: Long = 0,
-    // 响应时间，用于排序
+    // Response time, for sorting
     var respondTime: Long = 180000L,
-    // 智能排序的权重
+    // Smart sort weight
     var weight: Int = 0,
-    // 是否有发现url
+    // Has Explore URL
     var hasExploreUrl: Boolean = false
 ) {
 

@@ -24,23 +24,23 @@ class AnalyzeByJSonPath(json: Any) {
     private var ctx: ReadContext = parse(json)
 
     /**
-     * 改进解析方法
-     * 解决阅读”&&“、”||“与jsonPath支持的”&&“、”||“之间的冲突
-     * 解决{$.rule}形式规则可能匹配错误的问题，旧规则用正则解析内容含‘}’的json文本时，用规则中的字段去匹配这种内容会匹配错误.现改用平衡嵌套方法解决这个问题
+     * Improved parsing method
+     * Resolve conflict between reading "&&", "||" and jsonPath "&&", "||"
+     * Fix {$.rule} matching errors. Old regex failed on json text containing '}'. Now using balanced nesting method.
      * */
     fun getString(rule: String): String? {
         if (rule.isEmpty()) return null
         var result: String
-        val ruleAnalyzes = RuleAnalyzer(rule, true) //设置平衡组为代码平衡
+        val ruleAnalyzes = RuleAnalyzer(rule, true) //Set balanced group to code balance
         val rules = ruleAnalyzes.splitRule("&&", "||")
 
         if (rules.size == 1) {
 
-            ruleAnalyzes.reSetPos() //将pos重置为0，复用解析器
+            ruleAnalyzes.reSetPos() //Reset pos to 0, reuse parser
 
-            result = ruleAnalyzes.innerRule("{$.") { getString(it) } //替换所有{$.rule...}
+            result = ruleAnalyzes.innerRule("{$.") { getString(it) } //Replace all {$.rule...}
 
-            if (result.isEmpty()) { //st为空，表明无成功替换的内嵌规则
+            if (result.isEmpty()) { //st empty, means no successfully replaced inline rule
                 try {
                     val ob = ctx.read<Any>(rule)
                     result = if (ob is List<*>) {
@@ -71,13 +71,13 @@ class AnalyzeByJSonPath(json: Any) {
     internal fun getStringList(rule: String): List<String> {
         val result = ArrayList<String>()
         if (rule.isEmpty()) return result
-        val ruleAnalyzes = RuleAnalyzer(rule, true) //设置平衡组为代码平衡
+        val ruleAnalyzes = RuleAnalyzer(rule, true) //Set balanced group to code balance
         val rules = ruleAnalyzes.splitRule("&&", "||", "%%")
 
         if (rules.size == 1) {
-            ruleAnalyzes.reSetPos() //将pos重置为0，复用解析器
-            val st = ruleAnalyzes.innerRule("{$.") { getString(it) } //替换所有{$.rule...}
-            if (st.isEmpty()) { //st为空，表明无成功替换的内嵌规则
+            ruleAnalyzes.reSetPos() //Reset pos to 0, reuse parser
+            val st = ruleAnalyzes.innerRule("{$.") { getString(it) } //Replace all {$.rule...}
+            if (st.isEmpty()) { //st empty, means no successfully replaced inline rule
                 try {
                     val obj = ctx.read<Any>(rule)
                     if (obj is List<*>) {
@@ -129,7 +129,7 @@ class AnalyzeByJSonPath(json: Any) {
     internal fun getList(rule: String): ArrayList<Any>? {
         val result = ArrayList<Any>()
         if (rule.isEmpty()) return result
-        val ruleAnalyzes = RuleAnalyzer(rule, true) //设置平衡组为代码平衡
+        val ruleAnalyzes = RuleAnalyzer(rule, true) //Set balanced group to code balance
         val rules = ruleAnalyzes.splitRule("&&", "||", "%%")
         if (rules.size == 1) {
             ctx.let {

@@ -32,7 +32,7 @@ import splitties.init.appCtx
 @Suppress("unused")
 object AudioPlay : CoroutineScope by MainScope() {
     /**
-     * 播放模式枚举
+     * Playback mode enum
      */
     enum class PlayMode(val iconRes: Int) {
         LIST_END_STOP(R.drawable.ic_play_mode_list_end_stop),
@@ -132,7 +132,7 @@ object AudioPlay : CoroutineScope by MainScope() {
     }
 
     /**
-     * 加载播放URL
+     * Load play URL
      */
     private fun loadPlayUrl() {
         val index = durChapterIndex
@@ -175,7 +175,7 @@ object AudioPlay : CoroutineScope by MainScope() {
     }
 
     /**
-     * 加载完成
+     * Loading complete
      */
     private fun contentLoadFinish(chapter: BookChapter, content: String) {
         if (chapter.index == book?.durChapterIndex) {
@@ -193,7 +193,7 @@ object AudioPlay : CoroutineScope by MainScope() {
     }
 
     /**
-     * 播放当前章节
+     * Play current chapter
      */
     fun play() {
         context.startService<AudioPlayService> {
@@ -202,7 +202,7 @@ object AudioPlay : CoroutineScope by MainScope() {
     }
 
     /**
-     * 从头播放新章节
+     * Play new chapter from beginning
      */
     private fun playNew() {
         context.startService<AudioPlayService> {
@@ -211,7 +211,7 @@ object AudioPlay : CoroutineScope by MainScope() {
     }
 
     /**
-     * 更新当前章节
+     * Update current chapter
      */
     fun upDurChapter() {
         val book = book ?: return
@@ -378,7 +378,7 @@ object AudioPlay : CoroutineScope by MainScope() {
     }
 
     /**
-     * 保存章节长度
+     * Save chapter length
      */
     fun saveDurChapter(audioSize: Long) {
         val chapter = durChapter ?: return

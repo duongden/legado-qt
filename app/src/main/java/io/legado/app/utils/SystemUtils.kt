@@ -19,7 +19,7 @@ object SystemUtils {
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) return
 
         val hasIgnored = powerManager.isIgnoringBatteryOptimizations(activity.packageName)
-        //  判断当前APP是否有加入电池优化的白名单，如果没有，弹出加入电池优化的白名单的设置对话框。
+        // Check if current APP is in battery optimization whitelist, if not, pop up dialog to add to whitelist.
         if (!hasIgnored) {
             try {
                 @SuppressLint("BatteryLife")
@@ -39,14 +39,14 @@ object SystemUtils {
     }
 
     /**
-     * 屏幕像素宽度
+     * Screen pixel width
      */
     val screenWidthPx by lazy {
         appCtx.resources.displayMetrics.widthPixels
     }
 
     /**
-     * 屏幕像素高度
+     * Screen pixel height
      */
     val screenHeightPx by lazy {
         appCtx.resources.displayMetrics.heightPixels

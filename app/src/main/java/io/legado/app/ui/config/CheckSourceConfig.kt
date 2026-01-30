@@ -19,7 +19,7 @@ class CheckSourceConfig : BaseDialogFragment(R.layout.dialog_check_source_config
 
     private val binding by viewBinding(DialogCheckSourceConfigBinding::bind)
 
-    //允许的最小超时时间，秒
+    //Min allowed timeout, seconds
     private val minTimeout = 0L
 
     override fun onStart() {

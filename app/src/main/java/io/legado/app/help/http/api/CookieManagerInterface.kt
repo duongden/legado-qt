@@ -3,22 +3,22 @@ package io.legado.app.help.http.api
 interface CookieManagerInterface {
 
     /**
-     * 保存cookie
+     * Save cookie
      */
     fun setCookie(url: String, cookie: String?)
 
     /**
-     * 替换cookie
+     * Replace cookie
      */
     fun replaceCookie(url: String, cookie: String)
 
     /**
-     * 获取cookie
+     * Get cookie
      */
     fun getCookie(url: String): String
 
     /**
-     * 移除cookie
+     * Remove cookie
      */
     fun removeCookie(url: String)
 

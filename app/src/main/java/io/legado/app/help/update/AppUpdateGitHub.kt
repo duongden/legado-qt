@@ -34,15 +34,15 @@ object AppUpdateGitHub : AppUpdate.AppUpdateInterface {
             url(lastReleaseUrl)
         }
         if (!res.isSuccessful) {
-            throw NoStackTraceException("获取新版本出错(${res.code})")
+            throw NoStackTraceException(splitties.init.appCtx.getString(io.legado.app.R.string.get_new_version_error_code, res.code))
         }
         val body = res.body.text()
         if (body.isBlank()) {
-            throw NoStackTraceException("获取新版本出错")
+            throw NoStackTraceException(splitties.init.appCtx.getString(io.legado.app.R.string.get_new_version_error))
         }
         return GSON.fromJsonObject<GithubRelease>(body)
             .getOrElse {
-                throw NoStackTraceException("获取新版本出错 " + it.localizedMessage)
+                throw NoStackTraceException(splitties.init.appCtx.getString(io.legado.app.R.string.get_new_version_error_msg, it.localizedMessage))
             }
             .gitReleaseToAppReleaseInfo()
             .sortedByDescending { it.createdAt }
@@ -63,7 +63,7 @@ object AppUpdateGitHub : AppUpdate.AppUpdateInterface {
                         it.name
                     )
                 }
-                ?: throw NoStackTraceException("已是最新版本")
+                ?: throw NoStackTraceException(splitties.init.appCtx.getString(io.legado.app.R.string.already_latest_version))
         }.timeout(10000)
     }
 }

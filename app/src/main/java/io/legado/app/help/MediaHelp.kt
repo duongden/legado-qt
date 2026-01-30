@@ -49,7 +49,7 @@ object MediaHelp {
 
 
     /**
-     * @return 音频焦点
+     * @return Audio focus
      */
     fun requestFocus(focusRequest: AudioFocusRequestCompat): Boolean {
         val request = AudioManagerCompat.requestAudioFocus(audioManager, focusRequest)
@@ -57,7 +57,7 @@ object MediaHelp {
     }
 
     /**
-     * 播放静音音频,用来获取音频焦点
+     * Play silent audio to get focus
      */
     fun playSilentSound(mContext: Context) {
         kotlin.runCatching {

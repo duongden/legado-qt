@@ -205,7 +205,7 @@ object LibArchiveUtils {
     }
 
     /**
-     * 解压文件
+     * Unzip file
      */
     @Throws(NullPointerException::class, SecurityException::class)
     fun unArchive(
@@ -217,7 +217,7 @@ object LibArchiveUtils {
     }
 
     /**
-     * 解压
+     * Unzip
      */
     @Throws(NullPointerException::class, SecurityException::class)
     private fun unArchive(
@@ -242,7 +242,7 @@ object LibArchiveUtils {
                 }
                 val entryStat = ArchiveEntry.stat(entry)
 
-                //判断是否是文件夹
+                // Determine if it is a directory
                 if (entryStat.isDir()) {
                     if (!entryFile.exists()) {
                         entryFile.mkdirs()
@@ -292,7 +292,7 @@ object LibArchiveUtils {
 
                 val entryStat = ArchiveEntry.stat(entry)
 
-                //判断是否是文件夹
+                // Determine if it is a directory
                 if (entryStat.isDir()) {
                     continue
                 }

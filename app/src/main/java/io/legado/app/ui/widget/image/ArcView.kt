@@ -16,10 +16,10 @@ class ArcView @JvmOverloads constructor(
     private var mWidth = 0
     private var mHeight = 0
 
-    //弧形高度
+    //Arc height
     private val mArcHeight: Int
 
-    //背景颜色
+    //Background color
     private var mBgColor: Int
     private val mPaint: Paint = Paint().apply {
         isAntiAlias = true

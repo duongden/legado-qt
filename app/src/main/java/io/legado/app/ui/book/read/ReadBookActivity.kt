@@ -136,7 +136,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * 阅读界面
+ * Reading interface
  */
 class ReadBookActivity : BaseReadBookActivity(),
     View.OnTouchListener,
@@ -189,7 +189,7 @@ class ReadBookActivity : BaseReadBookActivity(),
                 viewModel.searchResultIndex = index
                 binding.searchMenu.updateSearchResultIndex(index)
                 binding.searchMenu.selectedSearchResult?.let { currentResult ->
-                    ReadBook.saveCurrentBookProgress() //退出全文搜索恢复此时进度
+                    ReadBook.saveCurrentBookProgress() //Exit full text search restore this progress
                     skipToSearch(currentResult)
                     showActionMenu()
                 }
@@ -247,7 +247,7 @@ class ReadBookActivity : BaseReadBookActivity(),
         }
     }
 
-    //恢复跳转前进度对话框的交互结果
+    //Restore progress before jump dialog interaction result
     private var confirmRestoreProcess: Boolean? = null
     private val networkChangedListener by lazy {
         NetworkChangedListener(this)
@@ -271,7 +271,7 @@ class ReadBookActivity : BaseReadBookActivity(),
                 restoreLastBookProcess()
                 return@addCallback
             }
-            //拦截返回供恢复阅读进度
+            //Intercept back to restore reading progress
             if (ReadBook.lastBookProgress != null && confirmRestoreProcess != false) {
                 restoreLastBookProcess()
                 return@addCallback
@@ -339,7 +339,7 @@ class ReadBookActivity : BaseReadBookActivity(),
             viewModel.initData(intent)
             justInitData = true
         } else {
-            //web端阅读时，app处于阅读界面，本地记录会覆盖web保存的进度，在此处恢复
+            //When reading on web, app in reading UI, local record overwrites web progress, restore here
             ReadBook.webBookProgress?.let {
                 ReadBook.setProgress(it)
                 ReadBook.webBookProgress = null
@@ -349,10 +349,10 @@ class ReadBookActivity : BaseReadBookActivity(),
         registerReceiver(timeBatteryReceiver, timeBatteryReceiver.filter)
         binding.readView.upTime()
         screenOffTimerStart()
-        // 网络监听，当从无网切换到网络环境时同步进度（注意注册的同时就会收到监听，因此界面激活时无需重复执行同步操作）
+        // Network listener, sync progress when switching from offline to online (Note: listener triggered on register, so no need to repeat sync on UI activate)
         networkChangedListener.register()
         networkChangedListener.onNetworkChanged = {
-            // 当网络是可用状态且无需初始化时同步进度（初始化中已有同步进度逻辑）
+            // Sync progress when network available and no init needed (Sync logic exists in init)
             if (AppConfig.syncBookProgressPlus && NetworkUtils.isAvailable() && !justInitData) {
                 ReadBook.syncProgress({ progress -> sureNewProgress(progress) })
             }
@@ -412,7 +412,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 更新菜单
+     * Update menu
      */
     private fun upMenu() {
         val menu = menu ?: return
@@ -450,7 +450,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 菜单
+     * Menu
      */
     override fun onCompatOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
@@ -584,7 +584,7 @@ class ReadBookActivity : BaseReadBookActivity(),
                     val imageStyle = imgStyles[index]
                     ReadBook.book?.setImageStyle(imageStyle)
                     if (imageStyle == Book.imgStyleSingle) {
-                        ReadBook.book?.setPageAnim(0)  // 切换图片样式single后，自动切换为覆盖
+                        ReadBook.book?.setPageAnim(0)  // Auto switch to overlay after switching image style to single
                         binding.readView.upPageAnim()
                     }
                     ReadBook.loadContent(false)
@@ -635,7 +635,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 按键拦截,显示菜单
+     * Key intercept, show menu
      */
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         val keyCode = event.keyCode
@@ -663,10 +663,10 @@ class ReadBookActivity : BaseReadBookActivity(),
             if (event.action == MotionEvent.ACTION_SCROLL) {
                 val axisValue = event.getAxisValue(MotionEvent.AXIS_VSCROLL)
                 LogUtils.d("onGenericMotionEvent", "axisValue = $axisValue")
-                // 获得垂直坐标上的滚动方向
-                if (axisValue < 0.0f) { // 滚轮向下滚
+                // Get vertical scroll direction
+                if (axisValue < 0.0f) { // Scroll wheel down
                     mouseWheelPage(PageDirection.NEXT)
-                } else { // 滚轮向上滚
+                } else { // Scroll wheel up
                     mouseWheelPage(PageDirection.PREV)
                 }
                 return true
@@ -676,7 +676,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 按键事件
+     * Key event
      */
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         if (menuLayoutIsVisible) {
@@ -723,7 +723,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 松开按键事件
+     * Key release event
      */
     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
         when (keyCode) {
@@ -738,7 +738,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * view触摸,文字选择
+     * view touch, text selection
      */
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(v: View, event: MotionEvent): Boolean = binding.run {
@@ -784,7 +784,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 更新文字选择开始位置
+     * Update text selection start
      */
     override fun upSelectedStart(x: Float, y: Float, top: Float) = binding.run {
         cursorLeft.x = x - cursorLeft.width
@@ -795,7 +795,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 更新文字选择结束位置
+     * Update text selection end
      */
     override fun upSelectedEnd(x: Float, y: Float) = binding.run {
         cursorRight.x = x
@@ -804,7 +804,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 取消文字选择
+     * Cancel text selection
      */
     override fun onCancelSelect() = binding.run {
         cursorLeft.invisible()
@@ -817,7 +817,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 显示文本操作菜单
+     * Show text op menu
      */
     override fun showTextActionMenu() {
         val navigationBarHeight =
@@ -835,12 +835,12 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 当前选择的文本
+     * Currently selected text
      */
     override val selectedText: String get() = binding.readView.getSelectText()
 
     /**
-     * 文本选择菜单操作
+     * Text selection menu op
      */
     override fun onMenuItemSelected(itemId: Int): Boolean {
         when (itemId) {
@@ -896,7 +896,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 文本选择菜单操作完成
+     * Text selection menu op complete
      */
     override fun onMenuActionFinally() = binding.run {
         textActionMenu.dismiss()
@@ -986,7 +986,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 内容加载完成
+     * Content loading complete
      */
     override fun contentLoadFinish() {
         if (intent.getBooleanExtra("readAloud", false)) {
@@ -997,7 +997,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 更新内容
+     * Update content
      */
     override fun upContent(
         relativePosition: Int,
@@ -1060,7 +1060,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 更新进度条位置
+     * Update progress bar pos
      */
     private fun upSeekBarProgress() {
         val progress = when (AppConfig.progressBarBehavior) {
@@ -1071,7 +1071,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 显示菜单
+     * Show menu
      */
     override fun showMenuBar() {
         binding.readMenu.runMenuIn()
@@ -1114,14 +1114,14 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 显示朗读菜单
+     * Show read aloud menu
      */
     override fun showReadAloudDialog() {
         showDialogFragment<ReadAloudDialog>()
     }
 
     /**
-     * 自动翻页
+     * Auto page turn
      */
     override fun autoPage() {
         ReadAloud.stop(this)
@@ -1162,14 +1162,14 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 替换
+     * Replace
      */
     override fun openReplaceRule() {
         replaceActivity.launch(Intent(this, ReplaceRuleActivity::class.java))
     }
 
     /**
-     * 打开目录
+     * Open catalog
      */
     override fun openChapterList() {
         ReadBook.book?.let {
@@ -1178,7 +1178,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 打开搜索界面
+     * Open search UI
      */
     override fun openSearchActivity(searchWord: String?) {
         val book = ReadBook.book ?: return
@@ -1195,21 +1195,21 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 禁用书源
+     * Disable source
      */
     override fun disableSource() {
         viewModel.disableSource()
     }
 
     /**
-     * 显示阅读样式配置
+     * Show reading style config
      */
     override fun showReadStyle() {
         showDialogFragment<ReadStyleDialog>()
     }
 
     /**
-     * 显示更多设置
+     * Show more settings
      */
     override fun showMoreSetting() {
         showDialogFragment<MoreConfigDialog>()
@@ -1220,14 +1220,14 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 更新状态栏,导航栏
+     * Update status bar, nav bar
      */
     override fun upSystemUiVisibility() {
         upSystemUiVisibility(isInMultiWindow, !menuLayoutIsVisible, bottomDialog > 0)
         upNavigationBarColor()
     }
 
-    // 退出全文搜索
+    // Exit full text search
     override fun exitSearchMenu() {
         if (isShowingSearchResult) {
             isShowingSearchResult = false
@@ -1238,7 +1238,7 @@ class ReadBookActivity : BaseReadBookActivity(),
         }
     }
 
-    /* 恢复到 全文搜索/进度条跳转前的位置 */
+    /* Restore to position before full text search/progress bar jump */
     private fun restoreLastBookProcess() {
         if (confirmRestoreProcess == true) {
             ReadBook.restoreLastBookProgress()
@@ -1247,7 +1247,7 @@ class ReadBookActivity : BaseReadBookActivity(),
                 setMessage(R.string.restore_last_book_process)
                 yesButton {
                     confirmRestoreProcess = true
-                    ReadBook.restoreLastBookProgress() //恢复启动全文搜索前的进度
+                    ReadBook.restoreLastBookProgress() //Restore progress before full text search start
                 }
                 noButton {
                     ReadBook.lastBookProgress = null
@@ -1275,7 +1275,7 @@ class ReadBookActivity : BaseReadBookActivity(),
         if (book.isLocal) return
         val chapter = appDb.bookChapterDao.getChapter(book.bookUrl, ReadBook.durChapterIndex)
         if (chapter == null) {
-            toastOnUi("no chapter")
+            toastOnUi(R.string.error_no_chapter)
             return
         }
         alert(R.string.chapter_pay) {
@@ -1283,10 +1283,10 @@ class ReadBookActivity : BaseReadBookActivity(),
             yesButton {
                 Coroutine.async(lifecycleScope) {
                     val source =
-                        ReadBook.bookSource ?: throw NoStackTraceException("no book source")
+                        ReadBook.bookSource ?: throw NoStackTraceException(getString(R.string.error_no_book_source))
                     val payAction = source.getContentRule().payAction
                     if (payAction.isNullOrBlank()) {
-                        throw NoStackTraceException("no pay action")
+                        throw NoStackTraceException(getString(R.string.error_no_pay_action))
                     }
                     val analyzeRule = AnalyzeRule(book, source)
                     analyzeRule.setCoroutineContext(coroutineContext)
@@ -1304,7 +1304,7 @@ class ReadBookActivity : BaseReadBookActivity(),
                             putExtra("sourceType", bookSource?.getSourceType())
                         }
                     } else if (it.isTrue()) {
-                        //购买成功后刷新目录
+                        //Refresh catalog after purchase success
                         ReadBook.book?.let {
                             ReadBook.curTextChapter = null
                             BookHelp.delContent(book, chapter)
@@ -1312,7 +1312,7 @@ class ReadBookActivity : BaseReadBookActivity(),
                         }
                     }
                 }.onError {
-                    AppLog.put("执行购买操作出错\n${it.localizedMessage}", it, true)
+                    AppLog.put(getString(R.string.purchase_action_error, it.localizedMessage), it, true)
                 }
             }
             noButton()
@@ -1320,7 +1320,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     /**
-     * 朗读按钮
+     * Read aloud button
      */
     override fun onClickReadAloud() {
         autoPageStop()
@@ -1479,13 +1479,13 @@ class ReadBookActivity : BaseReadBookActivity(),
         }
     }
 
-    /* 进度条跳转到指定章节 */
+    /* Progress bar jump to specified chapter */
     override fun skipToChapter(index: Int) {
-        ReadBook.saveCurrentBookProgress() //退出章节跳转恢复此时进度
+        ReadBook.saveCurrentBookProgress() //Exit chapter jump restore this progress
         viewModel.openChapter(index)
     }
 
-    /* 全文搜索跳转 */
+    /* Full text search jump */
     override fun navigateToSearch(searchResult: SearchResult, index: Int) {
         viewModel.searchResultIndex = index
         skipToSearch(searchResult)
@@ -1504,7 +1504,7 @@ class ReadBookActivity : BaseReadBookActivity(),
         binding.readView.onLayoutPageCompleted(index, page)
     }
 
-    /* 全文搜索跳转 */
+    /* Full text search jump */
     private fun skipToSearch(searchResult: SearchResult) {
         if (searchResult.chapterIndex != ReadBook.durChapterIndex) {
             viewModel.openChapter(searchResult.chapterIndex) {

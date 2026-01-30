@@ -142,9 +142,9 @@ class ImportTxtTocRuleDialog() : BaseDialogFragment(R.layout.dialog_recycler_vie
                 cbSourceName.text = item.name
                 val localSource = viewModel.checkSources[holder.layoutPosition]
                 tvSourceState.text = when {
-                    localSource == null -> "新增"
-                    item != localSource -> "更新"
-                    else -> "已有"
+                    localSource == null -> getString(R.string.sc_new_added)
+                    item != localSource -> getString(R.string.sc_updated)
+                    else -> getString(R.string.sc_existing)
                 }
             }
         }

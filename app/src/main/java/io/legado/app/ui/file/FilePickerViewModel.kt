@@ -4,6 +4,7 @@ import android.app.Application
 import android.os.Bundle
 import android.os.Environment
 import androidx.lifecycle.MutableLiveData
+import io.legado.app.R
 import io.legado.app.base.BaseViewModel
 import io.legado.app.exception.NoStackTraceException
 import io.legado.app.utils.toastOnUi
@@ -60,10 +61,10 @@ class FilePickerViewModel(application: Application) : BaseViewModel(application)
 
     fun createFolder(name: String) {
         execute {
-            val dir = lastDir ?: throw NoStackTraceException("父文件夹不存在")
+            val dir = lastDir ?: throw NoStackTraceException(context.getString(R.string.sc_parent_folder_not_exist))
             val folder = File(dir, name)
             if (!folder.canonicalPath.contains(dir.canonicalPath)) {
-                throw NoStackTraceException("非法文件名")
+                throw NoStackTraceException(context.getString(R.string.sc_invalid_filename))
             }
             folder.mkdir()
         }.onSuccess {

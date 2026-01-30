@@ -78,7 +78,7 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
         }
     }
 
-    //根据已启用词典数动态选取布局
+    //Dynamically select layout by enabled dict count
     private fun setupTabLayoutMode(dictCount: Int) {
         if (dictCount <= 4) {
             binding.tabLayout.tabMode = TabLayout.MODE_FIXED

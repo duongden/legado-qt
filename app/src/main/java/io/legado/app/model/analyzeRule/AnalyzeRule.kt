@@ -115,7 +115,7 @@ class AnalyzeRule(
     }
 
     /**
-     * 获取XPath解析类
+     * Get XPath parser
      */
     private fun getAnalyzeByXPath(o: Any): AnalyzeByXPath {
         return if (o != content) {
@@ -129,7 +129,7 @@ class AnalyzeRule(
     }
 
     /**
-     * 获取JSOUP解析类
+     * Get JSOUP parser
      */
     private fun getAnalyzeByJSoup(o: Any): AnalyzeByJSoup {
         return if (o != content) {
@@ -143,7 +143,7 @@ class AnalyzeRule(
     }
 
     /**
-     * 获取JSON解析类
+     * Get JSON parser
      */
     private fun getAnalyzeByJSonPath(o: Any): AnalyzeByJSonPath {
         return if (o != content) {
@@ -157,7 +157,7 @@ class AnalyzeRule(
     }
 
     /**
-     * 获取文本列表
+     * Get text list
      */
     @JvmOverloads
     fun getStringList(rule: String?, mContent: Any? = null, isUrl: Boolean = false): List<String>? {
@@ -184,7 +184,7 @@ class AnalyzeRule(
                     // get {{}}
                     sourceRule.rule
                 } else {
-                    // 键值直接访问
+                    // Key-value direct access
                     result[sourceRule.rule]
                 }
                 result?.let {
@@ -244,7 +244,7 @@ class AnalyzeRule(
     }
 
     /**
-     * 获取文本
+     * Get text
      */
     @JvmOverloads
     fun getString(ruleStr: String?, mContent: Any? = null, isUrl: Boolean = false): String {
@@ -278,7 +278,7 @@ class AnalyzeRule(
                     // get {{}}
                     sourceRule.rule
                 } else {
-                    // 键值直接访问
+                    // Key-value direct access
                     result[sourceRule.rule]?.toString()
                 }?.let {
                     replaceRegex(it, sourceRule)
@@ -327,7 +327,7 @@ class AnalyzeRule(
     }
 
     /**
-     * 获取Element
+     * Get Element
      */
     fun getElement(ruleStr: String): Any? {
         if (TextUtils.isEmpty(ruleStr)) return null
@@ -361,7 +361,7 @@ class AnalyzeRule(
     }
 
     /**
-     * 获取列表
+     * Get list
      */
     @Suppress("UNCHECKED_CAST")
     fun getElements(ruleStr: String): List<Any> {
@@ -394,7 +394,7 @@ class AnalyzeRule(
     }
 
     /**
-     * 保存变量
+     * Save variable
      */
     private fun putRule(map: Map<String, String>) {
         for ((key, value) in map) {
@@ -403,7 +403,7 @@ class AnalyzeRule(
     }
 
     /**
-     * 分离put规则
+     * Separate put rules
      */
     private fun splitPutRule(ruleStr: String, putMap: HashMap<String, String>): String {
         var vRuleStr = ruleStr
@@ -431,7 +431,7 @@ class AnalyzeRule(
     }
 
     /**
-     * 正则替换
+     * Regex replace
      */
     private fun replaceRegex(result: String, rule: SourceRule): String {
         if (rule.replaceRegex.isEmpty()) return result
@@ -439,7 +439,7 @@ class AnalyzeRule(
         val replacement = rule.replacement
         val regex = compileRegexCache(replaceRegex)
         if (rule.replaceFirst) {
-            /* ##match##replace### 获取第一个匹配到的结果并进行替换 */
+            /* ##match##replace### Get the first string matched and replace */
             if (regex != null) kotlin.runCatching {
                 val pattern = regex.toPattern()
                 val matcher = pattern.matcher(result)
@@ -451,7 +451,7 @@ class AnalyzeRule(
             }
             return replacement
         } else {
-            /* ##match##replace 替换*/
+            /* ##match##replace Replace */
             if (regex != null) kotlin.runCatching {
                 return result.replace(regex, replacement)
             }
@@ -470,7 +470,7 @@ class AnalyzeRule(
     }
 
     /**
-     * getString 类规则缓存
+     * getString class rule cache
      */
     private fun splitSourceRuleCacheString(ruleStr: String?): List<SourceRule> {
         if (ruleStr.isNullOrEmpty()) return emptyList()
@@ -480,14 +480,14 @@ class AnalyzeRule(
     }
 
     /**
-     * 分解规则生成规则列表
+     * Decompose rules to generate rule list
      */
     fun splitSourceRule(ruleStr: String?, allInOne: Boolean = false): List<SourceRule> {
         if (ruleStr.isNullOrEmpty()) return emptyList()
         val ruleList = ArrayList<SourceRule>()
         var mMode: Mode = Mode.Default
         var start = 0
-        //仅首字符为:时为AllInOne，其实:与伪类选择器冲突，建议改成?更合理
+        //Only first char : means AllInOne. Actually : conflicts with pseudo-class selector, ? suggested
         if (allInOne && ruleStr.startsWith(":")) {
             mMode = Mode.Regex
             isRegex = true
@@ -525,7 +525,7 @@ class AnalyzeRule(
     }
 
     /**
-     * 规则类
+     * Rule class
      */
     inner class SourceRule internal constructor(
         ruleStr: String,
@@ -570,16 +570,16 @@ class AnalyzeRule(
                     ruleStr
                 }
 
-                ruleStr.startsWith("/") -> {//XPath特征很明显,无需配置单独的识别标头
+                ruleStr.startsWith("/") -> {//XPath features obvious, no need for separate ID header
                     mode = Mode.XPath
                     ruleStr
                 }
 
                 else -> ruleStr
             }
-            //分离put
+            //Separate put
             rule = splitPutRule(rule, putMap)
-            //@get,{{ }}, 拆分
+            //@get,{{ }}, split
             var start = 0
             var tmp: String
             val evalMatcher = evalPattern.matcher(rule)
@@ -622,7 +622,7 @@ class AnalyzeRule(
         }
 
         /**
-         * 拆分\$\d{1,2}
+         * Split \$\d{1,2}
          */
         private fun splitRegex(ruleStr: String) {
             var start = 0
@@ -654,7 +654,7 @@ class AnalyzeRule(
         }
 
         /**
-         * 替换@get,{{ }}
+         * Replace @get,{{ }}
          */
         fun makeUpRule(result: Any?) {
             val infoVal = StringBuilder()
@@ -704,7 +704,7 @@ class AnalyzeRule(
                 }
                 rule = infoVal.toString()
             }
-            //分离正则表达式
+            //Separate regex
             val ruleStrS = rule.split("##")
             rule = ruleStrS[0].trim()
             if (ruleStrS.size > 1) {
@@ -719,7 +719,7 @@ class AnalyzeRule(
         }
 
         private fun isRule(ruleStr: String): Boolean {
-            return ruleStr.startsWith('@') //js首个字符不可能是@，除非是装饰器，所以@开头规定为规则
+            return ruleStr.startsWith('@') //js first char can't be @ unless decorator, so @ start defined as rule
                     || ruleStr.startsWith("$.")
                     || ruleStr.startsWith("$[")
                     || ruleStr.startsWith("//")
@@ -735,7 +735,7 @@ class AnalyzeRule(
     }
 
     /**
-     * 保存数据
+     * Save data
      */
     fun put(key: String, value: String): String {
         chapter?.putVariable(key, value)
@@ -746,7 +746,7 @@ class AnalyzeRule(
     }
 
     /**
-     * 获取保存的数据
+     * Get saved data
      */
     fun get(key: String): String {
         when (key) {
@@ -766,7 +766,7 @@ class AnalyzeRule(
     }
 
     /**
-     * 执行JS
+     * Execute JS
      */
     fun evalJS(jsStr: String, result: Any? = null): Any? {
         val bindings = buildScriptBindings { bindings ->
@@ -811,7 +811,7 @@ class AnalyzeRule(
     }
 
     /**
-     * js实现跨域访问,不能删
+     * JS implementation of cross-origin access, cannot delete
      */
     override fun ajax(url: Any): String? {
         val urlStr = if (url is List<*>) {
@@ -859,7 +859,7 @@ class AnalyzeRule(
     }
 
     /**
-     * 更新tocUrl,有些书源目录url定期更新,可以在js调用更新
+     * Update tocUrl, some source catalog urls update periodically, call update in js
      */
     fun refreshTocUrl() {
         if (!preUpdateJs) throw NoStackTraceException("只能在 preUpdateJs 中调用")

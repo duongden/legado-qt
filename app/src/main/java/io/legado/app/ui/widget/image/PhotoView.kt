@@ -63,15 +63,15 @@ class PhotoView @JvmOverloads constructor(
     private var isKnowSize = false
     private var hasOverTranslate = false
 
-    //缩放
+    //Zoom
     var isEnable = true
 
-    //旋转
+    //Rotate
     var isRotateEnable = false
     private var isInit = false
     private var mAdjustViewBounds = false
 
-    // 当前是否处于放大状态
+    // Whether currently zoomed in
     private var isZoonUp = false
     private var canRotate = false
 
@@ -126,7 +126,7 @@ class PhotoView @JvmOverloads constructor(
     }
 
     /**
-     * 获取默认的动画持续时间
+     * Get default animation duration
      */
     fun getDefaultAnimDuring(): Int {
         return ANIMA_DURING
@@ -159,7 +159,7 @@ class PhotoView @JvmOverloads constructor(
     }
 
     /**
-     * 获取动画持续时间
+     * Get animation duration
      */
     fun getAnimDuring(): Int {
         return mAnimaDuring
@@ -180,7 +180,7 @@ class PhotoView @JvmOverloads constructor(
     }
 
     /**
-     * 获取最大可以缩放的倍数
+     * Get max zoom factor
      */
     fun getMaxScale(): Float {
         return mMaxScale
@@ -246,13 +246,13 @@ class PhotoView @JvmOverloads constructor(
         val imgH = getDrawableHeight(img)
         mBaseRect[0f, 0f, imgW.toFloat()] = imgH.toFloat()
 
-        // 以图片中心点居中位移
+        // Center displacement by image center point
         val tx = (w - imgW) / 2
         val ty = (h - imgH) / 2
         var sx = 1f
         var sy = 1f
 
-        // 缩放，默认不超过屏幕大小
+        // Scale, default not exceeding screen size
         if (imgW > w) {
             sx = w.toFloat() / imgW
         }
@@ -573,7 +573,7 @@ class PhotoView @JvmOverloads constructor(
     }
 
     /**
-     * 匹配两个Rect的共同部分输出到out，若无共同部分则输出0，0，0，0
+     * Match intersection of two Rects to out, if none output 0,0,0,0
      */
     private fun mapRect(r1: RectF, r2: RectF, out: RectF) {
         val l: Float = if (r1.left > r2.left) r1.left else r2.left
@@ -819,7 +819,7 @@ class PhotoView @JvmOverloads constructor(
             } else {
                 isRunning = false
 
-                // 修复动画结束后边距有些空隙，
+                // Fix gap in margin after animation ends,
                 var needFix = false
                 if (imgLargeWidth) {
                     if (mImgRect.left > 0) {
@@ -961,14 +961,14 @@ class PhotoView @JvmOverloads constructor(
     }
 
     /**
-     * 在PhotoView内部还没有图片的时候同样可以调用该方法
+     * Can call this method when PhotoView has no image
      *
      *
-     * 此时并不会播放动画，当给PhotoView设置图片后会自动播放动画。
+     * Won't play animation now, will auto play when image set.
      *
      *
-     * 若等待时间过长也没有给控件设置图片，则会忽略该动画，若要再次播放动画则需要重新调用该方法
-     * (等待的时间默认500毫秒，可以通过setMaxAnimFromWaiteTime(int)设置最大等待时间)
+     * If wait too long, ignore animation. To replay, call again
+     * (Default wait 500ms, set via setMaxAnimFromWaiteTime(int))
      */
     fun animaFrom(info: Info) {
         if (isInit) {
@@ -1030,11 +1030,11 @@ class PhotoView @JvmOverloads constructor(
                 mImgRect.top + mImgRect.height() / 2
             mRotateCenter.set(mScaleCenter)
 
-            // 将图片旋转回正常位置，用以计算
+            // Rotate image back to normal for calculation
             mAnimMatrix.postRotate(-mDegrees, mScaleCenter.x, mScaleCenter.y)
             mAnimMatrix.mapRect(mImgRect, mBaseRect)
 
-            // 缩放
+            // Scale
             val scaleX = info.mImgRect.width() / mBaseRect.width()
             val scaleY = info.mImgRect.height() / mBaseRect.height()
             val scale = if (scaleX > scaleY) scaleX else scaleY

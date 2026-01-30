@@ -2,6 +2,7 @@ package io.legado.app.ui.association
 
 import android.app.Application
 import android.net.Uri
+import io.legado.app.R
 import androidx.lifecycle.MutableLiveData
 import io.legado.app.constant.AppLog
 import io.legado.app.constant.AppPattern
@@ -18,7 +19,7 @@ class FileAssociationViewModel(application: Application) : BaseAssociationViewMo
 
     fun dispatchIntent(uri: Uri) {
         execute {
-            //如果是普通的url，需要根据返回的内容判断是什么
+            //If normal url, judge by content
             if (uri.isContentScheme() || uri.isFileScheme()) {
                 val fileDoc = FileDoc.fromUri(uri, false)
                 val fileName = fileDoc.name
@@ -36,7 +37,7 @@ class FileAssociationViewModel(application: Application) : BaseAssociationViewMo
             }
         }.onError {
             it.printOnDebug()
-            val msg = "无法打开文件\n${it.localizedMessage}"
+            val msg = "${getApplication<Application>().getString(R.string.cannot_open_file)}\n${it.localizedMessage}"
             errorLive.postValue(msg)
             AppLog.put(msg, it)
         }
@@ -50,7 +51,7 @@ class FileAssociationViewModel(application: Application) : BaseAssociationViewMo
             }
         }.onFailure {
             it.printOnDebug()
-            AppLog.put("尝试导入为JSON文件失败\n${it.localizedMessage}", it)
+            AppLog.put("${getApplication<Application>().getString(R.string.import_json_failed)}\n${it.localizedMessage}", it)
         }
         if (fileDoc.name.matches(bookFileRegex)) {
             importBookLiveData.postValue(fileDoc.uri)

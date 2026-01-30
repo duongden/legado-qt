@@ -138,7 +138,7 @@ class ReadAloudDialog : BaseDialogFragment(R.layout.dialog_read_aloud) {
                 ReadAloud.setTimer(requireContext(), times[index])
             }
         }
-        //设置保存的默认值
+        //Set save default value
         seekTtsSpeechRate.progress = AppConfig.ttsSpeechRate
         seekTtsSpeechRate.setOnSeekBarChangeListener(object : SeekBarChangeListener {
 

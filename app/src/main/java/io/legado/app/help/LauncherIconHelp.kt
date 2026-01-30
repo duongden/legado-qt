@@ -33,14 +33,14 @@ object LauncherIconHelp {
         componentNames.forEach {
             if (icon.equals(it.className.substringAfterLast("."), true)) {
                 hasEnabled = true
-                //启用
+                //Enable
                 packageManager.setComponentEnabledSetting(
                     it,
                     PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                     PackageManager.DONT_KILL_APP
                 )
             } else {
-                //禁用
+                //Disable
                 packageManager.setComponentEnabledSetting(
                     it,
                     PackageManager.COMPONENT_ENABLED_STATE_DISABLED,

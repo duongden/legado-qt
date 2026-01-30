@@ -24,9 +24,9 @@ data class SearchResult(
             val rightString =
                 resultText.substring(queryIndexInSurrounding + query.length, resultText.length)
             
-            // 检查是否为墨水屏模式
+            // Check if E-ink mode
             val html = if (AppConfig.isEInkMode) {
-                // 墨水屏模式：使用下划线
+                // E-ink mode: Use underline
                 buildString {
                     append("<u>${chapterTitle}</u>")
                     append("<br>")
@@ -35,7 +35,7 @@ data class SearchResult(
                     append(rightString)
                 }
             } else {
-                // 普通模式：使用颜色
+                // Normal mode: Use color
                 buildString {
                     append(chapterTitle.colorTextForHtml(accentColor))
                     append("<br>")

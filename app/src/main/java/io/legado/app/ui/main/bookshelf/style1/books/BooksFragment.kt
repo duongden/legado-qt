@@ -157,13 +157,13 @@ class BooksFragment() : BaseFragment(R.layout.fragment_books),
     }
 
     /**
-     * 更新书籍列表信息
+     * Update book list info
      */
     private fun upRecyclerData() {
         booksFlowJob?.cancel()
         booksFlowJob = viewLifecycleOwner.lifecycleScope.launch {
             appDb.bookDao.flowByGroup(groupId).map { list ->
-                //排序
+                //Sort
                 when (bookSort) {
                     1 -> list.sortedByDescending { it.latestChapterTime }
                     2 -> list.sortedWith { o1, o2 ->
@@ -172,11 +172,11 @@ class BooksFragment() : BaseFragment(R.layout.fragment_books),
 
                     3 -> list.sortedBy { it.order }
 
-                    // 综合排序 issue #3192
+                    // Comprehensive sort issue #3192
                     4 -> list.sortedByDescending {
                         max(it.latestChapterTime, it.durChapterTime)
                     }
-                    // 按作者排序
+                    // Sort by author
                     5 -> list.sortedWith { o1, o2 ->
                         o1.author.cnCompare(o2.author)
                     }
@@ -232,7 +232,7 @@ class BooksFragment() : BaseFragment(R.layout.fragment_books),
     override fun onDestroyView() {
         super.onDestroyView()
         /**
-         * 将 RecyclerView 中的视图全部回收到 RecycledViewPool 中
+         * Recycle all views in RecyclerView to RecycledViewPool
          */
         binding.rvBookshelf.setItemViewCacheSize(0)
         binding.rvBookshelf.adapter = null

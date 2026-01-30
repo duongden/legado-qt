@@ -88,7 +88,7 @@ class SelectActionBar @JvmOverloads constructor(
             cbSelectedAll.isChecked = selectCount >= allCount
         }
 
-        //重置全选的文字
+        //Reset select all text
         if (cbSelectedAll.isChecked) {
             cbSelectedAll.text = context.getString(
                 R.string.select_cancel_count,

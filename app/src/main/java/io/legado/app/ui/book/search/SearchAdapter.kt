@@ -160,12 +160,12 @@ class SearchAdapter(context: Context, val callBack: CallBack) :
     interface CallBack {
 
         /**
-         * 是否已经加入书架
+         * Whether already added to bookshelf
          */
         fun isInBookshelf(book: SearchBook): Boolean
 
         /**
-         * 显示书籍详情
+         * Show book details
          */
         fun showBookInfo(name: String, author: String, bookUrl: String)
     }

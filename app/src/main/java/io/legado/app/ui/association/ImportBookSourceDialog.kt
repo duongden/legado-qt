@@ -246,9 +246,9 @@ class ImportBookSourceDialog() : BaseDialogFragment(R.layout.dialog_recycler_vie
                 cbSourceName.text = item.bookSourceName
                 val localSource = viewModel.checkSources[holder.layoutPosition]
                 tvSourceState.text = when {
-                    localSource == null -> "新增"
-                    item.lastUpdateTime > localSource.lastUpdateTime -> "更新"
-                    else -> "已有"
+                    localSource == null -> getString(R.string.import_status_new)
+                    item.lastUpdateTime > localSource.lastUpdateTime -> getString(R.string.import_status_update)
+                    else -> getString(R.string.import_status_exist)
                 }
             }
         }

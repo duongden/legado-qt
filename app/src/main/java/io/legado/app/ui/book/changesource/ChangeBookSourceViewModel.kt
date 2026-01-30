@@ -178,7 +178,7 @@ open class ChangeBookSourceViewModel(application: Application) : BaseViewModel(a
     }
 
     /**
-     * 搜索书籍
+     * Search book
      */
     fun startSearch() {
         execute {
@@ -287,7 +287,7 @@ open class ChangeBookSourceViewModel(application: Application) : BaseViewModel(a
         if (AppConfig.changeSourceLoadToc || AppConfig.changeSourceLoadWordCount) {
             loadBookToc(source, book)
         } else {
-            //从详情页里获取最新章节
+            //Get latest chapter from detail page
             val searchBook = book.toSearchBook()
             searchCallback?.searchSuccess(searchBook)
         }
@@ -354,7 +354,7 @@ open class ChangeBookSourceViewModel(application: Application) : BaseViewModel(a
     }
 
     /**
-     * 刷新列表
+     * Refresh list
      */
     fun startRefreshList(onlyRefreshNoWordCountBook: Boolean = false) {
         execute {
@@ -421,7 +421,7 @@ open class ChangeBookSourceViewModel(application: Application) : BaseViewModel(a
     }
 
     /**
-     * 筛选
+     * Filter
      */
     fun screen(key: String?) {
         screenKey = key?.trim() ?: ""

@@ -60,7 +60,7 @@ object CronetLoader : CronetEngine.Builder.LibraryLoader(), Cronet.LoaderInterfa
     }
 
     /**
-     * 判断Cronet是否安装完成
+     * Check if Cronet installation complete
      */
     override fun install(): Boolean {
         synchronized(this) {
@@ -96,9 +96,9 @@ object CronetLoader : CronetEngine.Builder.LibraryLoader(), Cronet.LoaderInterfa
     private fun getMd5(context: Context): String {
         val stringBuilder = StringBuilder()
         return try {
-            //获取assets资源管理器
+            //Get assets resource manager
             val assetManager = context.assets
-            //通过管理器打开文件并读取
+            //Open file and read via manager
             val bf = BufferedReader(
                 InputStreamReader(
                     assetManager.open("cronet.json")
@@ -120,48 +120,48 @@ object CronetLoader : CronetEngine.Builder.LibraryLoader(), Cronet.LoaderInterfa
         val start = System.currentTimeMillis()
         @Suppress("SameParameterValue")
         try {
-            //非cronet的so调用系统方法加载
+            //Non-cronet so calls system method to load
             if (!libName.contains("cronet")) {
                 System.loadLibrary(libName)
                 return
             }
-            //以下逻辑为cronet加载，优先加载本地，否则从远程加载
-            //首先调用系统行为进行加载
+            //Following logic is cronet load, prioritize local, else remote
+            //First call system behavior to load
             System.loadLibrary(libName)
             DebugLog.d(javaClass.simpleName, "load from system")
         } catch (e: Throwable) {
-            //如果找不到，则从远程下载
-            //删除历史文件
+            //Download from remote if not found
+            //Delete history file
             deleteHistoryFile(Objects.requireNonNull(soFile.parentFile), soFile)
             //md5 = getUrlMd5(md5Url)
             DebugLog.d(javaClass.simpleName, "soMD5:$md5")
             if (md5.length != 32 || soUrl.isEmpty()) {
-                //如果md5或下载的url为空，则调用系统行为进行加载
+                //If md5 or download url empty, use system behavior to load
                 System.loadLibrary(libName)
                 return
             }
             if (!soFile.exists() || !soFile.isFile) {
                 soFile.delete()
                 download(soUrl, md5, downloadFile, soFile)
-                //如果文件不存在或不是文件，则调用系统行为进行加载
+                //If file missing or not file, use system behavior to load
                 System.loadLibrary(libName)
                 return
             }
             if (soFile.exists()) {
-                //如果文件存在，则校验md5值
+                //If file exists, verify md5
                 val fileMD5 = getFileMD5(soFile)
                 if (fileMD5 != null && fileMD5.equals(md5, ignoreCase = true)) {
-                    //md5值一样，则加载
+                    //Load if md5 same
                     System.load(soFile.absolutePath)
                     DebugLog.d(javaClass.simpleName, "load from:$soFile")
                     return
                 }
-                //md5不一样则删除
+                //Delete if md5 differs
                 soFile.delete()
             }
-            //不存在则下载
+            //Download if not exists
             download(soUrl, md5, downloadFile, soFile)
-            //使用系统加载方法
+            //Use system load method
             System.loadLibrary(libName)
         } finally {
             DebugLog.d(javaClass.simpleName, "time:" + (System.currentTimeMillis() - start))
@@ -173,7 +173,7 @@ object CronetLoader : CronetEngine.Builder.LibraryLoader(), Cronet.LoaderInterfa
         if (cpuAbi != null) {
             return cpuAbi
         }
-        // 5.0以上Application才有primaryCpuAbi字段
+        // Application has primaryCpuAbi field only on 5.0+
         try {
             val appInfo = context.applicationInfo
             val abiField = ApplicationInfo::class.java.getDeclaredField("primaryCpuAbi")
@@ -190,7 +190,7 @@ object CronetLoader : CronetEngine.Builder.LibraryLoader(), Cronet.LoaderInterfa
 
 
     /**
-     * 删除历史文件
+     * Delete history file
      */
     private fun deleteHistoryFile(dir: File, currentFile: File?) {
         val files = dir.listFiles()
@@ -209,7 +209,7 @@ object CronetLoader : CronetEngine.Builder.LibraryLoader(), Cronet.LoaderInterfa
     }
 
     /**
-     * 下载文件
+     * Download file
      */
     private fun downloadFileIfNotExist(url: String, destFile: File): Boolean {
         var inputStream: InputStream? = null
@@ -255,7 +255,7 @@ object CronetLoader : CronetEngine.Builder.LibraryLoader(), Cronet.LoaderInterfa
     }
 
     /**
-     * 下载并拷贝文件
+     * Download and copy file
      */
     @Suppress("SameParameterValue")
     @Synchronized
@@ -273,7 +273,7 @@ object CronetLoader : CronetEngine.Builder.LibraryLoader(), Cronet.LoaderInterfa
         Coroutine.async {
             val result = downloadFileIfNotExist(url, downloadTempFile)
             DebugLog.d(javaClass.simpleName, "download result:$result")
-            //文件md5再次校验
+            //File md5 re-verify
             val fileMD5 = getFileMD5(downloadTempFile)
             if (md5 != null && !md5.equals(fileMD5, ignoreCase = true)) {
                 val delete = downloadTempFile.delete()
@@ -284,7 +284,7 @@ object CronetLoader : CronetEngine.Builder.LibraryLoader(), Cronet.LoaderInterfa
                 return@async
             }
             DebugLog.d(javaClass.simpleName, "download success, copy to $destSuccessFile")
-            //下载成功拷贝文件
+            //Copy file on download success
             copyFile(downloadTempFile, destSuccessFile)
             cacheInstall = false
             val parentFile = downloadTempFile.parentFile
@@ -294,7 +294,7 @@ object CronetLoader : CronetEngine.Builder.LibraryLoader(), Cronet.LoaderInterfa
     }
 
     /**
-     * 拷贝文件
+     * Copy file
      */
     private fun copyFile(source: File?, dest: File?): Boolean {
         if (source == null || !source.exists() || !source.isFile || dest == null) {
@@ -343,7 +343,7 @@ object CronetLoader : CronetEngine.Builder.LibraryLoader(), Cronet.LoaderInterfa
     }
 
     /**
-     * 获得文件md5
+     * Get file md5
      */
     private fun getFileMD5(file: File): String? {
         var fileInputStream: FileInputStream? = null

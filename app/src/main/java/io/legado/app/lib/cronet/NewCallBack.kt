@@ -34,7 +34,7 @@ class NewCallBack(originalRequest: Request, mCall: Call, readTimeoutMillis: Int)
     }
 
     /**
-     * 当发生错误时，通知子类终止阻塞抛出错误
+     * On error, notify subclass to stop blocking and throw error
      * @param error
      */
     override fun onError(error: IOException) {

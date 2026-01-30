@@ -9,8 +9,8 @@ import java.util.WeakHashMap
 import kotlin.math.max
 
 /**
- * 针对中文的断行排版处理-by hoodie13
- * 因为StaticLayout对标点处理不符合国人习惯，继承Layout
+ * Line break layout processing for Chinese - by hoodie13
+ * Because StaticLayout punctuation handling does not suit Chinese habits, inherit Layout
  * */
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 class ZhLayout(
@@ -65,21 +65,21 @@ class ZhLayout(
             var breakCharCnt = 0
 
             if (lineW > width) {
-                /*禁止在行尾的标点处理*/
+                /*Prohibit punctuation at line end handling*/
                 breakMod = if (index >= 1 && isPrePanc(words[index - 1])) {
-                    if (index >= 2 && isPrePanc(words[index - 2])) BreakMod.CPS_2//如果后面还有一个禁首标点则异常
-                    else BreakMod.BREAK_ONE_CHAR //无异常场景
+                    if (index >= 2 && isPrePanc(words[index - 2])) BreakMod.CPS_2//Exception if another prohibited leading punctuation follows
+                    else BreakMod.BREAK_ONE_CHAR //No exception scenario
                 }
-                /*禁止在行首的标点处理*/
+                /*Prohibit punctuation at line start handling*/
                 else if (isPostPanc(words[index])) {
-                    if (index >= 1 && isPostPanc(words[index - 1])) BreakMod.CPS_1//如果后面还有一个禁首标点则异常，不过三个连续行尾标点的用法不通用
-                    else if (index >= 2 && isPrePanc(words[index - 2])) BreakMod.CPS_3//如果后面还有一个禁首标点则异常
-                    else BreakMod.BREAK_ONE_CHAR //无异常场景
+                    if (index >= 1 && isPostPanc(words[index - 1])) BreakMod.CPS_1//Exception if another prohibited leading punctuation follows, but three consecutive trailing punctuations usage not common
+                    else if (index >= 2 && isPrePanc(words[index - 2])) BreakMod.CPS_3//Exception if another prohibited leading punctuation follows
+                    else BreakMod.BREAK_ONE_CHAR //No exception scenario
                 } else {
-                    BreakMod.NORMAL //无异常场景
+                    BreakMod.NORMAL //No exception scenario
                 }
 
-                /*判断上述逻辑解决不了的特殊情况*/
+                /*Judge special cases not solved by above logic*/
                 var reCheck = false
                 var breakIndex = 0
                 if (breakMod == BreakMod.CPS_1 &&
@@ -95,7 +95,7 @@ class ZhLayout(
                     && index < words.lastIndex && isPostPanc(words[index + 1])
                 ) reCheck = true
 
-                /*特殊标点使用难保证显示效果，所以不考虑间隔，直接查找到能满足条件的分割字*/
+                /*Special punctuation difficult to guarantee display effect, so ignore interval, directly find split char meeting condition*/
                 var breakLength = 0
                 if (reCheck && index > 2) {
                     val startPos = if (line == 0) indentSize else getLineStart(line)
@@ -117,37 +117,37 @@ class ZhLayout(
                 }
 
                 when (breakMod) {
-                    BreakMod.NORMAL -> {//模式0 正常断行
+                    BreakMod.NORMAL -> {//Mode 0 Normal break
                         offset = cw
                         lineStart[line + 1] = length
                         breakCharCnt = 1
                     }
 
-                    BreakMod.BREAK_ONE_CHAR -> {//模式1 当前行下移一个字
+                    BreakMod.BREAK_ONE_CHAR -> {//Mode 1 Current line shift down 1 char
                         offset = cw + cwPre
                         lineStart[line + 1] = length - words[index - 1].length
                         breakCharCnt = 2
                     }
 
-                    BreakMod.BREAK_MORE_CHAR -> {//模式2 当前行下移多个字
+                    BreakMod.BREAK_MORE_CHAR -> {//Mode 2 Current line shift down multiple chars
                         offset = cw + cwPre
                         lineStart[line + 1] = length - breakLength
                         breakCharCnt = breakIndex + 1
                     }
 
-                    BreakMod.CPS_1 -> {//模式3 两个后置标点压缩
+                    BreakMod.CPS_1 -> {//Mode 3 Two trailing punctuations compression
                         offset = 0f
                         lineStart[line + 1] = length + s.length
                         breakCharCnt = 0
                     }
 
-                    BreakMod.CPS_2 -> { //模式4 前置标点压缩+前置标点压缩+字
+                    BreakMod.CPS_2 -> { //Mode 4 Leading compression+Leading compression+Char
                         offset = 0f
                         lineStart[line + 1] = length + s.length
                         breakCharCnt = 0
                     }
 
-                    BreakMod.CPS_3 -> {//模式5 前置标点压缩+字+后置标点压缩
+                    BreakMod.CPS_3 -> {//Mode 5 Leading compression+Char+Trailing compression
                         offset = 0f
                         lineStart[line + 1] = length + s.length
                         breakCharCnt = 0
@@ -156,13 +156,13 @@ class ZhLayout(
                 breakLine = true
             }
 
-            /*当前行写满情况下的断行*/
+            /*Line break when current line is full*/
             if (breakLine) {
                 lineWidth[line] = lineW - offset
                 lineW = offset
                 addLineArray(++line)
             }
-            /*已到最后一个字符*/
+            /*Reached last character*/
             if ((words.lastIndex) == index) {
                 if (!breakLine) {
                     offset = 0f
@@ -171,7 +171,7 @@ class ZhLayout(
                     lineW = offset
                     addLineArray(++line)
                 }
-                /*写满断行、段落末尾、且需要下移字符，这种特殊情况下要额外多一行*/
+                /*Full line break, paragraph end, and need to shift char down, special case needs extra line*/
                 else if (breakCharCnt > 0) {
                     lineStart[line + 1] = lineStart[line] + breakCharCnt
                     lineWidth[line] = lineW

@@ -6,7 +6,7 @@ import org.jsoup.Jsoup
 import java.io.File
 
 /**
- * 自动获取文件的编码
+ * Automatically get file encoding
  * */
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 object EncodingDetect {
@@ -58,14 +58,14 @@ object EncodingDetect {
     }
 
     /**
-     * 得到文件的编码
+     * Get file encoding
      */
     fun getEncode(filePath: String): String {
         return getEncode(File(filePath))
     }
 
     /**
-     * 得到文件的编码
+     * Get file encoding
      */
     fun getEncode(file: File): String {
         val tempByte = getFileBytes(file)

@@ -78,14 +78,14 @@ abstract class BaseService : LifecycleService() {
     }
 
     /**
-     * 开启前台服务并发送通知
+     * Start foreground service and send notification
      */
     open fun startForegroundNotification() {
 
     }
 
     /**
-     * 检测通知权限和后台权限
+     * Check notification and background permissions
      */
     private fun checkPermission() {
         PermissionsCompat.Builder()

@@ -239,7 +239,7 @@ class BookSourceAdapter(
         val isEmpty = msg.isEmpty()
         var isFinalMessage = msg.contains(finalMessageRegex)
         if (!Debug.isChecking && !isFinalMessage) {
-            Debug.updateFinalMessage(item.bookSourceUrl, "校验失败")
+            Debug.updateFinalMessage(item.bookSourceUrl, context.getString(R.string.validation_failed))
             ivDebugText.text = Debug.debugMessageMap[item.bookSourceUrl] ?: ""
             isFinalMessage = true
         }

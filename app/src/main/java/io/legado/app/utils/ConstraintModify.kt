@@ -29,7 +29,7 @@ class ConstraintModify(private val constraintLayout: ConstraintLayout) {
     }
 
     /**
-     * 带动画的修改
+     * Modify with animation
      * @return
      */
     fun beginWithAnim(): ConstraintBegin {
@@ -38,14 +38,14 @@ class ConstraintModify(private val constraintLayout: ConstraintLayout) {
     }
 
     /**
-     * 重置
+     * Reset
      */
     fun reSet() {
         resetConstraintSet.applyTo(constraintLayout)
     }
 
     /**
-     * 带动画的重置
+     * Reset with animation
      */
     fun reSetWidthAnim() {
         TransitionManager.beginDelayedTransition(constraintLayout)
@@ -60,8 +60,8 @@ class ConstraintModify(private val constraintLayout: ConstraintLayout) {
     ) {
 
         /**
-         * 清除关系,这里不仅仅会清除关系，还会清除对应控件的宽高为 w:0,h:0
-         * @param viewId 视图ID
+         * Clear relationship, this not only clears relationship but also clears corresponding view width/height to w:0, h:0
+         * @param viewId View ID
          * @return
          */
         fun clear(viewId: Int): ConstraintBegin {
@@ -70,9 +70,9 @@ class ConstraintModify(private val constraintLayout: ConstraintLayout) {
         }
 
         /**
-         * 清除某个控件的，某个关系
-         * @param viewId 控件ID
-         * @param anchor 要解除的关系
+         * Clear a relationship of a view
+         * @param viewId View ID
+         * @param anchor Relationship to remove
          * @return
          */
         fun clear(viewId: Int, anchor: Anchor): ConstraintBegin {
@@ -91,8 +91,8 @@ class ConstraintModify(private val constraintLayout: ConstraintLayout) {
         }
 
         /**
-         * 为某个控件设置 margin
-         * @param viewId 某个控件ID
+         * Set margin for a view
+         * @param viewId View ID
          * @param left marginLeft
          * @param top   marginTop
          * @param right marginRight
@@ -114,8 +114,8 @@ class ConstraintModify(private val constraintLayout: ConstraintLayout) {
         }
 
         /**
-         * 为某个控件设置 marginLeft
-         * @param viewId 某个控件ID
+         * Set marginLeft for a view
+         * @param viewId View ID
          * @param left marginLeft
          * @return
          */
@@ -125,8 +125,8 @@ class ConstraintModify(private val constraintLayout: ConstraintLayout) {
         }
 
         /**
-         * 为某个控件设置 marginRight
-         * @param viewId 某个控件ID
+         * Set marginRight for a view
+         * @param viewId View ID
          * @param right marginRight
          * @return
          */
@@ -136,8 +136,8 @@ class ConstraintModify(private val constraintLayout: ConstraintLayout) {
         }
 
         /**
-         * 为某个控件设置 marginTop
-         * @param viewId 某个控件ID
+         * Set marginTop for a view
+         * @param viewId View ID
          * @param top marginTop
          * @return
          */
@@ -147,8 +147,8 @@ class ConstraintModify(private val constraintLayout: ConstraintLayout) {
         }
 
         /**
-         * 为某个控件设置marginBottom
-         * @param viewId 某个控件ID
+         * Set marginBottom for a view
+         * @param viewId View ID
          * @param bottom marginBottom
          * @return
          */
@@ -158,7 +158,7 @@ class ConstraintModify(private val constraintLayout: ConstraintLayout) {
         }
 
         /**
-         * 为某个控件设置关联关系 left_to_left_of
+         * Set constraint left_to_left_of for a view
          * @param startId
          * @param endId
          * @return
@@ -169,7 +169,7 @@ class ConstraintModify(private val constraintLayout: ConstraintLayout) {
         }
 
         /**
-         * 为某个控件设置关联关系 left_to_right_of
+         * Set constraint left_to_right_of for a view
          * @param startId
          * @param endId
          * @return
@@ -180,7 +180,7 @@ class ConstraintModify(private val constraintLayout: ConstraintLayout) {
         }
 
         /**
-         * 为某个控件设置关联关系 top_to_top_of
+         * Set constraint top_to_top_of for a view
          * @param startId
          * @param endId
          * @return
@@ -191,7 +191,7 @@ class ConstraintModify(private val constraintLayout: ConstraintLayout) {
         }
 
         /**
-         * 为某个控件设置关联关系 top_to_bottom_of
+         * Set constraint top_to_bottom_of for a view
          * @param startId
          * @param endId
          * @return
@@ -202,7 +202,7 @@ class ConstraintModify(private val constraintLayout: ConstraintLayout) {
         }
 
         /**
-         * 为某个控件设置关联关系 right_to_left_of
+         * Set constraint right_to_left_of for a view
          * @param startId
          * @param endId
          * @return
@@ -213,7 +213,7 @@ class ConstraintModify(private val constraintLayout: ConstraintLayout) {
         }
 
         /**
-         * 为某个控件设置关联关系 right_to_right_of
+         * Set constraint right_to_right_of for a view
          * @param startId
          * @param endId
          * @return
@@ -224,7 +224,7 @@ class ConstraintModify(private val constraintLayout: ConstraintLayout) {
         }
 
         /**
-         * 为某个控件设置关联关系 bottom_to_bottom_of
+         * Set constraint bottom_to_bottom_of for a view
          * @param startId
          * @param endId
          * @return
@@ -235,7 +235,7 @@ class ConstraintModify(private val constraintLayout: ConstraintLayout) {
         }
 
         /**
-         * 为某个控件设置关联关系 bottom_to_top_of
+         * Set constraint bottom_to_top_of for a view
          * @param startId
          * @param endId
          * @return
@@ -246,7 +246,7 @@ class ConstraintModify(private val constraintLayout: ConstraintLayout) {
         }
 
         /**
-         * 为某个控件设置宽度
+         * Set width for a view
          * @param viewId
          * @param width
          * @return
@@ -257,7 +257,7 @@ class ConstraintModify(private val constraintLayout: ConstraintLayout) {
         }
 
         /**
-         * 某个控件设置高度
+         * Set height for a view
          * @param viewId
          * @param height
          * @return
@@ -268,7 +268,7 @@ class ConstraintModify(private val constraintLayout: ConstraintLayout) {
         }
 
         /**
-         * 提交应用生效
+         * Commit to apply
          */
         fun commit() {
             constraintLayout.post {

@@ -403,7 +403,7 @@ class ChangeBookSourceDialog() : BaseDialogFragment(R.layout.dialog_book_change_
     }
 
     /**
-     * 更新分组菜单
+     * Update group menu
      */
     private fun upGroupMenu() {
         binding.toolBar.menu.findItem(R.id.menu_group)?.run {
@@ -432,7 +432,7 @@ class ChangeBookSourceDialog() : BaseDialogFragment(R.layout.dialog_book_change_
     }
 
     /**
-     * 更新分组菜单名
+     * Update group menu name
      */
     private fun upGroupMenuName() {
         val menuGroup = binding.toolBar.menu.findItem(R.id.menu_group)

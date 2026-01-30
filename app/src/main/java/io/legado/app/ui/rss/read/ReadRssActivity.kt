@@ -181,7 +181,7 @@ class ReadRssActivity : VMBaseActivity<ActivityRssReadBinding, ReadRssViewModel>
 
             R.id.menu_browser_open -> binding.webView.url?.let {
                 openUrl(it)
-            } ?: toastOnUi("url null")
+            } ?: toastOnUi(R.string.url_is_null)
         }
         return super.onCompatOptionsItemSelected(item)
     }
@@ -294,7 +294,7 @@ class ReadRssActivity : VMBaseActivity<ActivityRssReadBinding, ReadRssViewModel>
                     viewModel.headerMap[AppConst.UA_NAME] ?: AppConfig.userAgent
                 if (viewModel.rssSource?.loadWithBaseUrl == true) {
                     binding.webView
-                        .loadDataWithBaseURL(url, html, "text/html", "utf-8", url)//不想用baseUrl进else
+                        .loadDataWithBaseURL(url, html, "text/html", "utf-8", url)//Don't want to use baseUrl enter else
                 } else {
                     binding.webView
                         .loadDataWithBaseURL(null, html, "text/html;charset=utf-8", "utf-8", url)
@@ -406,9 +406,9 @@ class ReadRssActivity : VMBaseActivity<ActivityRssReadBinding, ReadRssViewModel>
         }
 
         /**
-         * 如果有黑名单,黑名单匹配返回空白,
-         * 没有黑名单再判断白名单,在白名单中的才通过,
-         * 都没有不做处理
+         * If there is blacklist, blacklist match returns blank,
+         * If no blacklist then check whitelist, only whitelist passes,
+         * If neither, no processing
          */
         override fun shouldInterceptRequest(
             view: WebView,
@@ -424,7 +424,7 @@ class ReadRssActivity : VMBaseActivity<ActivityRssReadBinding, ReadRssViewModel>
                             return createEmptyResource()
                         }
                     } catch (e: PatternSyntaxException) {
-                        AppLog.put("黑名单规则正则语法错误 源名称:${source.sourceName} 正则:$it", e)
+                        AppLog.put(getString(R.string.error_blacklist_regex, source.sourceName, it), e)
                     }
                 }
             } else {
@@ -436,7 +436,7 @@ class ReadRssActivity : VMBaseActivity<ActivityRssReadBinding, ReadRssViewModel>
                                 return super.shouldInterceptRequest(view, request)
                             }
                         } catch (e: PatternSyntaxException) {
-                            val msg = "白名单规则正则语法错误 源名称:${source.sourceName} 正则:$it"
+                            val msg = getString(R.string.error_whitelist_regex, source.sourceName, it)
                             AppLog.put(msg, e)
                         }
                     }
@@ -488,10 +488,10 @@ class ReadRssActivity : VMBaseActivity<ActivityRssReadBinding, ReadRssViewModel>
                         }.toString()
                     }
                 }.onFailure {
-                    AppLog.put("${source.getTag()}: url跳转拦截js出错", it)
+                    AppLog.put(getString(R.string.error_url_redirect_js, source.getTag()), it)
                 }.getOrNull()
                 if (SystemClock.uptimeMillis() - t > 30) {
-                    AppLog.put("${source.getTag()}: url跳转拦截js执行耗时过长")
+                    AppLog.put(getString(R.string.error_url_redirect_timeout, source.getTag()))
                 }
                 if (result.isTrue()) {
                     return true

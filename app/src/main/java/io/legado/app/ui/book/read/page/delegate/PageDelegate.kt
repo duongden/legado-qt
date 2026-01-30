@@ -17,15 +17,15 @@ abstract class PageDelegate(protected val readView: ReadView) {
 
     protected val context: Context = readView.context
 
-    //起始点
+    //Start point
     protected val startX: Float get() = readView.startX
     protected val startY: Float get() = readView.startY
 
-    //上一个触碰点
+    //Previous touch point
     protected val lastX: Float get() = readView.lastX
     protected val lastY: Float get() = readView.lastY
 
-    //触碰点
+    //Touch point
     protected val touchX: Float get() = readView.touchX
     protected val touchY: Float get() = readView.touchY
 
@@ -47,7 +47,7 @@ abstract class PageDelegate(protected val readView: ReadView) {
     var isMoved = false
     var noNext = true
 
-    //移动方向
+    //Move direction
     var mDirection = PageDirection.NONE
     var isCancel = false
     var isRunning = false
@@ -111,7 +111,7 @@ abstract class PageDelegate(protected val readView: ReadView) {
 
     abstract fun onAnimStart(animationSpeed: Int) //scroller start
 
-    abstract fun onDraw(canvas: Canvas) //绘制
+    abstract fun onDraw(canvas: Canvas) //Draw
 
     abstract fun onAnimStop() //scroller finish
 
@@ -134,28 +134,28 @@ abstract class PageDelegate(protected val readView: ReadView) {
     }
 
     /**
-     * 触摸事件处理
+     * Touch event handling
      */
     abstract fun onTouch(event: MotionEvent)
 
     /**
-     * 按下
+     * Press
      */
     fun onDown() {
-        //是否移动
+        //Is moved
         isMoved = false
-        //是否存在下一章
+        //Exists next chapter?
         noNext = false
-        //是否正在执行动画
+        //Is animating
         isRunning = false
-        //取消
+        //Cancel
         isCancel = false
-        //是下一章还是前一章
+        //Is next chapter or previous
         setDirection(PageDirection.NONE)
     }
 
     /**
-     * 判断是否有上一页
+     * Check if previous page exists
      */
     fun hasPrev(): Boolean {
         val hasPrev = readView.pageFactory.hasPrev()
@@ -169,7 +169,7 @@ abstract class PageDelegate(protected val readView: ReadView) {
     }
 
     /**
-     * 判断是否有下一页
+     * Check if next page exists
      */
     fun hasNext(): Boolean {
         val hasNext = readView.pageFactory.hasNext()
@@ -184,7 +184,7 @@ abstract class PageDelegate(protected val readView: ReadView) {
     }
 
     fun dismissSnackBar() {
-        // 判断snackBar是否显示，并关闭
+        // Check if snackBar shown, and close
         if (snackBar.isShown) {
             snackBar.dismiss()
         }

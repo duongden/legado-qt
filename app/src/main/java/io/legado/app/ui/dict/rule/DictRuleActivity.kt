@@ -66,7 +66,7 @@ class DictRuleActivity : VMBaseActivity<ActivityDictRuleBinding, DictRuleViewMod
                 )
             }
         }.onFailure {
-            toastOnUi("readTextError:${it.localizedMessage}")
+            toastOnUi(getString(R.string.read_text_error, it.localizedMessage))
         }
     }
     private val exportResult = registerForActivityResult(HandleFileContract()) {
@@ -126,7 +126,7 @@ class DictRuleActivity : VMBaseActivity<ActivityDictRuleBinding, DictRuleViewMod
     private fun observeDictRuleData() {
         lifecycleScope.launch {
             appDb.dictRuleDao.flowAll().catch {
-                AppLog.put("字典规则获取数据失败\n${it.localizedMessage}", it)
+                AppLog.put(getString(R.string.error_get_dict_rule_data, it.localizedMessage), it)
             }.flowOn(IO).collect {
                 adapter.setItems(it, adapter.diffItemCallBack)
             }
@@ -225,7 +225,7 @@ class DictRuleActivity : VMBaseActivity<ActivityDictRuleBinding, DictRuleViewMod
             ?.toMutableList() ?: mutableListOf()
         alert(titleResource = R.string.import_on_line) {
             val alertBinding = DialogEditTextBinding.inflate(layoutInflater).apply {
-                editView.hint = "url"
+                editView.hint = getString(R.string.url_hint)
                 editView.setFilterValues(cacheUrls)
                 editView.delCallBack = {
                     cacheUrls.remove(it)

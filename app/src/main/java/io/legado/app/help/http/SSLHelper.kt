@@ -20,9 +20,9 @@ import javax.net.ssl.*
 object SSLHelper {
 
     /**
-     * 为了解决客户端不信任服务器数字证书的问题，
-     * 网络上大部分的解决方案都是让客户端不对证书做任何检查，
-     * 这是一种有很大安全漏洞的办法
+     * To solve client not trusting server certificate,
+     * most online solutions disable check,
+     * which is a huge security hole
      */
     val unsafeTrustManager: X509TrustManager =
         @SuppressLint("CustomX509TrustManager")
@@ -30,13 +30,13 @@ object SSLHelper {
             @SuppressLint("TrustAllX509TrustManager")
             @Throws(CertificateException::class)
             override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {
-                //do nothing，接受任意客户端证书
+                //do nothing, accept any client cert
             }
 
             @SuppressLint("TrustAllX509TrustManager")
             @Throws(CertificateException::class)
             override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {
-                //do nothing，接受任意客户端证书
+                //do nothing, accept any client cert
             }
 
             fun checkServerTrusted(chain: Array<X509Certificate>, authType: String, host: String): List<X509Certificate> {
@@ -63,9 +63,9 @@ object SSLHelper {
     }
 
     /**
-     * 此类是用于主机名验证的基接口。 在握手期间，如果 URL 的主机名和服务器的标识主机名不匹配，
-     * 则验证机制可以回调此接口的实现程序来确定是否应该允许此连接。策略可以是基于证书的或依赖于其他验证方案。
-     * 当验证 URL 主机名使用的默认规则失败时使用这些回调。如果主机名是可接受的，则返回 true
+     * Base interface for hostname verification. If URL hostname and server ID hostname mismatch during handshake,
+     * mechanism calls this interface to allow connection. Policy can be cert-based or other scheme.
+     * Callbacks used when default hostname verification fails. Return true if hostname acceptable.
      */
     val unsafeHostnameVerifier: HostnameVerifier = HostnameVerifier { _, _ -> true }
 
@@ -75,25 +75,25 @@ object SSLHelper {
     }
 
     /**
-     * https单向认证
-     * 可以额外配置信任服务端的证书策略，否则默认是按CA证书去验证的，若不是CA可信任的证书，则无法通过验证
+     * https one-way authentication
+     * Can configure trusted server certificate policy, otherwise defaults to CA verification. If not CA trusted, verification fails.
      */
     fun getSslSocketFactory(trustManager: X509TrustManager): SSLParams? {
         return getSslSocketFactoryBase(trustManager, null, null)
     }
 
     /**
-     * https单向认证
-     * 用含有服务端公钥的证书校验服务端证书
+     * https one-way authentication
+     * Verify server certificate using certificate containing server public key
      */
     fun getSslSocketFactory(vararg certificates: InputStream): SSLParams? {
         return getSslSocketFactoryBase(null, null, null, *certificates)
     }
 
     /**
-     * https双向认证
-     * bksFile 和 password -> 客户端使用bks证书校验服务端证书
-     * certificates -> 用含有服务端公钥的证书校验服务端证书
+     * https mutual authentication
+     * bksFile and password -> Client uses bks cert to verify server cert
+     * certificates -> Verify server cert using cert containing server public key
      */
     fun getSslSocketFactory(
         bksFile: InputStream,
@@ -104,9 +104,9 @@ object SSLHelper {
     }
 
     /**
-     * https双向认证
-     * bksFile 和 password -> 客户端使用bks证书校验服务端证书
-     * X509TrustManager -> 如果需要自己校验，那么可以自己实现相关校验，如果不需要自己校验，那么传null即可
+     * https mutual authentication
+     * bksFile and password -> Client uses bks cert to verify server cert
+     * X509TrustManager -> If custom verification needed, implement it, otherwise pass null
      */
     fun getSslSocketFactory(
         bksFile: InputStream,
@@ -127,12 +127,12 @@ object SSLHelper {
             val keyManagers = prepareKeyManager(bksFile, password)
             val trustManagers = prepareTrustManager(*certificates)
             val manager: X509TrustManager = trustManager ?: chooseTrustManager(trustManagers)
-            // 创建TLS类型的SSLContext对象， that uses our TrustManager
+            // Create TLS SSLContext object, that uses our TrustManager
             val sslContext = SSLContext.getInstance("TLS")
-            // 用上面得到的trustManagers初始化SSLContext，这样sslContext就会信任keyStore中的证书
-            // 第一个参数是授权的密钥管理器，用来授权验证，比如授权自签名的证书验证。第二个是被授权的证书管理器，用来验证服务器端的证书
+            // Init SSLContext with obtained trustManagers, so sslContext trusts certs in keyStore
+            // First param is auth key manager for auth verification (e.g. self-signed). Second is trusted cert manager for server cert verification.
             sslContext.init(keyManagers, arrayOf<TrustManager>(manager), null)
-            // 通过sslContext获取SSLSocketFactory对象
+            // Get SSLSocketFactory via sslContext
             sslParams.sSLSocketFactory = sslContext.socketFactory
             sslParams.trustManager = manager
             return sslParams
@@ -160,14 +160,14 @@ object SSLHelper {
 
     private fun prepareTrustManager(vararg certificates: InputStream): Array<TrustManager> {
         val certificateFactory = CertificateFactory.getInstance("X.509")
-        // 创建一个默认类型的KeyStore，存储我们信任的证书
+        // Create default KeyStore, storing certs we trust
         val keyStore = KeyStore.getInstance(KeyStore.getDefaultType())
         keyStore.load(null)
         for ((index, certStream) in certificates.withIndex()) {
             val certificateAlias = index.toString()
-            // 证书工厂根据证书文件的流生成证书 cert
+            // Certificate factory generates cert from file stream
             val cert = certificateFactory.generateCertificate(certStream)
-            // 将 cert 作为可信证书放入到keyStore中
+            // Put cert into keyStore as trusted cert
             keyStore.setCertificateEntry(certificateAlias, cert)
             try {
                 certStream.close()
@@ -175,11 +175,11 @@ object SSLHelper {
                 e.printOnDebug()
             }
         }
-        //我们创建一个默认类型的TrustManagerFactory
+        //Create default TrustManagerFactory
         val tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-        //用我们之前的keyStore实例初始化TrustManagerFactory，这样tmf就会信任keyStore中的证书
+        //Init TrustManagerFactory with previous keyStore, so tmf trusts certs in keyStore
         tmf.init(keyStore)
-        //通过tmf获取TrustManager数组，TrustManager也会信任keyStore中的证书
+        //Get TrustManager array via tmf, TrustManager will trust keyStore certs
         return tmf.trustManagers
     }
 

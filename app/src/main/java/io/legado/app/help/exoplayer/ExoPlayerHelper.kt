@@ -83,10 +83,10 @@ object ExoPlayerHelper {
 
 
     /**
-     * 支持缓存的DataSource.Factory
+     * Cached DataSource.Factory
      */
     private val cacheDataSourceFactory by lazy {
-        //使用自定义的CacheDataSource以支持设置UA
+        //Use custom CacheDataSource to support setting UA
         CacheDataSource.Factory()
             .setCache(cache)
             .setUpstreamDataSourceFactory(okhttpDataFactory)
@@ -110,16 +110,16 @@ object ExoPlayerHelper {
     }
 
     /**
-     * Exoplayer 内置的缓存
+     * Exoplayer built-in cache
      */
     private val cache: Cache by lazy {
         val databaseProvider = StandaloneDatabaseProvider(appCtx)
         return@lazy SimpleCache(
-            //Exoplayer的缓存路径
+            //Exoplayer cache path
             File(appCtx.externalCache, "exoplayer"),
-            //100M的缓存
+            //100M cache
             LeastRecentlyUsedCacheEvictor((100 * 1024 * 1024).toLong()),
-            //记录缓存的数据库
+            //Record cached database
             databaseProvider
         )
     }

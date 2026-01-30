@@ -17,7 +17,7 @@ import kotlin.coroutines.resumeWithException
 private val handler by lazy { buildMainHandler() }
 
 /**
- * 带有超时检测的正则替换
+ * Regex replacement with timeout detection
  */
 fun CharSequence.replace(regex: Regex, replacement: String, timeout: Long): String {
     val charSequence = this@replace
@@ -52,7 +52,7 @@ fun CharSequence.replace(regex: Regex, replacement: String, timeout: Long): Stri
             handler.postDelayed(timeout) {
                 if (coroutine.isActive) {
                     val timeoutMsg =
-                        "替换超时,3秒后还未结束将重启应用\n替换规则$regex\n替换内容:$charSequence"
+                        "Replacement timed out, application will restart in 3 seconds if not finished\nReplacement rule $regex\nReplacement content: $charSequence"
                     val exception = RegexTimeoutException(timeoutMsg)
                     block.cancel(exception)
                     appCtx.longToastOnUi(timeoutMsg)

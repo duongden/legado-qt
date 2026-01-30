@@ -252,7 +252,7 @@ class ImportBookActivity : BaseImportBookActivity<ImportBookViewModel>(),
     }
 
     /**
-     * 扫描当前文件夹及所有子文件夹
+     * Scan current folder and subfolders
      */
     private fun scanFolder() {
         viewModel.rootDoc?.let { doc ->

@@ -17,10 +17,10 @@ class Info(
     degrees: Float,
     scaleType: ImageView.ScaleType?
 ) {
-    // 内部图片在整个手机界面的位置
+    // Internal image position on entire mobile screen
     var mRect = RectF()
 
-    // 控件在窗口的位置
+    // Widget position in window
     var mImgRect = RectF()
 
     var mWidgetRect = RectF()

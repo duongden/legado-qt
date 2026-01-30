@@ -17,6 +17,7 @@ import io.legado.app.constant.PreferKey
 import io.legado.app.receiver.NetworkChangedListener
 import io.legado.app.utils.NetworkUtils
 import io.legado.app.utils.getPrefBoolean
+import io.legado.app.constant.AppLog
 import io.legado.app.utils.getPrefInt
 import io.legado.app.utils.postEvent
 import io.legado.app.utils.printOnDebug
@@ -158,7 +159,7 @@ class WebService : BaseService() {
             webSocketServer = WebSocketServer(port + 1)
             try {
                 httpServer?.start()
-                webSocketServer?.start(1000 * 30) // 通信超时设置
+                webSocketServer?.start(1000 * 30) // Communication timeout settings
                 notificationList.clear()
                 notificationList.addAll(addressList.map { address ->
                     getString(
@@ -177,7 +178,7 @@ class WebService : BaseService() {
                 stopSelf()
             }
         } else {
-            toastOnUi("web service cant start, no ip address")
+            AppLog.put(getString(R.string.web_service_no_ip))
             stopSelf()
         }
     }
@@ -191,7 +192,7 @@ class WebService : BaseService() {
     }
 
     /**
-     * 更新通知
+     * Update notification
      */
     override fun startForegroundNotification() {
         val builder = NotificationCompat.Builder(this, AppConst.channelIdWeb)

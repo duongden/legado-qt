@@ -3,7 +3,7 @@ package io.legado.app.utils
 import android.util.Base64
 
 /**
- * 编码工具 escape base64
+ * Encoding tool escape base64
  */
 @Suppress("unused")
 object EncoderUtils {

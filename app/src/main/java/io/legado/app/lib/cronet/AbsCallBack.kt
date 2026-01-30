@@ -75,7 +75,7 @@ abstract class AbsCallBack(
     abstract fun waitForDone(urlRequest: UrlRequest): Response
 
     /**
-     * 当发生错误时，通知子类终止阻塞抛出错误
+     * On error, notify subclass to stop blocking and throw error
      * @param error
      */
     abstract fun onError(error: IOException)
@@ -152,7 +152,7 @@ abstract class AbsCallBack(
         mResponse = response
         onSuccess(response)
 
-        //打印协议，用于调试
+        //Print protocol, for debug
         val msg = "onResponseStarted[${info.negotiatedProtocol}][${info.httpStatusCode}]${info.url}"
         DebugLog.i(javaClass.simpleName, msg)
         if (eventListener != null) {
@@ -187,7 +187,7 @@ abstract class AbsCallBack(
     }
 
 
-    //UrlResponseInfo可能为null
+    //UrlResponseInfo may be null
     override fun onFailed(request: UrlRequest, info: UrlResponseInfo?, error: CronetException) {
         callbackResults.add(CallbackResult(CallbackStep.ON_FAILED, null, error))
         cancelJob?.cancel()

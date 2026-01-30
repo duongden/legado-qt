@@ -1,39 +1,39 @@
 package io.legado.app.model.analyzeRule
 
-//通用的规则切分处理
+//Common rule split processing
 class RuleAnalyzer(data: String, code: Boolean = false) {
 
-    private var queue: String = data //被处理字符串
-    private var pos = 0 //当前处理到的位置
-    private var start = 0 //当前处理字段的开始
-    private var startX = 0 //当前规则的开始
+    private var queue: String = data //Processed string
+    private var pos = 0 //Current processed position
+    private var start = 0 //Current field start
+    private var startX = 0 //Current rule start
 
-    private var rule = ArrayList<String>()  //分割出的规则列表
-    private var step: Int = 0 //分割字符的长度
-    var elementsType = "" //当前分割字符串
+    private var rule = ArrayList<String>()  //Split rule list
+    private var step: Int = 0 //Split character length
+    var elementsType = "" //Current split string
 
-    fun trim() { // 修剪当前规则之前的"@"或者空白符
-        if (queue[pos] == '@' || queue[pos] < '!') { //在while里重复设置start和startX会拖慢执行速度，所以先来个判断是否存在需要修剪的字段，最后再一次性设置start和startX
+    fun trim() { // Trim "@" or whitespace before current rule
+        if (queue[pos] == '@' || queue[pos] < '!') { //Repeatedly setting start/startX in while slows down, so check if trimming needed first, set start/startX once at end
             pos++
             while (queue[pos] == '@' || queue[pos] < '!') pos++
-            start = pos //开始点推移
-            startX = pos //规则起始点推移
+            start = pos //Start point move
+            startX = pos //Rule start point move
         }
     }
 
-    //将pos重置为0，方便复用
+    //Reset pos to 0, facilitate reuse
     fun reSetPos() {
         pos = 0
         startX = 0
     }
 
     /**
-     * 从剩余字串中拉出一个字符串，直到但不包括匹配序列
-     * @param seq 查找的字符串 **区分大小写**
-     * @return 是否找到相应字段。
+     * Pull string from remaining until matching sequence (exclusive)
+     * @param seq Search string **Case Sensitive**
+     * @return Whether found.
      */
     private fun consumeTo(seq: String): Boolean {
-        start = pos //将处理到的位置设置为规则起点
+        start = pos //Set processed position as rule start
         val offset = queue.indexOf(seq, pos)
         return if (offset != -1) {
             pos = offset
@@ -42,43 +42,43 @@ class RuleAnalyzer(data: String, code: Boolean = false) {
     }
 
     /**
-     * 从剩余字串中拉出一个字符串，直到但不包括匹配序列（匹配参数列表中一项即为匹配），或剩余字串用完。
-     * @param seq 匹配字符串序列
-     * @return 成功返回true并设置间隔，失败则直接返回fasle
+     * Pull string from remaining until matching sequence (any match in list), or remaining used up.
+     * @param seq Match string sequence
+     * @return True if success and set interval, otherwise false
      */
     private fun consumeToAny(vararg seq: String): Boolean {
 
-        var pos = pos //声明新变量记录匹配位置，不更改类本身的位置
+        var pos = pos //Declare new var to record match pos, do not change class pos
 
         while (pos != queue.length) {
 
             for (s in seq) {
                 if (queue.regionMatches(pos, s, 0, s.length)) {
-                    step = s.length //间隔数
-                    this.pos = pos //匹配成功, 同步处理位置到类
-                    return true //匹配就返回 true
+                    step = s.length //Interval count
+                    this.pos = pos //Match success, sync position to class
+                    return true //Match return true
                 }
             }
 
-            pos++ //逐个试探
+            pos++ //Probe one by one
         }
         return false
     }
 
     /**
-     * 从剩余字串中拉出一个字符串，直到但不包括匹配序列（匹配参数列表中一项即为匹配），或剩余字串用完。
-     * @param seq 匹配字符序列
-     * @return 返回匹配位置
+     * Pull string from remaining until matching sequence (any match in list), or remaining used up.
+     * @param seq Match char sequence
+     * @return Match position
      */
     private fun findToAny(vararg seq: Char): Int {
 
-        var pos = pos //声明新变量记录匹配位置，不更改类本身的位置
+        var pos = pos //Declare new var to record match pos, do not change class pos
 
         while (pos != queue.length) {
 
-            for (s in seq) if (queue[pos] == s) return pos //匹配则返回位置
+            for (s in seq) if (queue[pos] == s) return pos //Match return position
 
-            pos++ //逐个试探
+            pos++ //Probe one by one
 
         }
 
@@ -86,223 +86,223 @@ class RuleAnalyzer(data: String, code: Boolean = false) {
     }
 
     /**
-     * 拉出一个非内嵌代码平衡组，存在转义文本
+     * Extract non-inline code balanced group, escape text exists
      */
     private fun chompCodeBalanced(open: Char, close: Char): Boolean {
 
-        var pos = pos //声明临时变量记录匹配位置，匹配成功后才同步到类的pos
+        var pos = pos //Declare temp var to record match pos, sync to class pos only on success
 
-        var depth = 0 //嵌套深度
-        var otherDepth = 0 //其他对称符合嵌套深度
+        var depth = 0 //Nesting depth
+        var otherDepth = 0 //Other symmetric symbol nesting depth
 
-        var inSingleQuote = false //单引号
-        var inDoubleQuote = false //双引号
+        var inSingleQuote = false //Single quote
+        var inDoubleQuote = false //Double quote
 
         do {
             if (pos == queue.length) break
             val c = queue[pos++]
-            if (c != ESC) { //非转义字符
-                if (c == '\'' && !inDoubleQuote) inSingleQuote = !inSingleQuote //匹配具有语法功能的单引号
-                else if (c == '"' && !inSingleQuote) inDoubleQuote = !inDoubleQuote //匹配具有语法功能的双引号
+            if (c != ESC) { //Non-escape char
+                if (c == '\'' && !inDoubleQuote) inSingleQuote = !inSingleQuote //Match syntactic single quote
+                else if (c == '"' && !inSingleQuote) inDoubleQuote = !inDoubleQuote //Match syntactic double quote
 
-                if (inSingleQuote || inDoubleQuote) continue //语法单元未匹配结束，直接进入下个循环
+                if (inSingleQuote || inDoubleQuote) continue //Syntax unit not match end, continue next loop
 
-                if (c == '[') depth++ //开始嵌套一层
-                else if (c == ']') depth-- //闭合一层嵌套
+                if (c == '[') depth++ //Start nest one layer
+                else if (c == ']') depth-- //Close one layer nesting
                 else if (depth == 0) {
-                    //处于默认嵌套中的非默认字符不需要平衡，仅depth为0时默认嵌套全部闭合，此字符才进行嵌套
+                    //Non-default char in default nesting needs no balance, only nest this char when depth 0 (default nesting closed)
                     if (c == open) otherDepth++
                     else if (c == close) otherDepth--
                 }
 
             } else pos++
 
-        } while (depth > 0 || otherDepth > 0) //拉出一个平衡字串
+        } while (depth > 0 || otherDepth > 0) //Pull balanced string
 
         return if (depth > 0 || otherDepth > 0) false else {
-            this.pos = pos //同步位置
+            this.pos = pos //Sync position
             true
         }
     }
 
     /**
-     * 拉出一个规则平衡组，经过仔细测试xpath和jsoup中，引号内转义字符无效。
+     * Extract rule balanced group. Escape chars invalid in quotes in xpath/jsoup.
      */
     private fun chompRuleBalanced(open: Char, close: Char): Boolean {
 
-        var pos = pos //声明临时变量记录匹配位置，匹配成功后才同步到类的pos
-        var depth = 0 //嵌套深度
-        var inSingleQuote = false //单引号
-        var inDoubleQuote = false //双引号
+        var pos = pos //Declare temp var to record match pos, sync to class pos only on success
+        var depth = 0 //Nesting depth
+        var inSingleQuote = false //Single quote
+        var inDoubleQuote = false //Double quote
 
         do {
             if (pos == queue.length) break
             val c = queue[pos++]
-            if (c == '\'' && !inDoubleQuote) inSingleQuote = !inSingleQuote //匹配具有语法功能的单引号
-            else if (c == '"' && !inSingleQuote) inDoubleQuote = !inDoubleQuote //匹配具有语法功能的双引号
+            if (c == '\'' && !inDoubleQuote) inSingleQuote = !inSingleQuote //Match syntactic single quote
+            else if (c == '"' && !inSingleQuote) inDoubleQuote = !inDoubleQuote //Match syntactic double quote
 
-            if (inSingleQuote || inDoubleQuote) continue //语法单元未匹配结束，直接进入下个循环
-            else if (c == '\\') { //不在引号中的转义字符才将下个字符转义
+            if (inSingleQuote || inDoubleQuote) continue //Syntax unit not match end, continue next loop
+            else if (c == '\\') { //Only escape char outside quotes escapes next char
                 pos++
                 continue
             }
 
-            if (c == open) depth++ //开始嵌套一层
-            else if (c == close) depth-- //闭合一层嵌套
+            if (c == open) depth++ //Start nest one layer
+            else if (c == close) depth-- //Close one layer nesting
 
-        } while (depth > 0) //拉出一个平衡字串
+        } while (depth > 0) //Pull balanced string
 
         return if (depth > 0) false else {
-            this.pos = pos //同步位置
+            this.pos = pos //Sync position
             true
         }
     }
 
     /**
-     * 不用正则,不到最后不切片也不用中间变量存储,只在序列中标记当前查找字段的开头结尾,到返回时才切片,高效快速准确切割规则
-     * 解决jsonPath自带的"&&"和"||"与阅读的规则冲突,以及规则正则或字符串中包含"&&"、"||"、"%%"、"@"导致的冲突
+     * No regex, no slicing until end, no intermediate storage, only mark start/end in sequence, slice at return, efficient fast accurate splitting rule
+     * Solve conflict between jsonPath's "&&" "||" and reading rules, and conflicts caused by "&&", "||", "%%", "@" in rules regex or string
      */
-    tailrec fun splitRule(vararg split: String): ArrayList<String> { //首段匹配,elementsType为空
+    tailrec fun splitRule(vararg split: String): ArrayList<String> { //First segment match, elementsType empty
 
         if (split.size == 1) {
-            elementsType = split[0] //设置分割字串
+            elementsType = split[0] //Set split string
             return if (!consumeTo(elementsType)) {
                 rule += queue.substring(startX)
                 rule
             } else {
-                step = elementsType.length //设置分隔符长度
+                step = elementsType.length //Set separator length
                 splitRule()
-            } //递归匹配
-        } else if (!consumeToAny(* split)) { //未找到分隔符
+            } //Recursive match
+        } else if (!consumeToAny(* split)) { //Separator not found
             rule += queue.substring(startX)
             return rule
         }
 
-        val end = pos //记录分隔位置
-        pos = start //重回开始，启动另一种查找
+        val end = pos //Record split position
+        pos = start //Return to start, start another search
 
         do {
-            val st = findToAny('[', '(') //查找筛选器位置
+            val st = findToAny('[', '(') //Find filter position
 
             if (st == -1) {
 
-                rule = arrayListOf(queue.substring(startX, end)) //压入分隔的首段规则到数组
+                rule = arrayListOf(queue.substring(startX, end)) //Push separated first segment rule to array
 
-                elementsType = queue.substring(end, end + step) //设置组合类型
-                pos = end + step //跳过分隔符
+                elementsType = queue.substring(end, end + step) //Set composite type
+                pos = end + step //Skip separator
 
-                while (consumeTo(elementsType)) { //循环切分规则压入数组
+                while (consumeTo(elementsType)) { //Loop split rule push to array
                     rule += queue.substring(start, pos)
-                    pos += step //跳过分隔符
+                    pos += step //Skip separator
                 }
 
-                rule += queue.substring(pos) //将剩余字段压入数组末尾
+                rule += queue.substring(pos) //Push remaining fields to array end
 
                 return rule
             }
 
-            if (st > end) { //先匹配到st1pos，表明分隔字串不在选择器中，将选择器前分隔字串分隔的字段依次压入数组
+            if (st > end) { //Match st1pos first, means split string not in selector, push fields split by separator before selector into array
 
-                rule = arrayListOf(queue.substring(startX, end)) //压入分隔的首段规则到数组
+                rule = arrayListOf(queue.substring(startX, end)) //Push separated first segment rule to array
 
-                elementsType = queue.substring(end, end + step) //设置组合类型
-                pos = end + step //跳过分隔符
+                elementsType = queue.substring(end, end + step) //Set composite type
+                pos = end + step //Skip separator
 
-                while (consumeTo(elementsType) && pos < st) { //循环切分规则压入数组
+                while (consumeTo(elementsType) && pos < st) { //Loop split rule push to array
                     rule += queue.substring(start, pos)
-                    pos += step //跳过分隔符
+                    pos += step //Skip separator
                 }
 
                 return if (pos > st) {
                     startX = start
-                    splitRule() //首段已匹配,但当前段匹配未完成,调用二段匹配
-                } else { //执行到此，证明后面再无分隔字符
-                    rule += queue.substring(pos) //将剩余字段压入数组末尾
+                    splitRule() //First segment matched, current match incomplete, call 2nd stage
+                } else { //Executed here means no more separators behind
+                    rule += queue.substring(pos) //Push remaining fields to array end
                     rule
                 }
             }
 
-            pos = st //位置推移到筛选器处
-            val next = if (queue[pos] == '[') ']' else ')' //平衡组末尾字符
+            pos = st //Position move to filter
+            val next = if (queue[pos] == '[') ']' else ')' //Balanced group end char
 
             if (!chompBalanced(queue[pos], next)) throw Error(
                 queue.substring(0, start) + "后未平衡"
-            ) //拉出一个筛选器,不平衡则报错
+            ) //Pull filter, error if unbalanced
 
         } while (end > pos)
 
-        start = pos //设置开始查找筛选器位置的起始位置
+        start = pos //Set start position for finding filter position
 
-        return splitRule(* split) //递归调用首段匹配
+        return splitRule(* split) //Recursive call first segment match
     }
 
     @JvmName("splitRuleNext")
-    private tailrec fun splitRule(): ArrayList<String> { //二段匹配被调用,elementsType非空(已在首段赋值),直接按elementsType查找,比首段采用的方式更快
+    private tailrec fun splitRule(): ArrayList<String> { //Second stage match called, elementsType not null (set in first stage), find by elementsType directly, faster than first stage
 
-        val end = pos //记录分隔位置
-        pos = start //重回开始，启动另一种查找
+        val end = pos //Record split position
+        pos = start //Return to start, start another search
 
         do {
-            val st = findToAny('[', '(') //查找筛选器位置
+            val st = findToAny('[', '(') //Find filter position
 
             if (st == -1) {
 
-                rule += arrayOf(queue.substring(startX, end)) //压入分隔的首段规则到数组
-                pos = end + step //跳过分隔符
+                rule += arrayOf(queue.substring(startX, end)) //Push separated first segment rule to array
+                pos = end + step //Skip separator
 
-                while (consumeTo(elementsType)) { //循环切分规则压入数组
+                while (consumeTo(elementsType)) { //Loop split rule push to array
                     rule += queue.substring(start, pos)
-                    pos += step //跳过分隔符
+                    pos += step //Skip separator
                 }
 
-                rule += queue.substring(pos) //将剩余字段压入数组末尾
+                rule += queue.substring(pos) //Push remaining fields to array end
 
                 return rule
             }
 
-            if (st > end) { //先匹配到st1pos，表明分隔字串不在选择器中，将选择器前分隔字串分隔的字段依次压入数组
+            if (st > end) { //Match st1pos first, means split string not in selector, push fields split by separator before selector into array
 
-                rule += arrayListOf(queue.substring(startX, end)) //压入分隔的首段规则到数组
-                pos = end + step //跳过分隔符
+                rule += arrayListOf(queue.substring(startX, end)) //Push separated first segment rule to array
+                pos = end + step //Skip separator
 
-                while (consumeTo(elementsType) && pos < st) { //循环切分规则压入数组
+                while (consumeTo(elementsType) && pos < st) { //Loop split rule push to array
                     rule += queue.substring(start, pos)
-                    pos += step //跳过分隔符
+                    pos += step //Skip separator
                 }
 
                 return if (pos > st) {
                     startX = start
-                    splitRule() //首段已匹配,但当前段匹配未完成,调用二段匹配
-                } else { //执行到此，证明后面再无分隔字符
-                    rule += queue.substring(pos) //将剩余字段压入数组末尾
+                    splitRule() //First segment matched, current match incomplete, call 2nd stage
+                } else { //Executed here means no more separators behind
+                    rule += queue.substring(pos) //Push remaining fields to array end
                     rule
                 }
             }
 
-            pos = st //位置推移到筛选器处
-            val next = if (queue[pos] == '[') ']' else ')' //平衡组末尾字符
+            pos = st //Position move to filter
+            val next = if (queue[pos] == '[') ']' else ')' //Balanced group end char
 
             if (!chompBalanced(queue[pos], next)) throw Error(
                 queue.substring(0, start) + "后未平衡"
-            ) //拉出一个筛选器,不平衡则报错
+            ) //Pull filter, error if unbalanced
 
         } while (end > pos)
 
-        start = pos //设置开始查找筛选器位置的起始位置
+        start = pos //Set start position for finding filter position
 
         return if (!consumeTo(elementsType)) {
             rule += queue.substring(startX)
             rule
-        } else splitRule() //递归匹配
+        } else splitRule() //Recursive match
 
     }
 
     /**
-     * 替换内嵌规则
-     * @param inner 起始标志,如{$.
-     * @param startStep 不属于规则部分的前置字符长度，如{$.中{不属于规则的组成部分，故startStep为1
-     * @param endStep 不属于规则部分的后置字符长度
-     * @param fr 查找到内嵌规则时，用于解析的函数
+     * Replace inline rule
+     * @param inner Start tag, e.g. {$.
+     * @param startStep Prefix len not part of rule, e.g. {, so 1
+     * @param endStep Suffix len not part of rule
+     * @param fr Fn to parse when inline rule found
      *
      * */
     fun innerRule(
@@ -313,17 +313,17 @@ class RuleAnalyzer(data: String, code: Boolean = false) {
     ): String {
         val st = StringBuilder()
 
-        while (consumeTo(inner)) { //拉取成功返回true，ruleAnalyzes里的字符序列索引变量pos后移相应位置，否则返回false,且isEmpty为true
-            val posPre = pos //记录consumeTo匹配位置
+        while (consumeTo(inner)) { //Fetch success return true, pos in ruleAnalyzes moves, else return false, isEmpty true
+            val posPre = pos //Record consumeTo match position
             if (chompCodeBalanced('{', '}')) {
                 val frv = fr(queue.substring(posPre + startStep, pos - endStep))
                 if (!frv.isNullOrEmpty()) {
-                    st.append(queue.substring(startX, posPre) + frv) //压入内嵌规则前的内容，及内嵌规则解析得到的字符串
-                    startX = pos //记录下次规则起点
-                    continue //获取内容成功，继续选择下个内嵌规则
+                    st.append(queue.substring(startX, posPre) + frv) //Push content before inline rule, and string parsed from inline rule
+                    startX = pos //Record next rule start
+                    continue //Get content success, continue to next inline rule
                 }
             }
-            pos += inner.length //拉出字段不平衡，inner只是个普通字串，跳到此inner后继续匹配
+            pos += inner.length //Pulled field unbalanced, inner is normal string, jump after inner and continue match
         }
 
         return if (startX == 0) "" else st.apply {
@@ -332,8 +332,8 @@ class RuleAnalyzer(data: String, code: Boolean = false) {
     }
 
     /**
-     * 替换内嵌规则
-     * @param fr 查找到内嵌规则时，用于解析的函数
+     * Replace inline rule
+     * @param fr Fn to parse when inline rule found
      *
      * */
     fun innerRule(
@@ -343,9 +343,9 @@ class RuleAnalyzer(data: String, code: Boolean = false) {
     ): String {
 
         val st = StringBuilder()
-        while (consumeTo(startStr)) { //拉取成功返回true，ruleAnalyzes里的字符序列索引变量pos后移相应位置，否则返回false,且isEmpty为true
-            pos += startStr.length //跳过开始字符串
-            val posPre = pos //记录consumeTo匹配位置
+        while (consumeTo(startStr)) { //Fetch success return true, pos in ruleAnalyzes moves, else return false, isEmpty true
+            pos += startStr.length //Skip start string
+            val posPre = pos //Record consumeTo match position
             if (consumeTo(endStr)) {
                 val frv = fr(queue.substring(posPre, pos))
                 st.append(
@@ -353,9 +353,9 @@ class RuleAnalyzer(data: String, code: Boolean = false) {
                         startX,
                         posPre - startStr.length
                     ) + frv
-                ) //压入内嵌规则前的内容，及内嵌规则解析得到的字符串
-                pos += endStr.length //跳过结束字符串
-                startX = pos //记录下次规则起点
+                ) //Push content before inline rule, and string parsed from inline rule
+                pos += endStr.length //Skip end string
+                startX = pos //Record next rule start
             }
         }
 
@@ -364,13 +364,13 @@ class RuleAnalyzer(data: String, code: Boolean = false) {
         }.toString()
     }
 
-    //设置平衡组函数，json或JavaScript时设置成chompCodeBalanced，否则为chompRuleBalanced
+    //Set balanced group function, chompCodeBalanced if json/JS, else chompRuleBalanced
     val chompBalanced = if (code) ::chompCodeBalanced else ::chompRuleBalanced
 
     companion object {
 
         /**
-         * 转义字符
+         * Escape character
          */
         private const val ESC = '\\'
 

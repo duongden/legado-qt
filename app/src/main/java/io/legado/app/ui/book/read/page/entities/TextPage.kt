@@ -25,7 +25,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
- * 页面信息
+ * Page info
  */
 @Keep
 @Suppress("unused", "MemberVisibilityCanBePrivate")
@@ -92,7 +92,7 @@ data class TextPage(
     }
 
     /**
-     * 底部对齐更新行位置
+     * Align bottom update row position
      */
     fun upLinesPosition() {
         if (!ReadBookConfig.textBottomJustify) return
@@ -188,7 +188,7 @@ data class TextPage(
     }
 
     /**
-     * 移除朗读标志
+     * Remove read aloud flag
      */
     fun removePageAloudSpan(): TextPage {
         if (!hasReadAloudSpan) {
@@ -202,8 +202,8 @@ data class TextPage(
     }
 
     /**
-     * 更新朗读标志
-     * @param aloudSpanStart 朗读文字开始位置
+     * Update read aloud flag
+     * @param aloudSpanStart Read text start pos
      */
     fun upPageAloudSpan(aloudSpanStart: Int) {
         removePageAloudSpan()
@@ -253,10 +253,10 @@ data class TextPage(
         }
 
     /**
-     * 根据行和列返回字符在本页的位置
-     * @param lineIndex 字符在第几行
-     * @param columnIndex 字符在第几列
-     * @return 字符在本页位置
+     * Get char pos in page by row/col
+     * @param lineIndex Row index
+     * @param columnIndex Col index
+     * @return Char pos in page
      */
     fun getPosByLineColumn(lineIndex: Int, columnIndex: Int): Int {
         var length = 0
@@ -278,16 +278,16 @@ data class TextPage(
     }
 
     /**
-     * @return 页面所在章节
+     * @return Chapter where page is located
      */
     fun getTextChapter(): TextChapter {
         return textChapter
     }
 
     /**
-     * 判断章节字符位置是否在这一页中
+     * Check if chapter character pos is in this page
      *
-     * @param chapterPos 章节字符位置
+     * @param chapterPos Chapter char pos
      * @return
      */
     fun containPos(chapterPos: Int): Boolean {

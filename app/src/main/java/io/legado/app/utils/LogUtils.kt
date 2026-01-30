@@ -9,6 +9,7 @@ import android.webkit.WebSettings
 import io.legado.app.BuildConfig
 import io.legado.app.constant.AppConst
 import io.legado.app.constant.AppLog
+import io.legado.app.R
 import io.legado.app.help.config.AppConfig
 import io.legado.app.help.globalExecutor
 import splitties.init.appCtx
@@ -71,7 +72,7 @@ object LogUtils {
             return AsyncFileHandler(logPath).apply {
                 formatter = object : java.util.logging.Formatter() {
                     override fun format(record: LogRecord): String {
-                        // 设置文件输出格式
+                        // Set file output format
                         return getCurrentDateStr(TIME_PATTERN) + ": " + record.message + "\n"
                     }
                 }
@@ -83,7 +84,7 @@ object LogUtils {
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            AppLog.putNotSave("创建fileHandler出错\n$e", e)
+            AppLog.putNotSave("${appCtx.getString(R.string.sc_create_file_handler_error)}\n$e", e)
             return null
         }
     }
@@ -98,7 +99,7 @@ object LogUtils {
     }
 
     /**
-     * 获取当前时间
+     * Get current time
      */
     @SuppressLint("SimpleDateFormat")
     fun getCurrentDateStr(pattern: String): String {
@@ -111,7 +112,7 @@ object LogUtils {
         d("DeviceInfo") {
             buildString {
                 kotlin.runCatching {
-                    //获取系统信息
+                    //Get system info
                     append("MANUFACTURER=").append(Build.MANUFACTURER).append("\n")
                     append("BRAND=").append(Build.BRAND).append("\n")
                     append("MODEL=").append(Build.MODEL).append("\n")
@@ -125,7 +126,7 @@ object LogUtils {
                     append("WebViewUserAgent=").append(userAgent).append("\n")
                     append("packageName=").append(appCtx.packageName).append("\n")
                     append("heapSize=").append(Runtime.getRuntime().maxMemory()).append("\n")
-                    //获取app版本信息
+                    //Get app version info
                     AppConst.appInfo.let {
                         append("versionName=").append(it.versionName).append("\n")
                         append("versionCode=").append(it.versionCode).append("\n")

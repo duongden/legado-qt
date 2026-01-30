@@ -17,7 +17,7 @@ class OldCallback(originalRequest: Request, mCall: Call, readTimeoutMillis: Int)
 
     @Throws(IOException::class)
     override fun waitForDone(urlRequest: UrlRequest): Response {
-        //获取okhttp call的完整请求的超时时间
+        //Get okhttp call full request timeout
         val timeOutMs: Long = mCall.timeout().timeoutNanos() / 1000000
         urlRequest.start()
         startCheckCancelJob(urlRequest)
@@ -26,7 +26,7 @@ class OldCallback(originalRequest: Request, mCall: Call, readTimeoutMillis: Int)
         } else {
             mResponseCondition.block()
         }
-        //ConditionVariable 正常open或者超时open后，检查urlRequest是否完成
+        //ConditionVariable after normal or timeout open, check if urlRequest complete
         if (!urlRequest.isDone) {
             urlRequest.cancel()
             mException = IOException("Cronet timeout after wait " + timeOutMs + "ms")
@@ -39,7 +39,7 @@ class OldCallback(originalRequest: Request, mCall: Call, readTimeoutMillis: Int)
     }
 
     /**
-     * 当发生错误时，通知子类终止阻塞抛出错误
+     * On error, notify subclass to stop blocking and throw error
      * @param error
      */
     override fun onError(error: IOException) {

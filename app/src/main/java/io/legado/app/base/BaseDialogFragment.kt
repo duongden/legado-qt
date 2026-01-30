@@ -49,7 +49,7 @@ abstract class BaseDialogFragment(
                 it.attributes = attr
                 it.decorView.setBackgroundKeepPadding(R.color.transparent)
             }
-            // 修改gravity的时机一般在子类的onStart方法中, 因此需要在onStart之后执行.
+            // Modify gravity timing usually in subclass onStart, so execute after onStart.
             lifecycle.addObserver(LifecycleEventObserver { _, event ->
                 if (event == Lifecycle.Event.ON_START) {
                     when (dialog?.window?.attributes?.gravity) {
@@ -69,7 +69,7 @@ abstract class BaseDialogFragment(
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            //不加这个android 5.0对话框顶部会有空白
+            //Without this android 5.0 dialog top has whitespace
             setStyle(STYLE_NO_TITLE, 0)
         }
     }
@@ -90,7 +90,7 @@ abstract class BaseDialogFragment(
 
     override fun show(manager: FragmentManager, tag: String?) {
         kotlin.runCatching {
-            //在每个add事务前增加一个remove事务，防止连续的add
+            //Add remove transaction before each add, prevent continuous add
             manager.beginTransaction().remove(this).commit()
             super.show(manager, tag)
         }.onFailure {

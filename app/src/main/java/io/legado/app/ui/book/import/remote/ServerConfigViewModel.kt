@@ -11,7 +11,7 @@ class ServerConfigViewModel(application: Application): BaseViewModel(application
     var mServer: Server? = null
 
     fun init(id: Long?, onSuccess: () -> Unit) {
-        //mServer不为空可能是旋转屏幕界面重新创建,不用更新数据
+        //mServer not null maybe screen rotation recreated UI, no update needed
         if (mServer != null) return
         execute {
             mServer = if (id != null) {

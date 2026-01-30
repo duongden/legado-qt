@@ -105,7 +105,7 @@ class ReadRssViewModel(application: Application) : BaseViewModel(application) {
                 }
                 contentLiveData.postValue(body)
             }.onError {
-                contentLiveData.postValue("加载正文失败\n${it.stackTraceToString()}")
+                contentLiveData.postValue(context.getString(io.legado.app.R.string.error_load_content, it.stackTraceToString()))
             }
     }
 
@@ -115,7 +115,7 @@ class ReadRssViewModel(application: Application) : BaseViewModel(application) {
             return finish.invoke()
         }
         val rssSource = rssSource ?: let {
-            appCtx.toastOnUi("订阅源不存在")
+            appCtx.toastOnUi(io.legado.app.R.string.rss_source_not_exist)
             return finish.invoke()
         }
         val ruleContent = rssSource.ruleContent
@@ -181,9 +181,9 @@ class ReadRssViewModel(application: Application) : BaseViewModel(application) {
             uri.writeBytes(context, fileName, byteArray)
         }.onError {
             ACache.get().remove(imagePathKey)
-            context.toastOnUi("保存图片失败:${it.localizedMessage}")
+            context.toastOnUi(context.getString(io.legado.app.R.string.save_image_error, it.localizedMessage))
         }.onSuccess {
-            context.toastOnUi("保存成功")
+            context.toastOnUi(io.legado.app.R.string.saved_successfully)
         }
     }
 

@@ -258,7 +258,7 @@ class BookSourceEditActivity :
                 }
             )
         }
-        // 基本信息
+        // Basic info
         sourceEntities.clear()
         sourceEntities.apply {
             add(EditEntity("bookSourceUrl", bs.bookSourceUrl, R.string.source_url))
@@ -275,7 +275,7 @@ class BookSourceEditActivity :
             add(EditEntity("concurrentRate", bs.concurrentRate, R.string.concurrent_rate))
             add(EditEntity("jsLib", bs.jsLib, "jsLib"))
         }
-        // 搜索
+        // Search
         val sr = bs.getSearchRule()
         searchEntities.clear()
         searchEntities.apply {
@@ -291,7 +291,7 @@ class BookSourceEditActivity :
             add(EditEntity("coverUrl", sr.coverUrl, R.string.rule_cover_url))
             add(EditEntity("bookUrl", sr.bookUrl, R.string.r_book_url))
         }
-        // 发现
+        // Explore
         val er = bs.getExploreRule()
         exploreEntities.clear()
         exploreEntities.apply {
@@ -306,7 +306,7 @@ class BookSourceEditActivity :
             add(EditEntity("coverUrl", er.coverUrl, R.string.rule_cover_url))
             add(EditEntity("bookUrl", er.bookUrl, R.string.r_book_url))
         }
-        // 详情页
+        // Detail page
         val ir = bs.getBookInfoRule()
         infoEntities.clear()
         infoEntities.apply {
@@ -322,7 +322,7 @@ class BookSourceEditActivity :
             add(EditEntity("canReName", ir.canReName, R.string.rule_can_re_name))
             add(EditEntity("downloadUrls", ir.downloadUrls, R.string.download_url_rule))
         }
-        // 目录页
+        // Catalog page
         val tr = bs.getTocRule()
         tocEntities.clear()
         tocEntities.apply {
@@ -337,7 +337,7 @@ class BookSourceEditActivity :
             add(EditEntity("isPay", tr.isPay, R.string.rule_is_pay))
             add(EditEntity("nextTocUrl", tr.nextTocUrl, R.string.rule_next_toc_url))
         }
-        // 正文页
+        // Content page
         val cr = bs.getContentRule()
         contentEntities.clear()
         contentEntities.apply {
@@ -351,7 +351,7 @@ class BookSourceEditActivity :
             add(EditEntity("imageDecode", cr.imageDecode, R.string.rule_image_decode))
             add(EditEntity("payAction", cr.payAction, R.string.rule_pay_action))
         }
-        // 段评
+        // Paragraph comment
 //        val rr = bs.getReviewRule()
 //        reviewEntities.clear()
 //        reviewEntities.apply {
@@ -629,13 +629,13 @@ class BookSourceEditActivity :
         if (view is EditText) {
             val start = view.selectionStart
             val end = view.selectionEnd
-            val edit = view.editableText//获取EditText的文字
+            val edit = view.editableText//Get EditText text
             if (start < 0 || start >= edit.length) {
                 edit.append(text)
             } else if (start > end) {
                 edit.replace(end, start, text)
             } else {
-                edit.replace(start, end, text)//光标所在位置插入文字
+                edit.replace(start, end, text)//Insert text at cursor position
             }
         }
     }

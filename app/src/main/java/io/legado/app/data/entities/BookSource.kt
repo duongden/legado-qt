@@ -29,71 +29,71 @@ import kotlinx.parcelize.Parcelize
     indices = [(Index(value = ["bookSourceUrl"], unique = false))]
 )
 data class BookSource(
-    // 地址，包括 http/https
+    // Address, including http/https
     @PrimaryKey
     var bookSourceUrl: String = "",
-    // 名称
+    // Name
     var bookSourceName: String = "",
-    // 分组
+    // Group
     var bookSourceGroup: String? = null,
-    // 类型，0 文本，1 音频, 2 图片, 3 文件（指的是类似知轩藏书只提供下载的网站）
+    // Type, 0 Text, 1 Audio, 2 Image, 3 File (Sites like Zhixuan that only provide downloads)
     @BookSourceType.Type
     var bookSourceType: Int = 0,
-    // 详情页url正则
+    // Detail page url regex
     var bookUrlPattern: String? = null,
-    // 手动排序编号
+    // Manual sort number
     @ColumnInfo(defaultValue = "0")
     var customOrder: Int = 0,
-    // 是否启用
+    // Is Enabled
     @ColumnInfo(defaultValue = "1")
     var enabled: Boolean = true,
-    // 启用发现
+    // Enable Explore
     @ColumnInfo(defaultValue = "1")
     var enabledExplore: Boolean = true,
-    // js库
+    // js library
     override var jsLib: String? = null,
-    // 启用okhttp CookieJAr 自动保存每次请求的cookie
+    // Enable okhttp CookieJar auto save cookie for every request
     @ColumnInfo(defaultValue = "0")
     override var enabledCookieJar: Boolean? = true,
-    // 并发率
+    // Concurrency rate
     override var concurrentRate: String? = null,
-    // 请求头
+    // Request header
     override var header: String? = null,
-    // 登录地址
+    // Login URL
     override var loginUrl: String? = null,
-    // 登录UI
+    // Login UI
     override var loginUi: String? = null,
-    // 登录检测js
+    // Login check js
     var loginCheckJs: String? = null,
-    // 封面解密js
+    // Cover decryption js
     var coverDecodeJs: String? = null,
-    // 注释
+    // Comment
     var bookSourceComment: String? = null,
-    // 自定义变量说明
+    // Custom variable description
     var variableComment: String? = null,
-    // 最后更新时间，用于排序
+    // Last update time, for sorting
     var lastUpdateTime: Long = 0,
-    // 响应时间，用于排序
+    // Response time, for sorting
     var respondTime: Long = 180000L,
-    // 智能排序的权重
+    // Smart sort weight
     var weight: Int = 0,
-    // 发现url
+    // Explore URL
     var exploreUrl: String? = null,
-    // 发现筛选规则
+    // Explore filter rule
     var exploreScreen: String? = null,
-    // 发现规则
+    // Explore rule
     var ruleExplore: ExploreRule? = null,
-    // 搜索url
+    // Search URL
     var searchUrl: String? = null,
-    // 搜索规则
+    // Search rule
     var ruleSearch: SearchRule? = null,
-    // 书籍信息页规则
+    // Book info page rule
     var ruleBookInfo: BookInfoRule? = null,
-    // 目录页规则
+    // Catalog page rule
     var ruleToc: TocRule? = null,
-    // 正文页规则
+    // Content page rule
     var ruleContent: ContentRule? = null,
-    // 段评规则
+    // Paragraph comment rule
     var ruleReview: ReviewRule? = null
 ) : Parcelable, BaseSource {
 

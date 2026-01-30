@@ -15,7 +15,7 @@ class TextMeasure(private var paint: TextPaint) {
         if (codePoint < 128) {
             return asciiWidths[codePoint]
         }
-        // 中文 Unicode 范围 U+4E00 - U+9FA5
+        // Chinese Unicode range U+4E00 - U+9FA5
         if (codePoint in 19968 .. 40869) {
             return chineseCommonWidth
         }
@@ -32,7 +32,7 @@ class TextMeasure(private var paint: TextPaint) {
             if (charArray[i].isLowSurrogate()) continue
             val width = ceil(widths[i])
             widthsList.add(width)
-            // 可能需要检查是否不可见字符
+            // May need to check for invisible characters
             if (width == 0f && widthsList.size > 1) {
                 val lastIndex = widthsList.lastIndex
                 buf[0] = codePoints[lastIndex - 1]

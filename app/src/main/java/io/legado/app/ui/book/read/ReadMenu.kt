@@ -58,7 +58,7 @@ import splitties.views.onClick
 import splitties.views.onLongClick
 
 /**
- * 阅读界面菜单
+ * Reading interface menu
  */
 class ReadMenu @JvmOverloads constructor(
     context: Context,
@@ -228,7 +228,7 @@ class ReadMenu @JvmOverloads constructor(
         }
         upBrightnessVwPos()
         /**
-         * 确保视图不被导航栏遮挡
+         * Ensure view is not covered by navigation bar
          */
         applyNavigationBarPadding()
     }
@@ -370,7 +370,7 @@ class ReadMenu @JvmOverloads constructor(
         tvChapterName.setOnLongClickListener(chapterViewLongClickListener)
         tvChapterUrl.setOnClickListener(chapterViewClickListener)
         tvChapterUrl.setOnLongClickListener(chapterViewLongClickListener)
-        //书源操作
+        //Source operation
         tvSourceAction.onClick {
             sourceMenu.menu.findItem(R.id.menu_login).isVisible =
                 !ReadBook.bookSource?.loginUrl.isNullOrEmpty()
@@ -380,12 +380,12 @@ class ReadMenu @JvmOverloads constructor(
                         && ReadBook.curTextChapter?.isPay != true
             sourceMenu.show()
         }
-        //亮度跟随
+        //Brightness follow
         ivBrightnessAuto.setOnClickListener {
             context.putPrefBoolean("brightnessAuto", !brightnessAuto())
             upBrightnessState()
         }
-        //亮度调节
+        //Brightness adjustment
         seekBrightness.setOnSeekBarChangeListener(object : SeekBarChangeListener {
 
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
@@ -403,7 +403,7 @@ class ReadMenu @JvmOverloads constructor(
             AppConfig.brightnessVwPos = !AppConfig.brightnessVwPos
             upBrightnessVwPos()
         }
-        //阅读进度
+        //Reading progress
         seekReadPage.setOnSeekBarChangeListener(object : SeekBarChangeListener {
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {
@@ -418,7 +418,7 @@ class ReadMenu @JvmOverloads constructor(
                         if (confirmSkipToChapter) {
                             callBack.skipToChapter(seekBar.progress)
                         } else {
-                            context.alert("章节跳转确认", "确定要跳转章节吗？") {
+                            context.alert(R.string.chapter_skip_confirm, R.string.chapter_skip_message) {
                                 yesButton {
                                     confirmSkipToChapter = true
                                     callBack.skipToChapter(seekBar.progress)
@@ -437,43 +437,43 @@ class ReadMenu @JvmOverloads constructor(
 
         })
 
-        //搜索
+        //Search
         fabSearch.setOnClickListener {
             runMenuOut {
                 callBack.openSearchActivity(null)
             }
         }
 
-        //自动翻页
+        //Auto page turn
         fabAutoPage.setOnClickListener {
             runMenuOut {
                 callBack.autoPage()
             }
         }
 
-        //替换
+        //Replace
         fabReplaceRule.setOnClickListener { callBack.openReplaceRule() }
 
-        //夜间模式
+        //Night mode
         fabNightTheme.setOnClickListener {
             AppConfig.isNightTheme = !AppConfig.isNightTheme
             ThemeConfig.applyDayNight(context)
         }
 
-        //上一章
+        //Previous chapter
         tvPre.setOnClickListener { ReadBook.moveToPrevChapter(upContent = true, toLast = false) }
 
-        //下一章
+        //Next chapter
         tvNext.setOnClickListener { ReadBook.moveToNextChapter(true) }
 
-        //目录
+        //Catalog
         llCatalog.setOnClickListener {
             runMenuOut {
                 callBack.openChapterList()
             }
         }
 
-        //朗读
+        //Read aloud
         llReadAloud.setOnClickListener {
             runMenuOut {
                 callBack.onClickReadAloud()
@@ -484,14 +484,14 @@ class ReadMenu @JvmOverloads constructor(
                 callBack.showReadAloudDialog()
             }
         }
-        //界面
+        //Interface
         llFont.setOnClickListener {
             runMenuOut {
                 callBack.showReadStyle()
             }
         }
 
-        //设置
+        //Set
         llSetting.setOnClickListener {
             runMenuOut {
                 callBack.showMoreSetting()

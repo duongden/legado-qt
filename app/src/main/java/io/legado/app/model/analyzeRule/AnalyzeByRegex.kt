@@ -12,9 +12,9 @@ object AnalyzeByRegex {
         if (!resM.find()) {
             return null
         }
-        // 判断索引的规则是最后一个规则
+        // Rule to check index is the last rule
         return if (vIndex + 1 == regs.size) {
-            // 新建容器
+            // Create container
             val info = arrayListOf<String>()
             for (groupIndex in 0..resM.groupCount()) {
                 info.add(resM.group(groupIndex)!!)
@@ -35,13 +35,13 @@ object AnalyzeByRegex {
         if (!resM.find()) {
             return arrayListOf()
         }
-        // 判断索引的规则是最后一个规则
+        // Rule to check index is the last rule
         if (vIndex + 1 == regs.size) {
-            // 创建书息缓存数组
+            // Create book info cache array
             val books = ArrayList<List<String>>()
-            // 提取列表
+            // Extract list
             do {
-                // 新建容器
+                // Create container
                 val info = arrayListOf<String>()
                 for (groupIndex in 0..resM.groupCount()) {
                     info.add(resM.group(groupIndex) ?: "")

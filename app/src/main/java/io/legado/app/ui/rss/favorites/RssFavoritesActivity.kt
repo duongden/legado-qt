@@ -45,11 +45,11 @@ class RssFavoritesActivity : BaseActivity<ActivityRssFavoritesBinding>() {
 
     override fun onResume() {
         super.onResume()
-        //从ReadRssActivity退出时，判断是否需要重新定位tabLayout选中项
+        //When exiting ReadRssActivity, check if tabLayout selection needs repositioning
         if (currentGroup.isNotEmpty() && groupList.isNotEmpty()){
             var item = groupList.indexOf(currentGroup)
             val currentItem = binding.viewPager.currentItem
-            //如果坐标没有变化，则结束
+            //End if coordinates unchanged
             if(item == currentItem){
                 return
             }
@@ -113,7 +113,7 @@ class RssFavoritesActivity : BaseActivity<ActivityRssFavoritesBinding>() {
     private fun upFragments() {
         lifecycleScope.launch {
             appDb.rssStarDao.flowGroups().catch {
-                AppLog.put("订阅分组数据获取失败\n${it.localizedMessage}", it)
+                AppLog.put(getString(R.string.error_get_sub_group_data, it.localizedMessage), it)
             }.distinctUntilChanged().flowOn(IO).collect {
                 groupList.clear()
                 groupList.addAll(it)

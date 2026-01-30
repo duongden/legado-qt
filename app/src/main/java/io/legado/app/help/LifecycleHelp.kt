@@ -24,7 +24,7 @@ object LifecycleHelp : Application.ActivityLifecycleCallbacks {
     }
 
     /**
-     * 判断指定Activity是否存在
+     * Check if Activity exists
      */
     fun isExistActivity(activityClass: Class<*>): Boolean {
         activities.forEach { item ->
@@ -36,7 +36,7 @@ object LifecycleHelp : Application.ActivityLifecycleCallbacks {
     }
 
     /**
-     * 关闭指定 activity(class)
+     * Close specified activity(class)
      */
     fun finishActivity(vararg activityClasses: Class<*>) {
         val waitFinish = ArrayList<WeakReference<Activity>>()

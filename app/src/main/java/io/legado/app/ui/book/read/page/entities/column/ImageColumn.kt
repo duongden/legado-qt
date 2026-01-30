@@ -37,7 +37,7 @@ data class ImageColumn(
         val rectF = if (textLine.isImage) {
             RectF(start, 0f, end, height)
         } else {
-            /*以宽度为基准保持图片的原始比例叠加，当div为负数时，允许高度比字符更高*/
+            /*Overlay keeping original image aspect ratio based on width, allow height taller than char when div is negative*/
             val h = (end - start) / bitmap.width * bitmap.height
             val div = (height - h) / 2
             RectF(start, div, end, height - div)

@@ -42,6 +42,8 @@ import kotlinx.coroutines.launch
 import java.util.LinkedList
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
+import splitties.init.appCtx
+import io.legado.app.R
 import kotlin.math.min
 
 class MainViewModel(application: Application) : BaseViewModel(application) {
@@ -137,11 +139,11 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
                     startUpTocJob()
                 }
                 if (it == null && cacheBookJob == null && !CacheBookService.isRun) {
-                    //所有目录更新完再开始缓存章节
+                    //Start caching chapters after all catalogs updated
                     cacheBook()
                 }
             }.catch {
-                AppLog.put("更新目录出错\n${it.localizedMessage}", it)
+                AppLog.put(appCtx.getString(R.string.update_toc_error, it.localizedMessage), it)
             }.collect()
         }
     }
@@ -178,8 +180,8 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
             addDownload(source, book)
         }.onFailure {
             currentCoroutineContext().ensureActive()
-            AppLog.put("${book.name} 更新目录失败\n${it.localizedMessage}", it)
-            //这里可能因为时间太长书籍信息已经更改,所以重新获取
+            AppLog.put(appCtx.getString(R.string.update_toc_failed, book.name, it.localizedMessage), it)
+            //Book info might change due to long time, refetch
             appDb.bookDao.getBook(book.bookUrl)?.let { book ->
                 book.addType(BookType.updateError)
                 appDb.bookDao.update(book)
@@ -207,7 +209,7 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * 缓存书籍
+     * Cache book
      */
     private fun cacheBook() {
         if (AppConfig.preDownloadNum == 0) return
@@ -215,7 +217,7 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
         cacheBookJob = viewModelScope.launch(upTocPool) {
             launch {
                 while (isActive && CacheBook.isRun) {
-                    //有目录更新是不缓存,优先更新目录,现在更多网站限制并发
+                    //No cache on catalog update, prioritize catalog, sites limit concurrency
                     CacheBook.setWorkingState(waitUpTocBooks.isEmpty() && onUpTocBooks.isEmpty())
                     delay(1000)
                 }

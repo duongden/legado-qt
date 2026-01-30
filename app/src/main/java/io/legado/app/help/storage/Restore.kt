@@ -79,15 +79,15 @@ object Restore {
                 ZipUtils.unZipToPath(File(uri.path!!), Backup.backupPath)
             }
         }.onFailure {
-            AppLog.put("复制解压文件出错\n${it.localizedMessage}", it)
+            AppLog.put(appCtx.getString(R.string.copy_unzip_file_error, it.localizedMessage), it)
             return
         }
         kotlin.runCatching {
             restoreLocked(Backup.backupPath)
             LocalConfig.lastBackup = System.currentTimeMillis()
         }.onFailure {
-            appCtx.toastOnUi("恢复备份出错\n${it.localizedMessage}")
-            AppLog.put("恢复备份出错\n${it.localizedMessage}", it)
+            appCtx.toastOnUi(appCtx.getString(R.string.restore_backup_error, it.localizedMessage))
+            AppLog.put(appCtx.getString(R.string.restore_backup_error, it.localizedMessage), it)
         }
     }
 
@@ -169,7 +169,7 @@ object Restore {
         }
         fileToListT<ReadRecord>(path, "readRecord.json")?.let {
             it.forEach { readRecord ->
-                //判断是不是本机记录
+                //Check if local record
                 if (readRecord.deviceId != androidId) {
                     appDb.readRecordDao.insert(readRecord)
                 } else {
@@ -192,7 +192,7 @@ object Restore {
                 appDb.serverDao.insert(*it.toTypedArray())
             }
         }?.onFailure {
-            AppLog.put("恢复服务器配置出错\n${it.localizedMessage}", it)
+            AppLog.put(appCtx.getString(R.string.restore_server_config_error, it.localizedMessage), it)
         }
         File(path, DirectLinkUpload.ruleFileName).takeIf {
             it.exists()
@@ -200,9 +200,9 @@ object Restore {
             val json = readText()
             ACache.get(cacheDir = false).put(DirectLinkUpload.ruleFileName, json)
         }?.onFailure {
-            AppLog.put("恢复直链上传出错\n${it.localizedMessage}", it)
+            AppLog.put(appCtx.getString(R.string.restore_direct_link_upload_error, it.localizedMessage), it)
         }
-        //恢复主题配置
+        //Restore theme config
         File(path, ThemeConfig.configFileName).takeIf {
             it.exists()
         }?.runCatching {
@@ -210,7 +210,7 @@ object Restore {
             copyTo(File(ThemeConfig.configFilePath))
             ThemeConfig.upConfig()
         }?.onFailure {
-            AppLog.put("恢复主题出错\n${it.localizedMessage}", it)
+            AppLog.put(appCtx.getString(R.string.restore_theme_error, it.localizedMessage), it)
         }
         File(path, BookCover.configFileName).takeIf {
             it.exists()
@@ -218,10 +218,10 @@ object Restore {
             val json = readText()
             BookCover.saveCoverRule(json)
         }?.onFailure {
-            AppLog.put("恢复封面规则出错\n${it.localizedMessage}", it)
+            AppLog.put(appCtx.getString(R.string.restore_cover_rule_error, it.localizedMessage), it)
         }
         if (!BackupConfig.ignoreReadConfig) {
-            //恢复阅读界面配置
+            //Restore reading UI config
             File(path, ReadBookConfig.configFileName).takeIf {
                 it.exists()
             }?.runCatching {
@@ -229,7 +229,7 @@ object Restore {
                 copyTo(File(ReadBookConfig.configFilePath))
                 ReadBookConfig.initConfigs()
             }?.onFailure {
-                AppLog.put("恢复阅读界面出错\n${it.localizedMessage}", it)
+                AppLog.put(appCtx.getString(R.string.restore_read_interface_error, it.localizedMessage), it)
             }
             File(path, ReadBookConfig.shareConfigFileName).takeIf {
                 it.exists()
@@ -238,7 +238,7 @@ object Restore {
                 copyTo(File(ReadBookConfig.shareConfigFilePath))
                 ReadBookConfig.initShareConfig()
             }?.onFailure {
-                AppLog.put("恢复阅读界面出错\n${it.localizedMessage}", it)
+                AppLog.put(appCtx.getString(R.string.restore_read_interface_error, it.localizedMessage), it)
             }
         }
         //AppWebDav.downBgs()
@@ -306,8 +306,8 @@ object Restore {
                 LogUtils.d(TAG, "阅读恢复备份 $fileName 文件不存在")
             }
         } catch (e: Exception) {
-            AppLog.put("$fileName\n读取解析出错\n${e.localizedMessage}", e)
-            appCtx.toastOnUi("$fileName\n读取文件出错\n${e.localizedMessage}")
+            AppLog.put(appCtx.getString(R.string.read_parse_error, fileName, e.localizedMessage), e)
+            appCtx.toastOnUi(appCtx.getString(R.string.read_file_error, fileName, e.localizedMessage))
         }
         return null
     }

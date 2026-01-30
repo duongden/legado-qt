@@ -89,7 +89,7 @@ object Rss {
     }
 
     /**
-     * 检测重定向
+     * Check redirect
      */
     private fun checkRedirect(rssSource: RssSource, response: StrResponse) {
         response.raw.priorResponse?.let {

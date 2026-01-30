@@ -103,7 +103,7 @@ class CacheActivity : VMBaseActivity<ActivityCacheBookBinding, CacheViewModel>()
         if (!isReadyPath) {
             return@registerForActivityResult
         }
-        if (enableCustomExport()) {// 启用自定义导出 and 导出类型为Epub
+        if (enableCustomExport()) {// Enable custom export and export type is Epub
             configExportSection(dirPath, result.requestCode)
         } else {
             startExport(dirPath, result.requestCode)
@@ -143,7 +143,7 @@ class CacheActivity : VMBaseActivity<ActivityCacheBookBinding, CacheViewModel>()
 
     override fun onMenuOpened(featureId: Int, menu: Menu): Boolean {
         menu.findItem(R.id.menu_enable_replace)?.isChecked = AppConfig.exportUseReplace
-        // 菜单打开时读取状态[enableCustomExport]
+        // Read state when menu opens [enableCustomExport]
         menu.findItem(R.id.menu_enable_custom_export)?.isChecked = AppConfig.enableCustomExport
         menu.findItem(R.id.menu_export_no_chapter_name)?.isChecked = AppConfig.exportNoChapterName
         menu.findItem(R.id.menu_export_web_dav)?.isChecked = AppConfig.exportToWebDav
@@ -166,7 +166,7 @@ class CacheActivity : VMBaseActivity<ActivityCacheBookBinding, CacheViewModel>()
     }
 
     /**
-     * 菜单按下回调
+     * Menu press callback
      */
     override fun onCompatOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
@@ -203,7 +203,7 @@ class CacheActivity : VMBaseActivity<ActivityCacheBookBinding, CacheViewModel>()
 
             R.id.menu_export_all -> exportAll()
             R.id.menu_enable_replace -> AppConfig.exportUseReplace = !item.isChecked
-            // 更改菜单状态[enableCustomExport]
+            // Change menu state [enableCustomExport]
             R.id.menu_enable_custom_export -> AppConfig.enableCustomExport = !item.isChecked
             R.id.menu_export_no_chapter_name -> AppConfig.exportNoChapterName = !item.isChecked
             R.id.menu_export_web_dav -> AppConfig.exportToWebDav = !item.isChecked
@@ -330,7 +330,7 @@ class CacheActivity : VMBaseActivity<ActivityCacheBookBinding, CacheViewModel>()
                 withContext(IO) { !FileDoc.fromDir(path).checkWrite() }
             ) {
                 selectExportFolder(position)
-            } else if (enableCustomExport()) {// 启用自定义导出 and 导出类型为Epub
+            } else if (enableCustomExport()) {// Enable custom export and export type is Epub
                 configExportSection(path, position)
             } else {
                 startExport(path, position)
@@ -387,7 +387,7 @@ class CacheActivity : VMBaseActivity<ActivityCacheBookBinding, CacheViewModel>()
                 etEpubSize.setText("1")
                 // lyEtEpubFilename.endIconMode = TextInputLayout.END_ICON_NONE
                 etEpubFilename.text?.append(AppConfig.episodeExportFileName)
-                // 存储解析文件名的jsStr
+                // Store jsStr for parsing filename
                 etEpubFilename.let {
                     it.setOnFocusChangeListener { _, hasFocus ->
                         if (hasFocus)
@@ -433,7 +433,7 @@ class CacheActivity : VMBaseActivity<ActivityCacheBookBinding, CacheViewModel>()
                         }
                     }
 
-                // 默认选择自定义导出
+                // Default select custom export
                 cbSelectExport.callOnClick()
             }
         val alertDialog = alert(titleResource = R.string.select_section_export) {
@@ -450,7 +450,7 @@ class CacheActivity : VMBaseActivity<ActivityCacheBookBinding, CacheViewModel>()
                 }
                 val epubScope = etInputScope.text.toString()
                 if (!verificationField(epubScope)) {
-                    etInputScope.error = appCtx.getString(R.string.error_scope_input)//"请输入正确的范围"
+                    etInputScope.error = appCtx.getString(R.string.error_scope_input)//"Please enter correct range"
                     return@apply
                 }
                 etInputScope.error = null

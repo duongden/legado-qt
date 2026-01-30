@@ -15,79 +15,79 @@ import kotlinx.parcelize.Parcelize
 data class RssSource(
     @PrimaryKey
     var sourceUrl: String = "",
-    // 名称
+    // Name
     var sourceName: String = "",
-    // 图标
+    // Icon
     var sourceIcon: String = "",
-    // 分组
+    // Group
     var sourceGroup: String? = null,
-    // 注释
+    // Comment
     var sourceComment: String? = null,
-    // 是否启用
+    // Is Enabled
     var enabled: Boolean = true,
-    // 自定义变量说明
+    // Custom variable description
     var variableComment: String? = null,
-    // js库
+    // js library
     override var jsLib: String? = null,
-    // 启用okhttp CookieJAr 自动保存每次请求的cookie
+    // Enable okhttp CookieJar auto save cookie for every request
     @ColumnInfo(defaultValue = "0")
     override var enabledCookieJar: Boolean? = true,
-    /**并发率**/
+    /**Concurrency rate**/
     override var concurrentRate: String? = null,
-    /**请求头**/
+    /**Request header**/
     override var header: String? = null,
-    /**登录地址**/
+    /**Login Url**/
     override var loginUrl: String? = null,
-    /**登录Ui**/
+    /**Login Ui**/
     override var loginUi: String? = null,
-    /**登录检测js**/
+    /**Login check js**/
     var loginCheckJs: String? = null,
-    /**封面解密js**/
+    /**Cover decryption js**/
     var coverDecodeJs: String? = null,
-    /**分类Url**/
+    /**Category Url**/
     var sortUrl: String? = null,
-    /**是否单url源**/
+    /**Is single url source**/
     var singleUrl: Boolean = false,
-    /*列表规则*/
-    /**列表样式,0,1,2**/
+    /*List rule*/
+    /**List style,0,1,2**/
     @ColumnInfo(defaultValue = "0")
     var articleStyle: Int = 0,
-    /**列表规则**/
+    /**List rule**/
     var ruleArticles: String? = null,
-    /**下一页规则**/
+    /**Next page rule**/
     var ruleNextPage: String? = null,
-    /**标题规则**/
+    /**Title rule**/
     var ruleTitle: String? = null,
-    /**发布日期规则**/
+    /**Publish date rule**/
     var rulePubDate: String? = null,
-    /*webView规则*/
-    /**描述规则**/
+    /*webView rule*/
+    /**Description rule**/
     var ruleDescription: String? = null,
-    /**图片规则**/
+    /**Image rule**/
     var ruleImage: String? = null,
-    /**链接规则**/
+    /**Link rule**/
     var ruleLink: String? = null,
-    /**正文规则**/
+    /**Content rule**/
     var ruleContent: String? = null,
-    /**正文url白名单**/
+    /**Content url whitelist**/
     var contentWhitelist: String? = null,
-    /**正文url黑名单**/
+    /**Content url blacklist**/
     var contentBlacklist: String? = null,
     /**
      * 跳转url拦截,
      * js, 返回true拦截,js变量url,可以通过js打开url,比如调用阅读搜索,添加书架等,简化规则写法,不用webView js注入
      * **/
     var shouldOverrideUrlLoading: String? = null,
-    /**webView样式**/
+    /**webView style**/
     var style: String? = null,
     @ColumnInfo(defaultValue = "1")
     var enableJs: Boolean = true,
     @ColumnInfo(defaultValue = "1")
     var loadWithBaseUrl: Boolean = true,
-    /**注入js**/
+    /**Inject js**/
     var injectJs: String? = null,
-    /*其它规则*/
-    /**最后更新时间，用于排序**/
+    /*Other rules*/
+    /**Last update time, for sorting**/
     @ColumnInfo(defaultValue = "0")
     var lastUpdateTime: Long = 0,
     @ColumnInfo(defaultValue = "0")

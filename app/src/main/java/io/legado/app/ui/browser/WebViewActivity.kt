@@ -145,7 +145,7 @@ class WebViewActivity : VMBaseActivity<ActivityWebViewBinding, WebViewModel>() {
         return super.onCompatOptionsItemSelected(item)
     }
 
-    //实现starBrowser调起页面全屏
+    //Implement starBrowser invoke full screen
     private fun toggleFullScreen() {
         isFullScreen = !isFullScreen
 

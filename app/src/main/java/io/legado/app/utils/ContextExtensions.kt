@@ -215,14 +215,14 @@ fun Context.restart() {
                     or Intent.FLAG_ACTIVITY_CLEAR_TOP
         )
         startActivity(intent)
-        //杀掉以前进程
+        // Kill previous process
         Process.killProcess(Process.myPid())
         exitProcess(0)
     }
 }
 
 /**
- * 系统息屏时间
+ * System screen off time
  */
 val Context.sysScreenOffTime: Int
     get() {
@@ -332,7 +332,7 @@ fun Context.sendMail(mail: String) {
 }
 
 /**
- * 获取电量
+ * Get battery level
  */
 val Context.sysBattery: Int
     get() {
@@ -371,7 +371,7 @@ fun Context.openFileUri(uri: Uri, type: String? = null) {
     intent.action = Intent.ACTION_VIEW
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        //7.0版本以上
+        //Version 7.0+
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
     val uri = if (uri.isContentScheme()) uri

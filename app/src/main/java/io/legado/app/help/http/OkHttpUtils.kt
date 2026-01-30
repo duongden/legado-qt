@@ -84,12 +84,12 @@ fun ResponseBody.text(encode: String? = null): String {
         return String(responseBytes, Charset.forName(charsetName))
     }
 
-    //根据http头判断
+    //Judge by http header
     contentType()?.charset()?.let { charset ->
         return String(responseBytes, charset)
     }
 
-    //根据内容判断
+    //Judge by content
     charsetName = EncodingDetect.getHtmlEncode(responseBytes)
     return String(responseBytes, Charset.forName(charsetName))
 }

@@ -46,8 +46,8 @@ object ReadManga : CoroutineScope by MainScope() {
     var inBookshelf = false
     var book: Book? = null
     val executor = globalExecutor
-    var durChapterIndex = 0 //章节位置
-    var chapterSize = 0//总章节
+    var durChapterIndex = 0 //Chapter position
+    var chapterSize = 0//Total chapters
     var durChapterPos = 0
     var chapterChanged = false
     var prevMangaChapter: MangaChapter? = null
@@ -126,7 +126,7 @@ object ReadManga : CoroutineScope by MainScope() {
         nextMangaChapter = null
     }
 
-    //每次切换章节更新阅读记录
+    //Update reading record on chapter switch
     fun upReadTime() {
         executor.execute {
             if (!AppConfig.enableReadRecord) {
@@ -189,7 +189,7 @@ object ReadManga : CoroutineScope by MainScope() {
     }
 
     /**
-     * 内容加载完成
+     * Content loading complete
      */
     suspend fun contentLoadFinish(
         chapter: BookChapter,
@@ -269,7 +269,7 @@ object ReadManga : CoroutineScope by MainScope() {
     }
 
     /**
-     * 加载下一章
+     * Load next chapter
      */
     fun moveToNextChapter(toFirst: Boolean = false): Boolean {
         if (durChapterIndex < simulatedChapterSize - 1) {
@@ -384,7 +384,7 @@ object ReadManga : CoroutineScope by MainScope() {
             }
             preDownloadTask?.cancel()
             preDownloadTask = launch(IO) {
-                //预下载
+                //Pre-download
                 launch {
                     val maxChapterIndex =
                         min(durChapterIndex + AppConfig.preDownloadNum, chapterSize)
@@ -432,7 +432,7 @@ object ReadManga : CoroutineScope by MainScope() {
     }
 
     /**
-     * 获取正文
+     * Get content body
      */
     private suspend fun download(
         scope: CoroutineScope,
@@ -492,8 +492,8 @@ object ReadManga : CoroutineScope by MainScope() {
     }
 
     /**
-     * 同步阅读进度
-     * 如果当前进度快于服务器进度或者没有进度进行上传，如果慢与服务器进度则执行传入动作
+     * Sync reading progress
+     * If current progress faster than server or no progress, upload. If slower, execute input action
      */
     fun syncProgress(
         newProgressAction: ((progress: BookProgress) -> Unit)? = null,
@@ -511,7 +511,7 @@ object ReadManga : CoroutineScope by MainScope() {
                 (progress.durChapterIndex == book.durChapterIndex
                         && progress.durChapterPos < book.durChapterPos)
             ) {
-                // 服务器没有进度或者进度比服务器快，上传现有进度
+                // Server has no progress or progress faster than server, upload current progress
                 Coroutine.async {
                     AppWebDav.uploadBookProgress(BookProgress(book), uploadSuccessAction)
                     book.update()
@@ -519,7 +519,7 @@ object ReadManga : CoroutineScope by MainScope() {
             } else if (progress.durChapterIndex > book.durChapterIndex ||
                 progress.durChapterPos > book.durChapterPos
             ) {
-                // 进度比服务器慢，执行传入动作
+                // Progress slower than server, execute input action
                 newProgressAction?.invoke(progress)
             } else {
                 syncSuccessAction?.invoke()
@@ -570,14 +570,14 @@ object ReadManga : CoroutineScope by MainScope() {
     }
 
     /**
-     * 注册回调
+     * Register callback
      */
     fun register(cb: Callback) {
         mCallback = cb
     }
 
     /**
-     * 取消注册回调
+     * Unregister callback
      */
     fun unregister(cb: Callback) {
         if (mCallback === cb) {

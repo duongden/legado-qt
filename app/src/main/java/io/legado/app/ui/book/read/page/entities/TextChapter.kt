@@ -26,7 +26,7 @@ data class TextChapter(
     val sameTitleRemoved: Boolean,
     val isVip: Boolean,
     val isPay: Boolean,
-    //起效的替换规则
+    //Effective replacement rule
     val effectiveReplaceRules: List<ReplaceRule>?
 ) : LayoutProgressListener {
 
@@ -95,8 +95,8 @@ data class TextChapter(
         }
 
     /**
-     * @param index 页数
-     * @return 是否是最后一页
+     * @param index Page count
+     * @return Is last page
      */
     fun isLastIndex(index: Int): Boolean {
         return isCompleted && index >= pages.size - 1
@@ -107,8 +107,8 @@ data class TextChapter(
     }
 
     /**
-     * @param pageIndex 页数
-     * @return 已读长度
+     * @param pageIndex Page index
+     * @return Read length
      */
     fun getReadLength(pageIndex: Int): Int {
         if (pageIndex < 0) return 0
@@ -124,8 +124,8 @@ data class TextChapter(
     }
 
     /**
-     * @param length 当前页面文字在章节中的位置
-     * @return 下一页位置,如果没有下一页返回-1
+     * @param length Position of current page text in chapter
+     * @return Next page position, -1 if no next page
      */
     fun getNextPageLength(length: Int): Int {
         val pageIndex = getPageIndexByCharIndex(length)
@@ -136,8 +136,8 @@ data class TextChapter(
     }
 
     /**
-     * @param length 当前页面文字在章节中的位置
-     * @return 上一页位置,如果没有上一页返回-1
+     * @param length Position of current page text in chapter
+     * @return Previous page position, -1 if no previous page
      */
     fun getPrevPageLength(length: Int): Int {
         val pageIndex = getPageIndexByCharIndex(length)
@@ -148,7 +148,7 @@ data class TextChapter(
     }
 
     /**
-     * 获取内容
+     * Get content
      */
     fun getContent(): String {
         val stringBuilder = StringBuilder()
@@ -159,7 +159,7 @@ data class TextChapter(
     }
 
     /**
-     * @return 获取未读文字
+     * @return Get unread text
      */
     fun getUnRead(pageIndex: Int): String {
         val stringBuilder = StringBuilder()
@@ -172,10 +172,10 @@ data class TextChapter(
     }
 
     /**
-     * @return 需要朗读的文本列表
-     * @param pageIndex 起始页
-     * @param pageSplit 是否分页
-     * @param startPos 从当前页什么地方开始朗读
+     * @return Text list to read aloud
+     * @param pageIndex Start page
+     * @param pageSplit Whether to split pages
+     * @param startPos Where to start reading on current page
      */
     fun getNeedReadAloud(
         pageIndex: Int,
@@ -221,7 +221,7 @@ data class TextChapter(
     }
 
     /**
-     * @return 根据索引位置获取所在页
+     * @return Get page by index position
      */
     fun getPageIndexByCharIndex(charIndex: Int): Int {
         val pageSize = pages.size
@@ -232,7 +232,7 @@ data class TextChapter(
             it.chapterPosition
         }
         val index = abs(bIndex + 1) - 1
-        // 判断是否已经排版到 charIndex ，没有则返回 -1
+        // Check if layout reached charIndex, else return -1
         if (!isCompleted && index == pageSize - 1) {
             val page = pages[index]
             val pageEndPos = page.chapterPosition + page.charSize

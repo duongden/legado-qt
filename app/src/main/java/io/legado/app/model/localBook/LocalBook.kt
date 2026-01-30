@@ -63,7 +63,7 @@ import kotlin.coroutines.coroutineContext
 
 /**
  * 书籍文件导入 目录正文解析
- * 支持在线文件(txt epub umd 压缩文件 本地文件
+ * 支持在线文件txt epub umd 压缩文件 本地文件
  */
 object LocalBook {
 
@@ -83,14 +83,14 @@ object LocalBook {
                 val localArchiveUri = book.getArchiveUri()
                 val webDavUrl = book.getRemoteUrl()
                 if (localArchiveUri != null) {
-                    // 重新导入对应的压缩包
+                    // Re-import corresponding archive
                     importArchiveFile(localArchiveUri, book.originName) {
                         it.contains(book.originName)
                     }.firstOrNull()?.let {
                         getBookInputStream(it)
                     }
                 } else if (webDavUrl != null && downloadRemoteBook(book)) {
-                    // 下载远程链接
+                    // Download remote link
                     getBookInputStream(book)
                 } else {
                     null
@@ -215,7 +215,7 @@ object LocalBook {
     }
 
     /**
-     * 下载在线的文件并自动导入到阅读（txt umd epub)
+     * Download online file and auto import to reading (txt umd epub)
      */
     suspend fun importFileOnLine(
         str: String,
@@ -226,11 +226,11 @@ object LocalBook {
     }
 
     /**
-     * 导入本地文件
+     * Import local file
      */
     fun importFile(uri: Uri): Book {
         val bookUrl: String
-        //updateTime变量不要修改,否则会导致读取不到缓存
+        //Do not modify updateTime variable, or cache won't read
         val (fileName, _, _, updateTime, _) = FileDoc.fromUri(uri, false).apply {
             if (size == 0L) throw EmptyFileException("Unexpected empty File")
 
@@ -253,9 +253,9 @@ object LocalBook {
         } else {
             deleteBook(book, false)
             upBookInfo(book)
-            // 触发 isLocalModified
+            // Trigger isLocalModified
             book.latestChapterTime = 0
-            //已有书籍说明是更新,删除原有目录
+            //Existing book means update, delete old catalog
             appDb.bookChapterDao.delByBook(bookUrl)
         }
         return book
@@ -270,7 +270,7 @@ object LocalBook {
         }
     }
 
-    /* 导入压缩包内的书籍 */
+    /* Import books from archive */
     fun importArchiveFile(
         archiveFileUri: Uri,
         saveFileName: String? = null,
@@ -284,7 +284,7 @@ object LocalBook {
         return files.map {
             saveBookFile(FileInputStream(it), saveFileName ?: it.name).let { uri ->
                 importFile(uri).apply {
-                    //附加压缩包名称 以便解压文件被删后再解压
+                    //Append archive name, re-unzip if file deleted
                     origin = "${BookType.localTag}::${archiveFileDoc.name}"
                     addType(BookType.archive)
                     save()
@@ -293,7 +293,7 @@ object LocalBook {
         }
     }
 
-    /* 批量导入 支持自动导入压缩包的支持书籍 */
+    /* Batch import supports automatic import of supported books in archives */
     fun importFiles(uri: Uri): List<Book> {
         val books = mutableListOf<Book>()
         val fileDoc = FileDoc.fromUri(uri, false)
@@ -332,7 +332,7 @@ object LocalBook {
     }
 
     /**
-     * 从文件分析书籍必要信息（书名 作者等）
+     * Analyze book info from file (title, author...)
      */
     private fun analyzeNameAuthor(fileName: String): Pair<String, String> {
         val tempFileName = fileName.substringBeforeLast(".")
@@ -340,10 +340,10 @@ object LocalBook {
         var author = ""
         if (!AppConfig.bookImportFileName.isNullOrBlank()) {
             try {
-                //在用户脚本后添加捕获author、name的代码，只要脚本中author、name有值就会被捕获
+                //Add code capturing author/name after user script, captured if values exist
                 val js =
                     AppConfig.bookImportFileName + "\nJSON.stringify({author:author,name:name})"
-                //在脚本中定义如何分解文件名成书名、作者名
+                //Define how to split filename into title/author in script
                 val jsonStr = RhinoScriptEngine.run {
                     val bindings = ScriptBindings()
                     bindings["src"] = tempFileName
@@ -392,7 +392,7 @@ object LocalBook {
     }
 
     /**
-     * 下载在线的文件
+     * Download online file
      */
     suspend fun saveBookFile(
         str: String,
@@ -462,7 +462,7 @@ object LocalBook {
         return appDb.bookDao.hasFile(fileName) == true
     }
 
-    //文件类书源 合并在线书籍信息 在线 > 本地
+    //File source merge online book info Online > Local
     fun mergeBook(localBook: Book, onLineBook: Book?): Book {
         onLineBook ?: return localBook
         localBook.name = onLineBook.name.ifBlank { localBook.name }
@@ -474,14 +474,14 @@ object LocalBook {
         return localBook
     }
 
-    //下载book对应的远程文件 并更新Book
+    //Download remote file for book and update Book
     private fun downloadRemoteBook(localBook: Book): Boolean {
         val webDavUrl = localBook.getRemoteUrl()
         if (webDavUrl.isNullOrBlank()) throw NoStackTraceException("Book file is not webDav File")
         try {
             AppConfig.defaultBookTreeUri
                 ?: throw NoBooksDirException()
-            // 兼容旧版链接
+            // Compatible with old links
             val webdav: WebDav = kotlin.runCatching {
                 WebDav.fromPath(webDavUrl)
             }.getOrElse {
@@ -493,7 +493,7 @@ object LocalBook {
             }
             inputStream.use {
                 if (localBook.isArchive) {
-                    // 压缩包
+                    // Archive
                     val archiveUri = saveBookFile(it, localBook.archiveName)
                     val newBook = importArchiveFile(archiveUri, localBook.originName) { name ->
                         name.contains(localBook.originName)

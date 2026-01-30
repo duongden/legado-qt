@@ -24,7 +24,7 @@ open class ScrollMultiAutoCompleteTextView @JvmOverloads constructor(
     attrs: AttributeSet? = null
 ) : AppCompatMultiAutoCompleteTextView(context, attrs) {
 
-    //是否到顶或者到底的标志
+    //Flag reached top or bottom
     private var disallowIntercept = true
 
     private val scrollStateIdle = 0
@@ -39,7 +39,7 @@ open class ScrollMultiAutoCompleteTextView @JvmOverloads constructor(
     private var mMinFlingVelocity: Int = 0
     private var mMaxFlingVelocity: Int = 0
 
-    //滑动距离的最大边界
+    //Max swipe distance boundary
     private var mOffsetHeight: Int = 0
 
     //f(x) = (x-1)^5 + 1
@@ -66,7 +66,7 @@ open class ScrollMultiAutoCompleteTextView @JvmOverloads constructor(
                 val y = scrollY + distanceY
                 if (y < 0 || y > mOffsetHeight) {
                     disallowIntercept = false
-                    //这里触发父布局或祖父布局的滑动事件
+                    //Trigger parent/grandparent swipe event
                     parent.requestDisallowInterceptTouchEvent(false)
                 } else {
                     disallowIntercept = true
@@ -153,7 +153,7 @@ open class ScrollMultiAutoCompleteTextView @JvmOverloads constructor(
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val result = super.onTouchEvent(event)
-        //如果是需要拦截，则再拦截，这个方法会在onScrollChanged方法之后再调用一次
+        //Intercept if needed, this method called again after onScrollChanged
         if (disallowIntercept && lineCount > maxLines) {
             parent.requestDisallowInterceptTouchEvent(true)
         }
@@ -168,19 +168,19 @@ open class ScrollMultiAutoCompleteTextView @JvmOverloads constructor(
     private fun initOffsetHeight() {
         val mLayoutHeight: Int
 
-        //获得内容面板
+        //Get content panel
         val mLayout = layout ?: return
-        //获得内容面板的高度
+        //Get content panel height
         mLayoutHeight = mLayout.height
-        //获取上内边距
+        //Get top padding
         val paddingTop: Int = totalPaddingTop
-        //获取下内边距
+        //Get bottom padding
         val paddingBottom: Int = totalPaddingBottom
 
-        //获得控件的实际高度
+        //Get widget actual height
         val mHeight: Int = measuredHeight
 
-        //计算滑动距离的边界
+        //Calc swipe distance boundary
         mOffsetHeight = mLayoutHeight + paddingTop + paddingBottom - mHeight
         if (mOffsetHeight <= 0) {
             scrollTo(0, 0)
@@ -202,7 +202,7 @@ open class ScrollMultiAutoCompleteTextView @JvmOverloads constructor(
     }
 
     /**
-     * 惯性滚动
+     * Inertial scrolling
      */
     private inner class ViewFling : Runnable {
 

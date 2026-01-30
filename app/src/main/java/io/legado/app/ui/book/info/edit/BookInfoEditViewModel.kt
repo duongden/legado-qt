@@ -3,6 +3,7 @@ package io.legado.app.ui.book.info.edit
 import android.app.Application
 import android.database.sqlite.SQLiteConstraintException
 import androidx.lifecycle.MutableLiveData
+import io.legado.app.R
 import io.legado.app.base.BaseViewModel
 import io.legado.app.constant.AppLog
 import io.legado.app.data.appDb
@@ -32,9 +33,9 @@ class BookInfoEditViewModel(application: Application) : BaseViewModel(applicatio
             success?.invoke()
         }.onError {
             if (it is SQLiteConstraintException) {
-                AppLog.put("书籍信息保存失败，存在相同书名作者书籍\n$it", it, true)
+                AppLog.put(context.getString(R.string.sc_book_info_save_failed_duplicate, it.localizedMessage), it, true)
             } else {
-                AppLog.put("书籍信息保存失败\n$it", it, true)
+                AppLog.put(context.getString(R.string.sc_book_info_save_failed, it.localizedMessage), it, true)
             }
         }
     }

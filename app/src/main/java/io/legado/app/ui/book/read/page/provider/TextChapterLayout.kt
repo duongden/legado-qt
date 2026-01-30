@@ -190,7 +190,7 @@ class TextChapterLayout(
     }
 
     /**
-     * 获取拆分完的章节数据
+     * Get split chapter data
      */
     private suspend fun getTextChapter(
         book: Book,
@@ -204,7 +204,7 @@ class TextChapterLayout(
         val isTextImageStyle = imageStyle.equals(Book.imgStyleText, true)
 
         if (titleMode != 2 || bookChapter.isVolume || contents.isEmpty()) {
-            //标题非隐藏
+            //Title not hidden
             displayTitle.splitNotBlank("\n").forEach { text ->
                 setTypeText(
                     book,
@@ -222,7 +222,7 @@ class TextChapterLayout(
             }
             durY += titleBottomSpacing
 
-            // 如果是单图模式且当前页有内容，强制分页
+            // If single image mode and current page has content, force page break
             if (isSingleImageStyle && pendingTextPage.lines.isNotEmpty() && contents.isNotEmpty()) {
                 prepareNextPageIfNeed()
             }
@@ -233,7 +233,7 @@ class TextChapterLayout(
         contents.forEach { content ->
             currentCoroutineContext().ensureActive()
             if (isTextImageStyle) {
-                //图片样式为文字嵌入类型
+                //Image style is text embedded
                 var text = content.replace(ChapterProvider.srcReplaceChar, "▣")
                 val srcList = LinkedList<String>()
                 sb.setLength(0)
@@ -324,7 +324,7 @@ class TextChapterLayout(
     }
 
     /**
-     * 排版图片
+     * Layout image
      */
     private suspend fun setTypeImage(
         book: Book,
@@ -361,10 +361,10 @@ class TextChapterLayout(
                         prepareNextPageIfNeed()
                     }
 
-                    // 图片竖直方向居中：调整 Y 坐标
+                    // Image vertical center: adjust Y coordinate
                     if (height < visibleHeight) {
                         val adjustHeight = (visibleHeight - height) / 2f
-                        durY = adjustHeight // 将 Y 坐标设置为居中位置
+                        durY = adjustHeight // Set Y coordinate to center
                     }
                 }
 
@@ -395,14 +395,14 @@ class TextChapterLayout(
                 ImageColumn(start = absStartX + start, end = absStartX + end, src = src)
             )
             calcTextLinePosition(textPages, textLine, stringBuilder.length)
-            stringBuilder.append(" ") // 确保翻页时索引计算正确
+            stringBuilder.append(" ") // Ensure correct index calculation during page turn
             pendingTextPage.addLine(textLine)
         }
         durY += textHeight * paragraphSpacing / 10f
     }
 
     /**
-     * 排版文字
+     * Layout text
      */
     @Suppress("DEPRECATION")
     private suspend fun setTypeText(
@@ -428,7 +428,7 @@ class TextChapterLayout(
             StaticLayout(text, textPaint, visibleWidth, Layout.Alignment.ALIGN_NORMAL, 0f, 0f, true)
         }
         durY = when {
-            //标题y轴居中
+            //Title Y-axis centered
             emptyContent && textPages.isEmpty() -> {
                 val textPage = pendingTextPage
                 if (textPage.lineSize == 0) {
@@ -473,7 +473,7 @@ class TextChapterLayout(
             textLine.text = lineText
             when {
                 lineIndex == 0 && layout.lineCount > 1 && !isTitle && isFirstLine -> {
-                    //多行的第一行 非标题
+                    //First line of multi-line, Non-title
                     addCharsToLineFirst(
                         book, absStartX, textLine, words, textPaint,
                         desiredWidth, widths, srcList
@@ -481,8 +481,8 @@ class TextChapterLayout(
                 }
 
                 lineIndex == layout.lineCount - 1 -> {
-                    //最后一行、单行
-                    //标题x轴居中
+                    //Last line, single line
+                    //Title X-axis centered
                     val startX = if (
                         isTitle &&
                         (isMiddleTitle || emptyContent || isVolumeTitle
@@ -504,14 +504,14 @@ class TextChapterLayout(
                         (isMiddleTitle || emptyContent || isVolumeTitle
                                 || imageStyle?.uppercase() == Book.imgStyleSingle)
                     ) {
-                        //标题居中
+                        //Title centered
                         val startX = (visibleWidth - desiredWidth) / 2
                         addCharsToLineNatural(
                             book, absStartX, textLine, words,
                             startX, false, widths, srcList
                         )
                     } else {
-                        //中间行
+                        //Middle line
                         addCharsToLineMiddle(
                             book, absStartX, textLine, words, textPaint,
                             desiredWidth, 0f, widths, srcList
@@ -556,7 +556,7 @@ class TextChapterLayout(
     }
 
     /**
-     * 有缩进,两端对齐
+     * Indented, justified
      */
     private suspend fun addCharsToLineFirst(
         book: Book,
@@ -564,7 +564,7 @@ class TextChapterLayout(
         textLine: TextLine,
         words: List<String>,
         textPaint: TextPaint,
-        /**自然排版长度**/
+        /**Natural layout length**/
         desiredWidth: Float,
         textWidths: List<Float>,
         srcList: LinkedList<String>?
@@ -602,7 +602,7 @@ class TextChapterLayout(
     }
 
     /**
-     * 无缩进,两端对齐
+     * No indent, justify
      */
     private suspend fun addCharsToLineMiddle(
         book: Book,
@@ -610,9 +610,9 @@ class TextChapterLayout(
         textLine: TextLine,
         words: List<String>,
         textPaint: TextPaint,
-        /**自然排版长度**/
+        /**Natural layout length**/
         desiredWidth: Float,
-        /**起始x坐标**/
+        /**Start x coordinate**/
         startX: Float,
         textWidths: List<Float>,
         srcList: LinkedList<String>?
@@ -666,7 +666,7 @@ class TextChapterLayout(
     }
 
     /**
-     * 自然排列
+     * Natural sort
      */
     private suspend fun addCharsToLineNatural(
         book: Book,
@@ -695,7 +695,7 @@ class TextChapterLayout(
     }
 
     /**
-     * 添加字符
+     * Add character
      */
     private suspend fun addCharToLine(
         book: Book,
@@ -770,23 +770,23 @@ class TextChapterLayout(
     private suspend fun prepareNextPageIfNeed(requestHeight: Float = -1f) {
         if (requestHeight > visibleHeight || requestHeight == -1f) {
             val textPage = pendingTextPage
-            // 双页的 durY 不正确，可能会小于实际高度
+            // Double page durY incorrect, might be less than actual height
             if (textPage.height < durY) {
                 textPage.height = durY
             }
             if (doublePage && absStartX < viewWidth / 2) {
-                //当前页面左列结束
+                //Current page left column end
                 textPage.leftLineSize = textPage.lineSize
                 absStartX = viewWidth / 2 + paddingLeft
             } else {
-                //当前页面结束,设置各种值
+                //Current page end, set values
                 if (textPage.leftLineSize == 0) {
                     textPage.leftLineSize = textPage.lineSize
                 }
                 textPage.text = stringBuilder.toString()
                 currentCoroutineContext().ensureActive()
                 onPageCompleted()
-                //新建页面
+                //New page
                 pendingTextPage = TextPage()
                 stringBuilder.clear()
                 absStartX = paddingLeft

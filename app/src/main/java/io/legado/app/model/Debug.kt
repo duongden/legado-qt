@@ -41,7 +41,7 @@ object Debug {
         if (BuildConfig.DEBUG) {
             Log.d("sourceDebug", msg)
         }
-        //调试信息始终要执行
+        //Debug info always execute
         callback?.let {
             if ((debugSource != sourceUrl || !print)) return
             var printMsg = msg

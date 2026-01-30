@@ -237,7 +237,7 @@ object ThemeConfig {
     }
 
     /**
-     * 更新主题
+     * Update theme
      */
     fun applyTheme(context: Context) = with(context) {
         when {

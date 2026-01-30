@@ -116,16 +116,16 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
         lifecycleScope.launch {
-            //隐私协议
+            //Privacy policy
             if (!privacyPolicy()) return@launch
-            //版本更新
+            //Version update
             upVersion()
-            //设置本地密码
+            //Set local password
             setLocalPassword()
             notifyAppCrash()
-            //备份同步
+            //Backup sync
             backupSync()
-            //自动更新书籍
+            //Auto update book
             val isAutoRefreshedBook = savedInstanceState?.getBoolean("isAutoRefreshedBook") ?: false
             if (AppConfig.autoRefreshBook && !isAutoRefreshedBook) {
                 binding.viewPagerMain.postDelayed(1000) {
@@ -194,7 +194,7 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
     }
 
     /**
-     * 用户隐私与协议
+     * Privacy and Protocol
      */
     private suspend fun privacyPolicy(): Boolean = suspendCoroutine { block ->
         if (LocalConfig.privacyPolicyOk) {
@@ -215,7 +215,7 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
     }
 
     /**
-     * 版本更新日志
+     * Version update log
      */
     private suspend fun upVersion() = suspendCoroutine { block ->
         if (LocalConfig.versionCode == appInfo.versionCode) {
@@ -274,7 +274,7 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
             return
         }
         LocalConfig.appCrash = false
-        alert(getString(R.string.draw), "检测到阅读发生了崩溃，是否打开崩溃日志以便报告问题？") {
+        alert(getString(R.string.draw), getString(R.string.crash_detected_message)) {
             yesButton {
                 showDialogFragment<CrashLogsDialog>()
             }
@@ -283,7 +283,7 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
     }
 
     /**
-     * 备份同步
+     * Backup sync
      */
     private fun backupSync() {
         if (!AppConfig.autoCheckNewBackup) {
@@ -322,7 +322,7 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
     }
 
     /**
-     * 如果重启太快fragment不会重建,这里更新一下书架的排序
+     * If restart too fast fragment won't recreate, update bookshelf sort here
      */
     override fun recreate() {
         (fragmentMap[getFragmentId(0)] as? BaseBookshelfFragment)?.run {

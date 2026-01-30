@@ -32,7 +32,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
- * 阅读内容视图
+ * Reading content view
  */
 class ContentTextView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
     var selectAble = AppConfig.textSelectAble
@@ -53,7 +53,7 @@ class ContentTextView(context: Context, attrs: AttributeSet?) : View(context, at
     var reverseStartCursor = false
     var reverseEndCursor = false
 
-    //滚动参数
+    //Scroll params
     private val pageFactory get() = callBack.pageFactory
     private val pageDelegate get() = callBack.pageDelegate
     private var pageOffset = 0
@@ -61,7 +61,7 @@ class ContentTextView(context: Context, attrs: AttributeSet?) : View(context, at
     private var isScroll = false
     private val renderRunnable by lazy { Runnable { preRenderPage() } }
 
-    //绘制图片的paint
+    //Paint for drawing image
     val imagePaint by lazy {
         Paint().apply {
             isAntiAlias = AppConfig.useAntiAlias
@@ -77,7 +77,7 @@ class ContentTextView(context: Context, attrs: AttributeSet?) : View(context, at
      */
     fun setContent(textPage: TextPage) {
         this.textPage = textPage
-        // 非滑动翻页动画需要同步重绘，不然翻页可能会出现闪烁
+        // Non-swipe page turn animation needs sync redraw, otherwise flicker may occur
         if (isScroll) {
             postInvalidate()
         } else {
@@ -104,13 +104,13 @@ class ContentTextView(context: Context, attrs: AttributeSet?) : View(context, at
     }
 
     /**
-     * 绘制页面
+     * Draw page
      */
     private fun drawPage(canvas: Canvas) {
         var relativeOffset = relativeOffset(0)
         textPage.draw(this, canvas, relativeOffset)
         if (!callBack.isScroll) return
-        //滚动翻页
+        //Scroll page turn
         if (!pageFactory.hasNext()) return
         val textPage1 = relativePage(1)
         relativeOffset += textPage.height
@@ -129,11 +129,11 @@ class ContentTextView(context: Context, attrs: AttributeSet?) : View(context, at
     }
 
     /**
-     * 滚动事件
-     * pageOffset 向上滚动 减小 向下滚动 增大
-     * pageOffset 范围 0 ~ -textPage.height 大于0为上一页，小于-textPage.height为下一页
-     * 以内容显示区域顶端为界，pageOffset的绝对值为textPage上方的高度
-     * pageOffset + textPage.height 为 textPage 下方的高度
+     * Scroll event
+     * pageOffset Up decreases, Down increases
+     * pageOffset range 0 ~ -textPage.height. >0 Prev page, <-textPage.height Next page
+     * Bound by content display area top, abs(pageOffset) is height above textPage
+     * pageOffset + textPage.height is height below textPage
      */
     fun scroll(mOffset: Int) {
         pageOffset += mOffset
@@ -226,8 +226,8 @@ class ContentTextView(context: Context, attrs: AttributeSet?) : View(context, at
     }
 
     /**
-     * 单击
-     * @return true:已处理, false:未处理
+     * Click
+     * @return true: handled, false: unhandled
      */
     @Suppress("UNUSED_ANONYMOUS_PARAMETER")
     fun click(x: Float, y: Float): Boolean {
@@ -270,7 +270,7 @@ class ContentTextView(context: Context, attrs: AttributeSet?) : View(context, at
     }
 
     /**
-     * 开始选择符移动
+     * Start selector move
      */
     fun selectStartMove(x: Float, y: Float) {
         touchRough(x, y) { _, textPos, _, _, _ ->
@@ -294,7 +294,7 @@ class ContentTextView(context: Context, attrs: AttributeSet?) : View(context, at
     }
 
     /**
-     * 结束选择符移动
+     * End selector move
      */
     fun selectEndMove(x: Float, y: Float) {
         touchRough(x, y) { _, textPos, _, _, _ ->
@@ -318,8 +318,8 @@ class ContentTextView(context: Context, attrs: AttributeSet?) : View(context, at
     }
 
     /**
-     * 触碰位置信息
-     * @param touched 回调
+     * Touch pos info
+     * @param touched Callback
      */
     private fun touch(
         x: Float,
@@ -337,7 +337,7 @@ class ContentTextView(context: Context, attrs: AttributeSet?) : View(context, at
         for (relativePos in 0..2) {
             relativeOffset = relativeOffset(relativePos)
             if (relativePos > 0) {
-                //滚动翻页
+                //Scroll page turn
                 if (!callBack.isScroll) return
                 if (relativeOffset >= ChapterProvider.visibleHeight) return
             }
@@ -361,9 +361,9 @@ class ContentTextView(context: Context, attrs: AttributeSet?) : View(context, at
     }
 
     /**
-     * 触碰位置信息
-     * 文本选择专用
-     * @param touched 回调
+     * Touch pos info
+     * For text selection
+     * @param touched Callback
      */
     private fun touchRough(
         x: Float,
@@ -380,7 +380,7 @@ class ContentTextView(context: Context, attrs: AttributeSet?) : View(context, at
         for (relativePos in 0..2) {
             relativeOffset = relativeOffset(relativePos)
             if (relativePos > 0) {
-                //滚动翻页
+                //Scroll page turn
                 if (!callBack.isScroll) return
                 if (relativeOffset >= ChapterProvider.visibleHeight) return
             }
@@ -429,7 +429,7 @@ class ContentTextView(context: Context, attrs: AttributeSet?) : View(context, at
         for (relativePos in 0..2) {
             relativeOffset = relativeOffset(relativePos)
             if (relativePos > 0) {
-                //滚动翻页
+                //Scroll page turn
                 if (!callBack.isScroll) break
                 if (relativeOffset >= ChapterProvider.visibleHeight) break
             }
@@ -454,7 +454,7 @@ class ContentTextView(context: Context, attrs: AttributeSet?) : View(context, at
         for (relativePos in 0..2) {
             relativeOffset = relativeOffset(relativePos)
             if (relativePos > 0) {
-                //滚动翻页
+                //Scroll page turn
                 if (!callBack.isScroll) break
                 if (relativeOffset >= ChapterProvider.visibleHeight) break
             }

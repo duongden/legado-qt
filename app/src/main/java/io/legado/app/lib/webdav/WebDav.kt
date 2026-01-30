@@ -53,7 +53,7 @@ open class WebDav(
         @SuppressLint("DateTimeFormatter")
         private val dateTimeFormatter = DateTimeFormatter.RFC_1123_DATE_TIME
 
-        // 指定返回哪些属性
+        // Specify attributes to return
         @Language("xml")
         private const val DIR =
             """<?xml version="1.0"?>
@@ -118,7 +118,7 @@ open class WebDav(
         }
 
     /**
-     * 获取当前url文件信息
+     * Get current url file info
      */
     @Throws(WebDavException::class)
     suspend fun getWebDavFile(): WebDavFile? {
@@ -128,8 +128,8 @@ open class WebDav(
     }
 
     /**
-     * 列出当前路径下的文件
-     * @return 文件列表
+     * List files in current path
+     * @return File list
      */
     @Throws(WebDavException::class)
     suspend fun listFiles(): List<WebDavFile> {
@@ -142,7 +142,7 @@ open class WebDav(
     }
 
     /**
-     * @param propsList 指定列出文件的哪些属性
+     * @param propsList Specify which file properties to list
      */
     @Throws(WebDavException::class)
     private suspend fun propFindResponse(
@@ -162,8 +162,8 @@ open class WebDav(
         return webDavClient.newCallResponse {
             url(url)
             addHeader("Depth", depth.toString())
-            // 添加RequestBody对象，可以只返回的属性。如果设为null，则会返回全部属性
-            // 注意：尽量手动指定需要返回的属性。若返回全部属性，可能后由于Prop.java里没有该属性名，而崩溃。
+            // Add RequestBody object, can return specific attributes. If null, returns all attributes
+            // Note: Manually specify returned attributes if possible. Returning all may crash if Prop.java missing attribute name.
             val requestBody = requestPropsStr.toRequestBody("text/plain".toMediaType())
             method("PROPFIND", requestBody)
         }.apply {
@@ -172,7 +172,7 @@ open class WebDav(
     }
 
     /**
-     * 解析webDav返回的xml
+     * Parse webDav xml
      */
     private fun parseBody(s: String): List<WebDavFile> {
         val list = ArrayList<WebDavFile>()
@@ -186,7 +186,7 @@ open class WebDav(
         val urlStr = httpUrl ?: return list
         val baseUrl = NetworkUtils.getBaseUrl(urlStr)
         for (element in elements) {
-            //依然是优化支持 caddy 自建的 WebDav ，其目录后缀都为“/”, 所以删除“/”的判定，不然无法获取该目录项
+            //Still optimization for caddy self-hosted WebDav, dir suffix is "/", so remove "/" check, else cannot get dir item
             val href = element.findNS("href", ns)[0].text()
             val hrefDecode = URLDecoder.decodeForPath(href, Charsets.UTF_8)
             val fileName = hrefDecode.removeSuffix("/").substringAfterLast("/")
@@ -239,7 +239,7 @@ open class WebDav(
     }
 
     /**
-     * 文件是否存在
+     * File exists
      */
     suspend fun exists(): Boolean {
         val url = httpUrl ?: return false
@@ -256,7 +256,7 @@ open class WebDav(
     }
 
     /**
-     * 检查用户名密码是否有效
+     * Check username/password validity
      */
     suspend fun check(): Boolean {
         return kotlin.runCatching {
@@ -272,12 +272,12 @@ open class WebDav(
     }
 
     /**
-     * 根据自己的URL，在远程处创建对应的文件夹
-     * @return 是否创建成功
+     * Create corresponding folder remotely by URL
+     * @return Success
      */
     suspend fun makeAsDir(): Boolean {
         val url = httpUrl ?: return false
-        //防止报错
+        //Prevent error
         return kotlin.runCatching {
             if (!exists()) {
                 webDavClient.newCallResponse {
@@ -294,9 +294,9 @@ open class WebDav(
     }
 
     /**
-     * 下载到本地
-     * @param savedPath       本地的完整路径，包括最后的文件名
-     * @param replaceExisting 是否替换本地的同名文件
+     * Download to local
+     * @param savedPath       Local full path, including filename
+     * @param replaceExisting Whether to replace existing file
      */
     @Throws(WebDavException::class)
     suspend fun downloadTo(savedPath: String, replaceExisting: Boolean) {
@@ -312,7 +312,7 @@ open class WebDav(
     }
 
     /**
-     * 下载文件,返回ByteArray
+     * Download file, return ByteArray
      */
     @Throws(WebDavException::class)
     suspend fun download(): ByteArray {
@@ -322,7 +322,7 @@ open class WebDav(
     }
 
     /**
-     * 上传文件
+     * Upload file
      */
     @Throws(WebDavException::class)
     suspend fun upload(localPath: String, contentType: String = DEFAULT_CONTENT_TYPE) {
@@ -334,7 +334,7 @@ open class WebDav(
         kotlin.runCatching {
             withContext(IO) {
                 if (!file.exists()) throw WebDavException("文件不存在")
-                // 务必注意RequestBody不要嵌套，不然上传时内容可能会被追加多余的文件信息
+                // Warning: RequestBody must not be nested, otherwise extra file info might be appended during upload
                 val fileBody = file.asRequestBody(contentType.toMediaType())
                 val url = httpUrl ?: throw WebDavException("url不能为空")
                 webDavClient.newCallResponse {
@@ -353,7 +353,7 @@ open class WebDav(
 
     @Throws(WebDavException::class)
     suspend fun upload(byteArray: ByteArray, contentType: String = DEFAULT_CONTENT_TYPE) {
-        // 务必注意RequestBody不要嵌套，不然上传时内容可能会被追加多余的文件信息
+        // Warning: RequestBody must not be nested, otherwise extra file info might be appended during upload
         kotlin.runCatching {
             withContext(IO) {
                 val fileBody = byteArray.toRequestBody(contentType.toMediaType())
@@ -374,7 +374,7 @@ open class WebDav(
 
     @Throws(WebDavException::class)
     suspend fun upload(uri: Uri, contentType: String = DEFAULT_CONTENT_TYPE) {
-        // 务必注意RequestBody不要嵌套，不然上传时内容可能会被追加多余的文件信息
+        // Warning: RequestBody must not be nested, otherwise extra file info might be appended during upload
         kotlin.runCatching {
             withContext(IO) {
                 val fileBody = uri.toRequestBody(contentType.toMediaType())
@@ -405,11 +405,11 @@ open class WebDav(
     }
 
     /**
-     * 移除文件/文件夹
+     * Remove file/folder
      */
     suspend fun delete(): Boolean {
         val url = httpUrl ?: return false
-        //防止报错
+        //Prevent error
         return kotlin.runCatching {
             webDavClient.newCallResponse {
                 url(url)
@@ -424,7 +424,7 @@ open class WebDav(
     }
 
     /**
-     * 检测返回结果是否正确
+     * Check result correctness
      */
     private fun checkResult(response: Response) {
         if (!response.isSuccessful) {

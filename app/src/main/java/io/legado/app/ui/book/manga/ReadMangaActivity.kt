@@ -127,7 +127,7 @@ class ReadMangaActivity : VMBaseActivity<ActivityMangaBinding, ReadMangaViewMode
         }
     }
 
-    //打开目录返回选择章节返回结果
+    //Open catalog return selected chapter result
     private val tocActivity = registerForActivityResult(TocActivityResult()) {
         it?.let {
             viewModel.openChapter(it.first, it.second)
@@ -347,7 +347,7 @@ class ReadMangaActivity : VMBaseActivity<ActivityMangaBinding, ReadMangaViewMode
         super.onResume()
         networkChangedListener.register()
         networkChangedListener.onNetworkChanged = {
-            // 当网络是可用状态且无需初始化时同步进度（初始化中已有同步进度逻辑）
+            // Sync progress when network available and no init needed (Sync logic exists in init)
             if (AppConfig.syncBookProgressPlus && NetworkUtils.isAvailable() && !justInitData) {
                 ReadManga.syncProgress({ progress -> sureNewProgress(progress) })
             }
@@ -462,7 +462,7 @@ class ReadMangaActivity : VMBaseActivity<ActivityMangaBinding, ReadMangaViewMode
     }
 
     /**
-     * 菜单
+     * Menu
      */
     @SuppressLint("StringFormatMatches", "NotifyDataSetChanged")
     override fun onCompatOptionsItemSelected(item: MenuItem): Boolean {
@@ -804,7 +804,7 @@ class ReadMangaActivity : VMBaseActivity<ActivityMangaBinding, ReadMangaViewMode
         val normalizedBrightness = brightness.toFloat() / 255.0f
         layoutParams.screenBrightness = normalizedBrightness.coerceIn(0f, 1f)
         window.attributes = layoutParams
-        // 强制刷新屏幕
+        // Force refresh screen
         window.decorView.postInvalidate()
     }
 

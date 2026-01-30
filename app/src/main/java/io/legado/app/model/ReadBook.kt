@@ -81,10 +81,10 @@ object ReadBook : CoroutineScope by MainScope() {
     private val nextChapterLoadingLock = Mutex()
     var readStartTime: Long = System.currentTimeMillis()
 
-    /* 跳转进度前进度记录 */
+    /* Progress record before jump progress */
     var lastBookProgress: BookProgress? = null
 
-    /* web端阅读进度记录 */
+    /* Web reading progress record */
     var webBookProgress: BookProgress? = null
 
     var preDownloadTask: Job? = null
@@ -205,13 +205,13 @@ object ReadBook : CoroutineScope by MainScope() {
         }
     }
 
-    //暂时保存跳转前进度
+    //Temp save progress before jump
     fun saveCurrentBookProgress() {
-        if (lastBookProgress != null) return //避免进度条连续跳转不能覆盖最初的进度记录
+        if (lastBookProgress != null) return //Avoid continuous progress bar jumps overwriting initial record
         lastBookProgress = book?.let { BookProgress(it) }
     }
 
-    //恢复跳转前进度
+    //Restore progress before jump
     fun restoreLastBookProgress() {
         lastBookProgress?.let {
             setProgress(it)
@@ -245,8 +245,8 @@ object ReadBook : CoroutineScope by MainScope() {
     }
 
     /**
-     * 同步阅读进度
-     * 如果当前进度快于服务器进度或者没有进度进行上传，如果慢与服务器进度则执行传入动作
+     * Sync reading progress
+     * If current progress faster than server or no progress, upload. If slower, execute input action
      */
     fun syncProgress(
         newProgressAction: ((progress: BookProgress) -> Unit)? = null,
@@ -264,7 +264,7 @@ object ReadBook : CoroutineScope by MainScope() {
                 (progress.durChapterIndex == book.durChapterIndex
                         && progress.durChapterPos < book.durChapterPos)
             ) {
-                // 服务器没有进度或者进度比服务器快，上传现有进度
+                // Server has no progress or progress faster than server, upload current progress
                 Coroutine.async {
                     AppWebDav.uploadBookProgress(BookProgress(book), uploadSuccessAction)
                     book.update()
@@ -272,7 +272,7 @@ object ReadBook : CoroutineScope by MainScope() {
             } else if (progress.durChapterIndex > book.durChapterIndex ||
                 progress.durChapterPos > book.durChapterPos
             ) {
-                // 进度比服务器慢，执行传入动作
+                // Progress slower than server, execute input action
                 newProgressAction?.invoke(progress)
             } else {
                 syncSuccessAction?.invoke()
@@ -466,7 +466,7 @@ object ReadBook : CoroutineScope by MainScope() {
     }
 
     /**
-     * 当前页面变化
+     * Current page changed
      */
     private fun curPageChanged(pageChanged: Boolean = false) {
         callBack?.pageChanged()
@@ -485,7 +485,7 @@ object ReadBook : CoroutineScope by MainScope() {
     }
 
     /**
-     * 朗读
+     * Read aloud
      */
     fun readAloud(play: Boolean = true, startPos: Int = 0) {
         book ?: return
@@ -496,7 +496,7 @@ object ReadBook : CoroutineScope by MainScope() {
     }
 
     /**
-     * 当前页数
+     * Current page number
      */
     val durPageIndex: Int
         get() {
@@ -504,7 +504,7 @@ object ReadBook : CoroutineScope by MainScope() {
         }
 
     /**
-     * 是否排版到了当前阅读位置
+     * Layout reached current reading pos
      */
     val isLayoutAvailable inline get() = durPageIndex >= 0
 
@@ -513,7 +513,7 @@ object ReadBook : CoroutineScope by MainScope() {
     val contentLoadFinish get() = curTextChapter != null || msg != null
 
     /**
-     * chapterOnDur: 0为当前页,1为下一页,-1为上一页
+     * chapterOnDur: 0 is current page, 1 is next page, -1 is previous page
      */
     fun textChapter(chapterOnDur: Int = 0): TextChapter? {
         return when (chapterOnDur) {
@@ -525,9 +525,9 @@ object ReadBook : CoroutineScope by MainScope() {
     }
 
     /**
-     * 加载当前章节和前后一章内容
-     * @param resetPageOffset 滚动阅读是否重置滚动位置
-     * @param success 当前章节加载完成回调
+     * Load current chapter and prev/next chapters
+     * @param resetPageOffset Whether to reset scroll pos
+     * @param success Callback on completion
      */
     fun loadContent(
         resetPageOffset: Boolean,
@@ -555,11 +555,11 @@ object ReadBook : CoroutineScope by MainScope() {
     }
 
     /**
-     * 加载章节内容
-     * @param index 章节序号
-     * @param upContent 是否更新视图
-     * @param resetPageOffset 滚动阅读是否重置滚动位置
-     * @param success 加载完成回调
+     * Load chapter content
+     * @param index Chapter index
+     * @param upContent Update view
+     * @param resetPageOffset Reset scroll pos
+     * @param success Callback
      */
     fun loadContent(
         index: Int,
@@ -613,7 +613,7 @@ object ReadBook : CoroutineScope by MainScope() {
     }
 
     /**
-     * 下载正文
+     * Download content_body
      */
     private suspend fun downloadIndex(index: Int) {
         if (index < 0) return
@@ -634,7 +634,7 @@ object ReadBook : CoroutineScope by MainScope() {
     }
 
     /**
-     * 下载正文
+     * Download content_body
      */
     private fun download(
         scope: CoroutineScope,
@@ -683,7 +683,7 @@ object ReadBook : CoroutineScope by MainScope() {
     }
 
     /**
-     * 内容加载完成
+     * Content loading complete
      */
     @Synchronized
     fun contentLoadFinish(
@@ -932,7 +932,7 @@ object ReadBook : CoroutineScope by MainScope() {
             }
             preDownloadTask?.cancel()
             preDownloadTask = launch(IO) {
-                //预下载
+                //Pre-download
                 launch {
                     val maxChapterIndex =
                         min(durChapterIndex + AppConfig.preDownloadNum, chapterSize)
@@ -989,7 +989,7 @@ object ReadBook : CoroutineScope by MainScope() {
     }
 
     /**
-     * 注册回调
+     * Register callback
      */
     fun register(cb: CallBack) {
         callBack?.notifyBookChanged()
@@ -997,7 +997,7 @@ object ReadBook : CoroutineScope by MainScope() {
     }
 
     /**
-     * 取消注册回调
+     * Unregister callback
      */
     fun unregister(cb: CallBack) {
         if (callBack === cb) {

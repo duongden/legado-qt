@@ -53,7 +53,7 @@ object CacheBook {
         updateBookSource(bookSource)
         var cacheBook = cacheBookMap[bookUrl]
         if (cacheBook != null) {
-            //存在时更新,书源可能会变化,必须更新
+            //Update if exists, source may change, must update
             cacheBook.bookSource = bookSource
             cacheBook.book = book
             return cacheBook
@@ -68,7 +68,7 @@ object CacheBook {
         updateBookSource(bookSource)
         var cacheBook = cacheBookMap[book.bookUrl]
         if (cacheBook != null) {
-            //存在时更新,书源可能会变化,必须更新
+            //Update if exists, source may change, must update
             cacheBook.bookSource = bookSource
             cacheBook.book = book
             return cacheBook
@@ -267,7 +267,7 @@ object CacheBook {
 
         @Synchronized
         private fun onPostError(chapter: BookChapter, error: Throwable) {
-            //重试3次
+            //Retry 3 times
             if ((errorDownloadMap[chapter.primaryStr()] ?: 0) < 3 && !isStopped) {
                 waitDownloadSet.add(chapter.index)
             } else {
@@ -300,7 +300,7 @@ object CacheBook {
         }
 
         /**
-         * 从待下载列表内取第一条下载
+         * Take first download from pending download list
          */
         @Synchronized
         fun download(scope: CoroutineScope, context: CoroutineContext) {
@@ -320,7 +320,7 @@ object CacheBook {
                 return
             }
             if (chapter.isVolume) {
-                /** 修正下载计数 */
+                /** Correct download count */
                 postEvent(EventBus.SAVE_CONTENT, Pair(book, chapter))
                 waitDownloadSet.remove(chapterIndex)
                 return
@@ -340,7 +340,7 @@ object CacheBook {
                     onSuccess(chapter)
                 }.onError {
                     onPreError(chapter, it)
-                    //出现错误等待一秒后重新加入待下载列表
+                    //Error occurred, wait 1s then re-add to download list
                     delay(1000)
                     onPostError(chapter, it)
                 }.onCancel {
@@ -365,7 +365,7 @@ object CacheBook {
                 downloadFinish(chapter, content)
             }.onError {
                 onPreError(chapter, it)
-                //出现错误等待一秒后重新加入待下载列表
+                //Error occurred, wait 1s then re-add to download list
                 delay(1000)
                 onPostError(chapter, it)
                 downloadFinish(chapter, "获取正文失败\n${it.localizedMessage}")

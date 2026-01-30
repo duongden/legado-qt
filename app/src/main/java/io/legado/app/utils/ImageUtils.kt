@@ -5,17 +5,19 @@ import io.legado.app.data.entities.BaseSource
 import io.legado.app.data.entities.Book
 import io.legado.app.data.entities.BookSource
 import io.legado.app.data.entities.RssSource
+import io.legado.app.R
+import splitties.init.appCtx
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 
 /**
- * 加密图片解密工具
+ * Encrypted image decryption tool
  */
 object ImageUtils {
 
     /**
-     * @param isCover 根据这个执行书源中不同的解密规则
-     * @return 解密失败返回Null 解密规则为空不处理
+     * @param isCover Execute different decryption rules in book source based on this
+     * @return Return Null if decryption failed. Do not process if decryption rule is empty
      */
     fun decode(
         src: String, bytes: ByteArray, isCover: Boolean,
@@ -23,7 +25,7 @@ object ImageUtils {
     ): ByteArray? {
         val ruleJs = getRuleJs(source, isCover)
         if (ruleJs.isNullOrBlank()) return bytes
-        //解密库hutool.crypto ByteArray|InputStream -> ByteArray
+        //Decryption lib hutool.crypto ByteArray|InputStream -> ByteArray
         return kotlin.runCatching {
             source?.evalJS(ruleJs) {
                 put("book", book)
@@ -31,7 +33,7 @@ object ImageUtils {
                 put("src", src)
             } as ByteArray
         }.onFailure {
-            AppLog.putDebug("${src}解密错误", it)
+            AppLog.putDebug("${src}${appCtx.getString(R.string.sc_decryption_error)}", it)
         }.getOrNull()
     }
 
@@ -41,7 +43,7 @@ object ImageUtils {
     ): InputStream? {
         val ruleJs = getRuleJs(source, isCover)
         if (ruleJs.isNullOrBlank()) return inputStream
-        //解密库hutool.crypto ByteArray|InputStream -> ByteArray
+        //Decryption lib hutool.crypto ByteArray|InputStream -> ByteArray
         return kotlin.runCatching {
             val bytes = source?.evalJS(ruleJs) {
                 put("book", book)
@@ -50,7 +52,7 @@ object ImageUtils {
             } as ByteArray
             ByteArrayInputStream(bytes)
         }.onFailure {
-            AppLog.putDebug("${src}解密错误", it)
+            AppLog.putDebug("${src}${appCtx.getString(R.string.sc_decryption_error)}", it)
         }.getOrNull()
     }
 

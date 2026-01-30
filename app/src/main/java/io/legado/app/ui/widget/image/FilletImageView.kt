@@ -22,7 +22,7 @@ class FilletImageView @JvmOverloads constructor(
     private var leftBottomRadius: Int = 0
 
     init {
-        // 读取配置
+        // Read config
         val array = context.obtainStyledAttributes(attrs, R.styleable.FilletImageView)
         val defaultRadius = 5.dpToPx()
         val radius =
@@ -45,7 +45,7 @@ class FilletImageView @JvmOverloads constructor(
             defaultRadius
         )
 
-        //如果四个角的值没有设置，那么就使用通用的radius的值。
+        //If four corners not set, use common radius.
         if (defaultRadius == leftTopRadius) {
             leftTopRadius = radius
         }
@@ -68,7 +68,7 @@ class FilletImageView @JvmOverloads constructor(
     }
 
     override fun onDraw(canvas: Canvas) {
-        //这里做下判断，只有图片的宽高大于设置的圆角距离的时候才进行裁剪
+        //Check here, crop only if img w/h > radius
         val maxLeft = max(leftTopRadius, leftBottomRadius)
         val maxRight = max(rightTopRadius, rightBottomRadius)
         val minWidth = maxLeft + maxRight
@@ -77,7 +77,7 @@ class FilletImageView @JvmOverloads constructor(
         val minHeight = maxTop + maxBottom
         if (width >= minWidth && height > minHeight) {
             @SuppressLint("DrawAllocation") val path = Path()
-            //四个角：右上，右下，左下，左上
+            //Four corners: TR, BR, BL, TL
             path.moveTo(leftTopRadius.toFloat(), 0f)
             path.lineTo(width - rightTopRadius, 0f)
             path.quadTo(width, 0f, width, rightTopRadius.toFloat())

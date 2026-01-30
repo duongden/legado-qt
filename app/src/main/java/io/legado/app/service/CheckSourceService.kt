@@ -98,7 +98,7 @@ class CheckSourceService : BaseService() {
 
     private fun check(ids: List<String>) {
         if (checkJob?.isActive == true) {
-            toastOnUi("已有书源在校验,等完成后再试")
+            toastOnUi(getString(R.string.source_checking_wait))
             return
         }
         checkJob = lifecycleScope.launch(searchCoroutine) {
@@ -137,16 +137,16 @@ class CheckSourceService : BaseService() {
                 doCheckSource(source)
             }
         }.onSuccess {
-            Debug.updateFinalMessage(source.bookSourceUrl, "校验成功")
+            Debug.updateFinalMessage(source.bookSourceUrl, getString(R.string.check_success))
         }.onFailure {
             coroutineContext.ensureActive()
             when (it) {
-                is TimeoutCancellationException -> source.addGroup("校验超时")
-                is ScriptException, is WrappedException -> source.addGroup("js失效")
-                !is NoStackTraceException -> source.addGroup("网站失效")
+                is TimeoutCancellationException -> source.addGroup(getString(R.string.check_timeout))
+                is ScriptException, is WrappedException -> source.addGroup(getString(R.string.js_invalid))
+                !is NoStackTraceException -> source.addGroup(getString(R.string.website_invalid))
             }
             source.addErrorComment(it)
-            Debug.updateFinalMessage(source.bookSourceUrl, "校验失败:${it.localizedMessage}")
+            Debug.updateFinalMessage(source.bookSourceUrl, getString(R.string.check_failed, it.localizedMessage))
         }
         source.respondTime = Debug.getRespondTime(source.bookSourceUrl)
     }
@@ -155,36 +155,36 @@ class CheckSourceService : BaseService() {
         Debug.startChecking(source)
         source.removeInvalidGroups()
         source.removeErrorComment()
-        //校验搜索书籍
+        //Validate search book
         if (CheckSource.checkSearch) {
             val searchWord = source.getCheckKeyword(CheckSource.keyword)
             if (!source.searchUrl.isNullOrBlank()) {
-                source.removeGroup("搜索链接规则为空")
+                source.removeGroup(getString(R.string.search_url_rule_empty))
                 val searchBooks = WebBook.searchBookAwait(source, searchWord)
                 if (searchBooks.isEmpty()) {
-                    source.addGroup("搜索失效")
+                    source.addGroup(getString(R.string.search_invalid))
                 } else {
-                    source.removeGroup("搜索失效")
+                    source.removeGroup(getString(R.string.search_invalid))
                     checkBook(searchBooks.first().toBook(), source)
                 }
             } else {
-                source.addGroup("搜索链接规则为空")
+                source.addGroup(getString(R.string.search_url_rule_empty))
             }
         }
-        //校验发现书籍
+        //Validate explore book
         if (CheckSource.checkDiscovery && !source.exploreUrl.isNullOrBlank()) {
             val url = source.exploreKinds().firstOrNull {
                 !it.url.isNullOrBlank()
             }?.url
             if (url.isNullOrBlank()) {
-                source.addGroup("发现规则为空")
+                source.addGroup(getString(R.string.explore_rule_empty))
             } else {
-                source.removeGroup("发现规则为空")
+                source.removeGroup(getString(R.string.explore_rule_empty))
                 val exploreBooks = WebBook.exploreBookAwait(source, url)
                 if (exploreBooks.isEmpty()) {
-                    source.addGroup("发现失效")
+                    source.addGroup(getString(R.string.explore_invalid))
                 } else {
-                    source.removeGroup("发现失效")
+                    source.removeGroup(getString(R.string.explore_invalid))
                     checkBook(exploreBooks.first().toBook(), source, false)
                 }
             }
@@ -203,14 +203,14 @@ class CheckSourceService : BaseService() {
             if (!CheckSource.checkInfo) {
                 return
             }
-            //校验详情
+            //Validate details
             if (book.tocUrl.isBlank()) {
                 WebBook.getBookInfoAwait(source, book)
             }
             if (!CheckSource.checkCategory || source.bookSourceType == BookSourceType.file) {
                 return
             }
-            //校验目录
+            //Validate catalog
             val toc = WebBook.getChapterListAwait(source, book).getOrThrow().asSequence()
                 .filter { !(it.isVolume && it.url.startsWith(it.title)) }
                 .take(2)
@@ -219,7 +219,7 @@ class CheckSourceService : BaseService() {
             if (!CheckSource.checkContent) {
                 return
             }
-            //校验正文
+            //Validate content
             WebBook.getContentAwait(
                 bookSource = source,
                 book = book,
@@ -228,16 +228,16 @@ class CheckSourceService : BaseService() {
                 needSave = false
             )
         }.onFailure {
-            val bookType = if (isSearchBook) "搜索" else "发现"
+            val bookType = if (isSearchBook) getString(R.string.service_search) else getString(R.string.service_explore)
             when (it) {
-                is ContentEmptyException -> source.addGroup("${bookType}正文失效")
-                is TocEmptyException -> source.addGroup("${bookType}目录失效")
+                is ContentEmptyException -> source.addGroup(getString(R.string.content_invalid, bookType))
+                is TocEmptyException -> source.addGroup(getString(R.string.toc_invalid, bookType))
                 else -> throw it
             }
         }.onSuccess {
-            val bookType = if (isSearchBook) "搜索" else "发现"
-            source.removeGroup("${bookType}目录失效")
-            source.removeGroup("${bookType}正文失效")
+            val bookType = if (isSearchBook) getString(R.string.service_search) else getString(R.string.service_explore)
+            source.removeGroup(getString(R.string.toc_invalid, bookType))
+            source.removeGroup(getString(R.string.content_invalid, bookType))
         }
     }
 
@@ -249,7 +249,7 @@ class CheckSourceService : BaseService() {
     }
 
     /**
-     * 更新通知
+     * Update notification
      */
     override fun startForegroundNotification() {
         notificationBuilder.setContentText(notificationMsg)

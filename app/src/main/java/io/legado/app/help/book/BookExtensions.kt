@@ -119,17 +119,17 @@ fun Book.getLocalUri(): Uri {
     } else {
         Uri.fromFile(File(bookUrl))
     }
-    //先检测uri是否有效,这个比较快
+    //Check uri validity first, is faster
     uri.inputStream(appCtx).getOrNull()?.use {
         localUriCache[bookUrl] = uri
     }?.let {
         return uri
     }
-    //不同的设备书籍保存路径可能不一样, uri无效时尝试寻找当前保存路径下的文件
+    //Different devices book save path may differ, try finding file in current save path if uri invalid
     val defaultBookDir = AppConfig.defaultBookTreeUri
     val importBookDir = AppConfig.importBookPath
 
-    // 查找书籍保存目录
+    // Find book save directory
     if (!defaultBookDir.isNullOrBlank()) {
         val treeUri = defaultBookDir.toUri()
         val treeFileDoc = FileDoc.fromUri(treeUri, true)
@@ -139,7 +139,7 @@ fun Book.getLocalUri(): Uri {
             val fileDoc = treeFileDoc.find(originName, 5, 100)
             if (fileDoc != null) {
                 localUriCache[bookUrl] = fileDoc.uri
-                //更新bookUrl 重启不用再找一遍
+                //Update bookUrl restart no need search again
                 bookUrl = fileDoc.toString()
                 save()
                 return fileDoc.uri
@@ -147,7 +147,7 @@ fun Book.getLocalUri(): Uri {
         }
     }
 
-    // 查找添加本地选择的目录
+    // Find add locally selected directory
     if (!importBookDir.isNullOrBlank() && defaultBookDir != importBookDir) {
         val treeUri = if (importBookDir.isUri()) {
             importBookDir.toUri()
@@ -315,7 +315,7 @@ fun Book.getExportFileName(suffix: String): String {
         return "$name 作者：${getRealAuthor()}.$suffix"
     }
     val bindings = buildScriptBindings { bindings ->
-        bindings["epubIndex"] = ""// 兼容老版本,修复可能存在的错误
+        bindings["epubIndex"] = ""// Compatible with old version, fix potential errors
         bindings["name"] = name
         bindings["author"] = getRealAuthor()
     }
@@ -334,7 +334,7 @@ fun Book.getExportFileName(
     epubIndex: Int,
     jsStr: String? = AppConfig.episodeExportFileName
 ): String {
-    // 默认规则
+    // Default rule
     val default = "$name 作者：${getRealAuthor()} [${epubIndex}].$suffix"
     if (jsStr.isNullOrBlank()) {
         return default
@@ -351,12 +351,12 @@ fun Book.getExportFileName(
     }.getOrDefault(default).normalizeFileName()
 }
 
-// 根据当前日期计算章节总数
+// Calculate total chapters based on current date
 fun Book.simulatedTotalChapterNum(): Int {
     return if (readSimulating()) {
         val currentDate = LocalDate.now()
         val daysPassed = between(config.startDate, currentDate).days + 1
-        // 计算当前应该解锁到哪一章
+        // Calculate which chapter to unlock to
         val chaptersToUnlock =
             max(0, (config.startChapter ?: 0) + (daysPassed * config.dailyChapters))
         min(totalChapterNum, chaptersToUnlock)

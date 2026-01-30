@@ -5,8 +5,8 @@ import android.os.Looper
 import androidx.lifecycle.LiveData
 
 /**
- * 合并发送,只发送最新数据
- * @param delay 发送时间间隔
+ * Merge send, only send latest data
+ * @param delay Send time interval
  */
 class ConflateLiveData<T>(val delay: Int) : LiveData<T>() {
     private val handler = Handler(Looper.getMainLooper())

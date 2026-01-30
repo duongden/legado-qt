@@ -103,7 +103,7 @@ fun String.cnCompare(other: String): Int {
 }
 
 /**
- * 字符串所占内存大小
+ * Memory size occupied by string
  */
 fun String?.memorySize(): Int {
     this ?: return 0
@@ -111,7 +111,7 @@ fun String?.memorySize(): Int {
 }
 
 /**
- * 是否中文
+ * Is Chinese
  */
 fun String.isChinese(): Boolean {
     val p = Pattern.compile("[\u4e00-\u9fa5]")
@@ -120,7 +120,7 @@ fun String.isChinese(): Boolean {
 }
 
 /**
- * 将字符串拆分为单个字符,包含emoji
+ * Split string into single characters, including emoji
  */
 fun CharSequence.toStringArray(): Array<String> {
     var codePointIndex = 0

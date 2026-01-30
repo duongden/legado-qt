@@ -1,4 +1,4 @@
-//Copyright (c) 2017. 章钦豪. All rights reserved.
+//Copyright (c) 2017. Zhang Qinhao. All rights reserved.
 package io.legado.app.utils
 
 import android.graphics.Bitmap
@@ -24,7 +24,7 @@ import kotlin.math.min
 
 
 /**
- * 本地缓存
+ * Local cache
  */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int) {
@@ -33,7 +33,7 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
         const val TIME_HOUR = 60 * 60
         const val TIME_DAY = TIME_HOUR * 24
         private const val MAX_SIZE = 1000 * 1000 * 50 // 50 mb
-        private const val MAX_COUNT = Integer.MAX_VALUE // 不限制存放数据的数量
+        private const val MAX_COUNT = Integer.MAX_VALUE // No limit on number of stored data
         private val mInstanceMap = HashMap<String, ACache>()
 
         @JvmOverloads
@@ -84,14 +84,14 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
     }
 
     // =======================================
-    // ============ String数据 读写 ==============
+    // ============ String data Read/Write ==============
     // =======================================
 
     /**
-     * 保存 String数据 到 缓存中
+     * Save String data to cache
      *
-     * @param key   保存的key
-     * @param value 保存的String数据
+     * @param key   Save key
+     * @param value Saved String data
      */
     fun put(key: String, value: String) {
         mCache?.let { mCache ->
@@ -106,11 +106,11 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
     }
 
     /**
-     * 保存 String数据 到 缓存中
+     * Save String data to cache
      *
-     * @param key      保存的key
-     * @param value    保存的String数据
-     * @param saveTime 保存的时间，单位：秒
+     * @param key      Save key
+     * @param value    Saved String data
+     * @param saveTime Save time, unit: seconds
      */
     fun put(key: String, value: String, saveTime: Int) {
         if (saveTime == 0) put(key, value) else put(
@@ -120,9 +120,9 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
     }
 
     /**
-     * 读取 String数据
+     * Read String data
      *
-     * @return String 数据
+     * @return String data
      */
     fun getAsString(key: String): String? {
         mCache?.let { mCache ->
@@ -148,34 +148,34 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
     }
 
     // =======================================
-    // ========== JSONObject 数据 读写 =========
+    // ========== JSONObject Data Read/Write =========
     // =======================================
 
     /**
-     * 保存 JSONObject数据 到 缓存中
+     * Save JSONObject data to cache
      *
-     * @param key   保存的key
-     * @param value 保存的JSON数据
+     * @param key   Save key
+     * @param value Saved JSON data
      */
     fun put(key: String, value: JSONObject) {
         put(key, value.toString())
     }
 
     /**
-     * 保存 JSONObject数据 到 缓存中
+     * Save JSONObject data to cache
      *
-     * @param key      保存的key
-     * @param value    保存的JSONObject数据
-     * @param saveTime 保存的时间，单位：秒
+     * @param key      Save key
+     * @param value    Saved JSONObject data
+     * @param saveTime Save time, unit: seconds
      */
     fun put(key: String, value: JSONObject, saveTime: Int) {
         put(key, value.toString(), saveTime)
     }
 
     /**
-     * 读取JSONObject数据
+     * Read JSONObject data
      *
-     * @return JSONObject数据
+     * @return JSONObject data
      */
     fun getAsJSONObject(key: String): JSONObject? {
         val json = getAsString(key) ?: return null
@@ -187,34 +187,34 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
     }
 
     // =======================================
-    // ============ JSONArray 数据 读写 =============
+    // ============ JSONArray Data Read/Write =============
     // =======================================
 
     /**
-     * 保存 JSONArray数据 到 缓存中
+     * Save JSONArray data to cache
      *
-     * @param key   保存的key
-     * @param value 保存的JSONArray数据
+     * @param key   Save key
+     * @param value Saved JSONArray data
      */
     fun put(key: String, value: JSONArray) {
         put(key, value.toString())
     }
 
     /**
-     * 保存 JSONArray数据 到 缓存中
+     * Save JSONArray data to cache
      *
-     * @param key      保存的key
-     * @param value    保存的JSONArray数据
-     * @param saveTime 保存的时间，单位：秒
+     * @param key      Save key
+     * @param value    Saved JSONArray data
+     * @param saveTime Save time, unit: seconds
      */
     fun put(key: String, value: JSONArray, saveTime: Int) {
         put(key, value.toString(), saveTime)
     }
 
     /**
-     * 读取JSONArray数据
+     * Read JSONArray data
      *
-     * @return JSONArray数据
+     * @return JSONArray data
      */
     fun getAsJSONArray(key: String): JSONArray? {
         val json = getAsString(key)
@@ -227,14 +227,14 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
     }
 
     // =======================================
-    // ============== byte 数据 读写 =============
+    // ============== byte Data Read/Write =============
     // =======================================
 
     /**
-     * 保存 byte数据 到 缓存中
+     * Save byte data to cache
      *
-     * @param key   保存的key
-     * @param value 保存的数据
+     * @param key   Save key
+     * @param value Saved data
      */
     fun put(key: String, value: ByteArray) {
         mCache?.let { mCache ->
@@ -245,11 +245,11 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
     }
 
     /**
-     * 保存 byte数据 到 缓存中
+     * Save byte data to cache
      *
-     * @param key      保存的key
-     * @param value    保存的数据
-     * @param saveTime 保存的时间，单位：秒
+     * @param key      Save key
+     * @param value    Saved data
+     * @param saveTime Save time, unit: seconds
      */
     fun put(key: String, value: ByteArray, saveTime: Int) {
         if (saveTime == 0) put(key, value)
@@ -257,9 +257,9 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
     }
 
     /**
-     * 获取 byte 数据
+     * Get byte data
      *
-     * @return byte 数据
+     * @return byte data
      */
     fun getAsBinary(key: String): ByteArray? {
         mCache?.let { mCache ->
@@ -287,11 +287,11 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
     }
 
     /**
-     * 保存 Serializable数据到 缓存中
+     * Save Serializable data to cache
      *
-     * @param key      保存的key
-     * @param value    保存的value
-     * @param saveTime 保存的时间，单位：秒
+     * @param key      Save key
+     * @param value    Saved value
+     * @param saveTime Save time, unit: seconds
      */
     @JvmOverloads
     fun put(key: String, value: Serializable, saveTime: Int = -1) {
@@ -312,9 +312,9 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
     }
 
     /**
-     * 读取 Serializable数据
+     * Read Serializable data
      *
-     * @return Serializable 数据
+     * @return Serializable data
      */
     fun getAsObject(key: String): Any? {
         val data = getAsBinary(key)
@@ -347,34 +347,34 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
     }
 
     // =======================================
-    // ============== bitmap 数据 读写 =============
+    // ============== bitmap Data Read/Write =============
     // =======================================
 
     /**
-     * 保存 bitmap 到 缓存中
+     * Save bitmap to cache
      *
-     * @param key   保存的key
-     * @param value 保存的bitmap数据
+     * @param key   Save key
+     * @param value Saved bitmap data
      */
     fun put(key: String, value: Bitmap) {
         put(key, Utils.bitmap2Bytes(value))
     }
 
     /**
-     * 保存 bitmap 到 缓存中
+     * Save bitmap to cache
      *
-     * @param key      保存的key
-     * @param value    保存的 bitmap 数据
-     * @param saveTime 保存的时间，单位：秒
+     * @param key      Save key
+     * @param value    Saved bitmap data
+     * @param saveTime Save time, unit: seconds
      */
     fun put(key: String, value: Bitmap, saveTime: Int) {
         put(key, Utils.bitmap2Bytes(value), saveTime)
     }
 
     /**
-     * 读取 bitmap 数据
+     * Read bitmap data
      *
-     * @return bitmap 数据
+     * @return bitmap data
      */
     fun getAsBitmap(key: String): Bitmap? {
         return if (getAsBinary(key) == null) {
@@ -383,34 +383,34 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
     }
 
     // =======================================
-    // ============= drawable 数据 读写 =============
+    // ============= drawable Data Read/Write =============
     // =======================================
 
     /**
-     * 保存 drawable 到 缓存中
+     * Save drawable to cache
      *
-     * @param key   保存的key
-     * @param value 保存的drawable数据
+     * @param key   Save key
+     * @param value Saved drawable data
      */
     fun put(key: String, value: Drawable) {
         put(key, Utils.drawable2Bitmap(value))
     }
 
     /**
-     * 保存 drawable 到 缓存中
+     * Save drawable to cache
      *
-     * @param key      保存的key
-     * @param value    保存的 drawable 数据
-     * @param saveTime 保存的时间，单位：秒
+     * @param key      Save key
+     * @param value    Saved drawable data
+     * @param saveTime Save time, unit: seconds
      */
     fun put(key: String, value: Drawable, saveTime: Int) {
         put(key, Utils.drawable2Bitmap(value), saveTime)
     }
 
     /**
-     * 读取 Drawable 数据
+     * Read Drawable data
      *
-     * @return Drawable 数据
+     * @return Drawable data
      */
     fun getAsDrawable(key: String): Drawable? {
         return if (getAsBinary(key) == null) {
@@ -423,9 +423,9 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
     }
 
     /**
-     * 获取缓存文件
+     * Get cached file
      *
-     * @return value 缓存的文件
+     * @return value Cached file
      */
     fun file(key: String): File? {
         mCache?.let { mCache ->
@@ -442,25 +442,25 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
     }
 
     /**
-     * 移除某个key
+     * Remove a key
      *
-     * @return 是否移除成功
+     * @return Removal success
      */
     fun remove(key: String): Boolean {
         return mCache?.remove(key) == true
     }
 
     /**
-     * 清除所有数据
+     * Clear all data
      */
     fun clear() {
         mCache?.clear()
     }
 
     /**
-     * @author 杨福海（michael） www.yangfuhai.com
+     * @author Michael www.yangfuhai.com
      * @version 1.0
-     * title 时间计算工具类
+     * title Time calculation utility class
      */
     private object Utils {
 
@@ -468,18 +468,18 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
         private const val mSeparator = ' '
 
         /**
-         * 判断缓存的String数据是否到期
+         * Check if cached String data is due
          *
-         * @return true：到期了 false：还没有到期
+         * @return true: due, false: not due
          */
         fun isDue(str: String): Boolean {
             return isDue(str.toByteArray())
         }
 
         /**
-         * 判断缓存的byte数据是否到期
+         * Check if cached byte data is due
          *
-         * @return true：到期了 false：还没有到期
+         * @return true: due, false: not due
          */
         fun isDue(data: ByteArray): Boolean {
             try {
@@ -603,21 +603,21 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
          * Drawable → Bitmap
          */
         fun drawable2Bitmap(drawable: Drawable): Bitmap {
-            // 取 drawable 的长宽
+            // Get drawable width/height
             val w = drawable.intrinsicWidth
             val h = drawable.intrinsicHeight
-            // 取 drawable 的颜色格式
+            // Get drawable color config
             @Suppress("DEPRECATION")
             val config = if (drawable.opacity != PixelFormat.OPAQUE)
                 Bitmap.Config.ARGB_8888
             else
                 Bitmap.Config.RGB_565
-            // 建立对应 bitmap
+            // Create corresponding bitmap
             val bitmap = Bitmap.createBitmap(w, h, config)
-            // 建立对应 bitmap 的画布
+            // Create canvas for corresponding bitmap
             val canvas = Canvas(bitmap)
             drawable.setBounds(0, 0, w, h)
-            // 把 drawable 内容画到画布中
+            // Draw drawable content to canvas
             drawable.draw(canvas)
             return bitmap
         }
@@ -633,9 +633,9 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
     }
 
     /**
-     * @author 杨福海（michael） www.yangfuhai.com
+     * @author Michael www.yangfuhai.com
      * @version 1.0
-     * title 缓存管理器
+     * title Cache Manager
      */
     open inner class ACacheManager(
         private var cacheDir: File,
@@ -652,7 +652,7 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
         }
 
         /**
-         * 计算 cacheSize和cacheCount
+         * Calculate cacheSize and cacheCount
          */
         private fun calculateCacheSizeAndCacheCount() {
             Thread {
@@ -742,7 +742,7 @@ class ACache private constructor(cacheDir: File, max_size: Long, max_count: Int)
         }
 
         /**
-         * 移除旧的文件
+         * Remove old file
          */
         private fun removeNext(): Long {
             try {

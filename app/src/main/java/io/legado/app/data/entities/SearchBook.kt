@@ -30,7 +30,7 @@ import kotlinx.parcelize.Parcelize
 data class SearchBook(
     @PrimaryKey
     override var bookUrl: String = "",
-    /** 书源 */
+    /** Source */
     var origin: String = "",
     var originName: String = "",
     /** BookType */
@@ -42,7 +42,7 @@ data class SearchBook(
     var intro: String? = null,
     override var wordCount: String? = null,
     var latestChapterTitle: String? = null,
-    /** 目录页Url (toc=table of Contents) */
+    /** Catalog Url (toc=table of Contents) */
     var tocUrl: String = "",
     var time: Long = System.currentTimeMillis(),
     override var variable: String? = null,

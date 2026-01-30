@@ -71,7 +71,7 @@ class DownloadService : BaseService() {
                 if (completeDownloads.contains(id)) {
                     openDownload(id, downloads[id]?.fileName)
                 } else {
-                    toastOnUi("未完成,下载的文件夹Download")
+                    toastOnUi(getString(R.string.download_incomplete))
                 }
             }
 
@@ -84,7 +84,7 @@ class DownloadService : BaseService() {
     }
 
     /**
-     * 开始下载
+     * Start download
      */
     @Synchronized
     private fun startDownload(url: String?, fileName: String?) {
@@ -95,17 +95,17 @@ class DownloadService : BaseService() {
             return
         }
         if (downloads.values.any { it.url == url }) {
-            toastOnUi("已在下载列表")
+            toastOnUi(getString(R.string.download_already_in_list))
             return
         }
         kotlin.runCatching {
-            // 指定下载地址
+            // Specify download URL
             val request = DownloadManager.Request(Uri.parse(url))
-            // 设置通知
+            // Set notification
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN)
-            // 设置下载文件保存的路径和文件名
+            // Set download file save path and filename
             request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
-            // 添加一个下载任务
+            // Add a download task
             val downloadId = downloadManager.enqueue(request)
             downloads[downloadId] =
                 DownloadInfo(url, fileName, NotificationId.Download + downloads.size)
@@ -116,8 +116,8 @@ class DownloadService : BaseService() {
         }.onFailure {
             it.printStackTrace()
             val msg = when (it) {
-                is SecurityException -> "下载出错,没有存储权限"
-                else -> "下载出错,${it.localizedMessage}"
+                is SecurityException -> getString(R.string.download_error_no_permission)
+                else -> getString(R.string.download_error_msg, it.localizedMessage)
             }
             toastOnUi(msg)
             AppLog.put(msg, it)
@@ -125,7 +125,7 @@ class DownloadService : BaseService() {
     }
 
     /**
-     * 取消下载
+     * Cancel download
      */
     @Synchronized
     private fun removeDownload(downloadId: Long) {
@@ -138,7 +138,7 @@ class DownloadService : BaseService() {
     }
 
     /**
-     * 下载成功
+     * Download successful
      */
     @Synchronized
     private fun successDownload(downloadId: Long) {
@@ -160,7 +160,7 @@ class DownloadService : BaseService() {
     }
 
     /**
-     * 查询下载进度
+     * Query download progress
      */
     @Synchronized
     private fun queryState() {
@@ -210,7 +210,7 @@ class DownloadService : BaseService() {
     }
 
     /**
-     * 打开下载文件
+     * Open download file
      */
     private fun openDownload(downloadId: Long, fileName: String?) {
         kotlin.runCatching {
@@ -219,7 +219,7 @@ class DownloadService : BaseService() {
                 openFileUri(uri, type)
             }
         }.onFailure {
-            AppLog.put("打开下载文件${fileName}出错", it)
+            AppLog.put(getString(R.string.open_download_file_error, fileName), it)
         }
     }
 
@@ -235,7 +235,7 @@ class DownloadService : BaseService() {
     }
 
     /**
-     * 更新通知
+     * Update notification
      */
     private fun upDownloadNotification(
         downloadId: Long,

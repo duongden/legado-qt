@@ -134,7 +134,7 @@ data class FileDoc(
 }
 
 /**
- * 过滤器
+ * Filter
  */
 typealias FileDocFilter = (file: FileDoc) -> Boolean
 
@@ -149,13 +149,13 @@ private val projection by lazy {
 }
 
 /**
- * 返回子文件列表,如果不是文件夹则返回null
+ * Return child file list, return null if not directory
  */
 fun FileDoc.list(filter: FileDocFilter? = null): ArrayList<FileDoc>? {
     if (isDir) {
         if (uri.isContentScheme()) {
             /**
-             * DocumentFile 的 listFiles() 非常的慢,所以这里直接从数据库查询
+             * DocumentFile.listFiles() is very slow, so query from database directly here
              */
             val childrenUri = DocumentsContract
                 .buildChildDocumentsUriUsingTree(uri, DocumentsContract.getDocumentId(uri))
@@ -206,9 +206,9 @@ fun FileDoc.list(filter: FileDocFilter? = null): ArrayList<FileDoc>? {
 }
 
 /**
- * 查找文档, 如果存在则返回文档,如果不存在返回空
- * @param name 文件名
- * @param depth 查找文件夹深度
+ * Find document, return document if exists, return null if not
+ * @param name File name
+ * @param depth Search folder depth
  */
 fun FileDoc.find(name: String, depth: Int = 0): FileDoc? {
     val list = list()
@@ -231,10 +231,10 @@ fun FileDoc.find(name: String, depth: Int = 0): FileDoc? {
 }
 
 /**
- * 查找文档, 如果存在则返回文档,如果不存在返回空
- * @param name 文件名
- * @param depth 查找文件夹深度
- * @param maxFinds 最大查找文件夹数量
+ * Find document, return document if exists, return null if not
+ * @param name File name
+ * @param depth Search folder depth
+ * @param maxFinds Max search folder count
  */
 fun FileDoc.find(name: String, depth: Int = 0, maxFinds: Int = Int.MAX_VALUE): FileDoc? {
     return find(name, depth, AtomicInteger(maxFinds))
@@ -362,7 +362,7 @@ fun FileDoc.checkWrite(): Boolean {
 }
 
 /**
- * DocumentFile 的 listFiles() 非常的慢,尽量不要使用
+ * DocumentFile.listFiles() is very slow, try not to use
  */
 fun DocumentFile.listFileDocs(filter: FileDocFilter? = null): ArrayList<FileDoc>? {
     return FileDoc.fromDocumentFile(this).list(filter)

@@ -323,7 +323,7 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     }
 
     /**
-     * 处理传入数据
+     * Process input data
      */
     private fun receiptIntent(intent: Intent? = null) {
         val searchScope = intent?.getStringExtra("searchScope")
@@ -340,7 +340,7 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     }
 
     /**
-     * 滚动到底部事件
+     * Scroll to bottom event
      */
     private fun scrollToBottom() {
         if (isManualStopSearch) {
@@ -355,7 +355,7 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     }
 
     /**
-     * 打开关闭输入帮助
+     * Open/Close input help
      */
     private fun visibleInputHelp(visible: Boolean) {
         if (visible) {
@@ -367,7 +367,7 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     }
 
     /**
-     * 更新搜索历史
+     * Update search history
      */
     private fun upHistory(key: String? = null) {
         booksFlowJob?.cancel()
@@ -407,7 +407,7 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     }
 
     /**
-     * 开始搜索
+     * Start search
      */
     private fun startSearch() {
         binding.refreshProgressBar.visible()
@@ -417,7 +417,7 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     }
 
     /**
-     * 搜索结束
+     * Search ended
      */
     private fun searchFinally() {
         binding.refreshProgressBar.isAutoLoading = false
@@ -458,7 +458,7 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     }
 
     /**
-     * 显示书籍详情
+     * Show book details
      */
     override fun showBookInfo(name: String, author: String, bookUrl: String) {
         startActivity<BookInfoActivity> {
@@ -469,21 +469,21 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     }
 
     /**
-     * 是否已经加入书架
+     * Is in bookshelf
      */
     override fun isInBookshelf(book: SearchBook): Boolean {
         return viewModel.isInBookShelf(book)
     }
 
     /**
-     * 显示书籍详情
+     * Show book details
      */
     override fun showBookInfo(book: Book) {
         showBookInfo(book.name, book.author, book.bookUrl)
     }
 
     /**
-     * 点击历史关键字
+     * Click history keyword
      */
     override fun searchHistory(key: String) {
         lifecycleScope.launch {
@@ -504,7 +504,7 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     }
 
     /**
-     * 删除搜索记录
+     * Delete search history
      */
     override fun deleteHistory(searchKeyword: SearchKeyword) {
         viewModel.deleteHistory(searchKeyword)

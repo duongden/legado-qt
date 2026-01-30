@@ -41,12 +41,12 @@ object AppContextWrapper {
     }
 
     /**
-     * 当前系统语言
+     * Current system language
      */
     @SuppressLint("ObsoleteSdkInt")
     private fun getSystemLocale(): Locale {
         val locale: Locale
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) { //7.0有多语言设置获取顶部的语言
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) { //7.0 has multi-language settings get top language
             locale = sysConfiguration.locales.get(0)
         } else {
             @Suppress("DEPRECATION")
@@ -56,7 +56,7 @@ object AppContextWrapper {
     }
 
     /**
-     * 当前App语言
+     * Current App language
      */
     @SuppressLint("ObsoleteSdkInt")
     private fun getAppLocale(context: Context): Locale {
@@ -72,7 +72,7 @@ object AppContextWrapper {
     }
 
     /**
-     * 当前设置语言
+     * Current setting language
      */
     private fun getSetLocale(context: Context): Locale {
         return when (context.getPrefString(PreferKey.language)) {
@@ -84,7 +84,7 @@ object AppContextWrapper {
     }
 
     /**
-     * 判断App语言和设置语言是否相同
+     * Check if App language matches setting language
      */
     fun isSameWithSetting(context: Context): Boolean {
         val locale = getAppLocale(context)

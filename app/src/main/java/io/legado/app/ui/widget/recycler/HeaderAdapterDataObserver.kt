@@ -19,7 +19,7 @@ internal class HeaderAdapterDataObserver(
         adapterDataObserver.onItemRangeChanged(positionStart + headerCount, itemCount, payload)
     }
 
-    // 当第n个数据被获取，更新第n+1个position
+    // When nth data fetched, update n+1 position
     override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
         adapterDataObserver.onItemRangeInserted(positionStart + headerCount, itemCount)
     }

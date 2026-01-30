@@ -4,8 +4,8 @@ import io.legado.app.model.analyzeRule.AnalyzeUrl
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * 进度监听器管理类
- * 加入图片加载进度监听，加入Https支持
+ * Progress listener manager class
+ * Added image loading progress listener, added Https support
  */
 object ProgressManager {
     private val listenersMap = ConcurrentHashMap<String, OnProgressListener>()

@@ -123,14 +123,14 @@ class SearchMenu @JvmOverloads constructor(
     }
 
     private fun bindEvent() = binding.run {
-        //搜索结果
+        //Search result
         llSearchResults.setOnClickListener {
             runMenuOut {
                 callBack.openSearchActivity(selectedSearchResult?.query)
             }
         }
 
-        //主菜单
+        //Main menu
         llMainMenu.setOnClickListener {
             runMenuOut {
                 callBack.cancelSelect()
@@ -139,7 +139,7 @@ class SearchMenu @JvmOverloads constructor(
             }
         }
 
-        //退出
+        //Exit
         llSearchExit.setOnClickListener {
             runMenuOut {
                 callBack.exitSearchMenu()
@@ -180,7 +180,7 @@ class SearchMenu @JvmOverloads constructor(
     }
 
     private fun initAnimation() {
-        //显示菜单
+        //Show menu
         menuBottomIn.setAnimationListener(object : Animation.AnimationListener {
             override fun onAnimationStart(animation: Animation) {
                 callBack.upSystemUiVisibility()
@@ -197,7 +197,7 @@ class SearchMenu @JvmOverloads constructor(
             override fun onAnimationRepeat(animation: Animation) = Unit
         })
 
-        //隐藏菜单
+        //Hide menu
         menuBottomOut.setAnimationListener(object : Animation.AnimationListener {
             override fun onAnimationStart(animation: Animation) {
                 isMenuOutAnimating = true

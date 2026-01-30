@@ -322,7 +322,7 @@ class BookInfoActivity :
                 bookWebDav
                     ?.upload(book)
                     ?: throw NoStackTraceException("未配置webDav")
-                //更新书籍最后更新时间,使之比远程书籍的时间新
+                //Update book last update time, make it newer than remote
                 book.lastCheckTime = System.currentTimeMillis()
                 viewModel.saveBook(book)
             } catch (e: Exception) {
@@ -649,7 +649,7 @@ class BookInfoActivity :
                     onClick?.invoke(it)
                 }
             } else if (webFile.isSupportDecompress) {
-                /* 解压筛选后再选择导入项 */
+                /* Filter unzip and then select import items */
                 viewModel.importOrDownloadWebFile<Uri>(webFile) { uri ->
                     viewModel.getArchiveFilesName(uri) { fileNames ->
                         if (fileNames.size == 1) {

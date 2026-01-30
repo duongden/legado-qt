@@ -115,7 +115,7 @@ class HttpReadAloudService : BaseReadAloudService(),
         exoPlayer.stop()
         if (!requestFocus()) return
         if (contentList.isEmpty()) {
-            AppLog.putDebug("朗读列表为空")
+            AppLog.put(getString(R.string.read_aloud_list_empty))
             ReadBook.readAloud()
         } else {
             super.play()
@@ -159,7 +159,7 @@ class HttpReadAloudService : BaseReadAloudService(),
                     val fileName = md5SpeakFileName(text)
                     val speakText = text.replace(AppPattern.notReadAloudRegex, "")
                     if (speakText.isEmpty()) {
-                        AppLog.put("阅读段落内容为空，使用无声音频代替。\n朗读文本：$text")
+                        AppLog.put(getString(R.string.read_content_empty_silent, text))
                         createSilentSound(fileName)
                     } else if (!hasSpeakFile(fileName)) {
                         runCatching {
@@ -186,7 +186,7 @@ class HttpReadAloudService : BaseReadAloudService(),
                 preDownloadAudios(httpTts)
             }
         }.onError {
-            AppLog.put("朗读下载出错\n${it.localizedMessage}", it, true)
+            AppLog.put(getString(R.string.read_aloud_download_error, it.localizedMessage), it, true)
         }
     }
 
@@ -238,7 +238,7 @@ class HttpReadAloudService : BaseReadAloudService(),
                     }
                     val speakText = text.replace(AppPattern.notReadAloudRegex, "")
                     if (speakText.isEmpty()) {
-                        AppLog.put("阅读段落内容为空，使用无声音频代替。\n朗读文本：$speakText")
+                        AppLog.put(getString(R.string.read_content_empty_silent, speakText))
                     }
                     val fileName = md5SpeakFileName(text)
                     val dataSourceFactory = createDataSourceFactory(httpTts, speakText)
@@ -252,7 +252,7 @@ class HttpReadAloudService : BaseReadAloudService(),
                 preDownloadAudiosStream(httpTts, downloaderChannel)
             }
         }.onError {
-            AppLog.put("朗读下载出错\n${it.localizedMessage}", it, true)
+            AppLog.put(getString(R.string.read_aloud_download_error, it.localizedMessage), it, true)
         }
     }
 
@@ -349,7 +349,7 @@ class HttpReadAloudService : BaseReadAloudService(),
                     } else if (ct?.isNotBlank() == true) {
                         if (!contentType.matches(ct.toRegex())) {
                             throw NoStackTraceException(
-                                "TTS服务器返回错误：" + response.body.string()
+                                getString(R.string.tts_server_error, response.body!!.string())
                             )
                         }
                     }
@@ -363,7 +363,7 @@ class HttpReadAloudService : BaseReadAloudService(),
                 when (e) {
                     is CancellationException -> throw e
                     is ScriptException, is WrappedException -> {
-                        AppLog.put("js错误\n${e.localizedMessage}", e, true)
+                        AppLog.put(getString(R.string.js_error, e.localizedMessage), e, true)
                         e.printOnDebug()
                         throw e
                     }
@@ -371,7 +371,7 @@ class HttpReadAloudService : BaseReadAloudService(),
                     is SocketTimeoutException, is ConnectException -> {
                         downloadErrorNo++
                         if (downloadErrorNo > 5) {
-                            val msg = "tts超时或连接错误超过5次\n${e.localizedMessage}"
+                            val msg = getString(R.string.tts_timeout_error, e.localizedMessage)
                             AppLog.put(msg, e, true)
                             throw e
                         }
@@ -379,15 +379,15 @@ class HttpReadAloudService : BaseReadAloudService(),
 
                     else -> {
                         downloadErrorNo++
-                        val msg = "tts下载错误\n${e.localizedMessage}"
+                        val msg = getString(R.string.tts_download_error, e.localizedMessage)
                         AppLog.put(msg, e)
                         e.printOnDebug()
                         if (downloadErrorNo > 5) {
-                            val msg1 = "TTS服务器连续5次错误，已暂停阅读。"
-                            AppLog.put(msg1, e, true)
+                            AppLog.put(getString(R.string.tts_server_error_pause))
+                            AppLog.put(msg, e, true)
                             throw e
                         } else {
-                            AppLog.put("TTS下载音频出错，使用无声音频代替。\n朗读文本：$speakText")
+                            AppLog.put(getString(R.string.tts_download_audio_error_silent, speakText), e)
                             break
                         }
                     }
@@ -428,7 +428,7 @@ class HttpReadAloudService : BaseReadAloudService(),
     }
 
     /**
-     * 移除缓存文件
+     * Remove cache file
      */
     private fun removeCacheFile() {
         val titleMd5 = MD5Utils.md5Encode16(textChapter?.title ?: "")
@@ -492,7 +492,7 @@ class HttpReadAloudService : BaseReadAloudService(),
     }
 
     /**
-     * 更新朗读速度
+     * Update read speed
      */
     override fun upSpeechRate(reset: Boolean) {
         downloadTask?.cancel()
@@ -509,22 +509,22 @@ class HttpReadAloudService : BaseReadAloudService(),
         super.onPlaybackStateChanged(playbackState)
         when (playbackState) {
             Player.STATE_IDLE -> {
-                // 空闲
+                // Idle
             }
 
             Player.STATE_BUFFERING -> {
-                // 缓冲中
+                // Buffering
             }
 
             Player.STATE_READY -> {
-                // 准备好
+                // Ready
                 if (pause) return
                 exoPlayer.play()
                 upPlayPos()
             }
 
             Player.STATE_ENDED -> {
-                // 结束
+                // End
                 playErrorNo = 0
                 updateNextPos()
                 exoPlayer.stop()
@@ -556,12 +556,12 @@ class HttpReadAloudService : BaseReadAloudService(),
 
     override fun onPlayerError(error: PlaybackException) {
         super.onPlayerError(error)
-        AppLog.put("朗读错误\n${contentList[nowSpeak]}", error)
+        AppLog.put(getString(R.string.read_aloud_error, contentList[nowSpeak]), error)
         deleteCurrentSpeakFile()
         playErrorNo++
         if (playErrorNo >= 5) {
-            toastOnUi("朗读连续5次错误, 最后一次错误代码(${error.localizedMessage})")
-            AppLog.put("朗读连续5次错误, 最后一次错误代码(${error.localizedMessage})", error)
+            toastOnUi(getString(R.string.read_aloud_error_5_times, error.localizedMessage))
+            AppLog.put(getString(R.string.read_aloud_error_5_times, error.localizedMessage), error)
             pauseReadAloud()
         } else {
             if (exoPlayer.hasNextMediaItem()) {

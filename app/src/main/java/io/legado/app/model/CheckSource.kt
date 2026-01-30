@@ -13,7 +13,7 @@ import splitties.init.appCtx
 object CheckSource {
     var keyword = "我的"
 
-    //校验设置
+    //Validate settings
     var timeout = CacheManager.getLong("checkSourceTimeout") ?: 180000L
     var checkSearch = CacheManager.get("checkSearch")?.toBoolean() ?: true
     var checkDiscovery = CacheManager.get("checkDiscovery")?.toBoolean() ?: true

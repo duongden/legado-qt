@@ -2,6 +2,7 @@ package io.legado.app.ui.replace.edit
 
 import android.app.Application
 import android.content.Intent
+import io.legado.app.R
 import io.legado.app.base.BaseViewModel
 import io.legado.app.data.appDb
 import io.legado.app.data.entities.ReplaceRule
@@ -40,10 +41,10 @@ class ReplaceEditViewModel(application: Application) : BaseViewModel(application
         execute(context = Dispatchers.Main) {
             val text = context.getClipText()
             if (text.isNullOrBlank()) {
-                throw NoStackTraceException("剪贴板为空")
+                throw NoStackTraceException(context.getString(R.string.sc_clipboard_is_empty))
             }
             GSON.fromJsonObject<ReplaceRule>(text).getOrNull()
-                ?: throw NoStackTraceException("格式不对")
+                ?: throw NoStackTraceException(context.getString(R.string.sc_format_error))
         }.onSuccess {
             success.invoke(it)
         }.onError {

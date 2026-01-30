@@ -17,14 +17,14 @@ import org.jsoup.Connection
 @Suppress("ConstPropertyName")
 object CookieManager {
     /**
-     * <domain>_session_cookie 会话期 cookie，应用重启后失效
-     * <domain>_cookie cookies 缓存
+     * <domain>_session_cookie Session cookie, invalid after app restart
+     * <domain>_cookie cookies cache
      */
 
     const val cookieJarHeader = "CookieJar"
 
     /**
-     * 从响应中保存Cookies
+     * Save Cookies from response
      */
     fun saveResponse(response: Response) {
         val url = response.request.url
@@ -50,7 +50,7 @@ object CookieManager {
     }
 
     /**
-     * 加载Cookies到请求中
+     * Load Cookies into request
      */
     fun loadRequest(request: Request): Request {
         val url = request.url.toString()
@@ -107,7 +107,7 @@ object CookieManager {
     }
 
     /**
-     * 删除单个Cookie
+     * Delete single Cookie
      */
     fun removeCookie(url: String, key: String) {
         val domain = NetworkUtils.getSubDomain(url)

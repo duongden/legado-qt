@@ -31,7 +31,7 @@
         android:title="@string/replace_purify"
         app:showAsAction="never" />
 
-    <!--自定义导出章节 选择菜单-->
+    <!--Custom export chapter selection menu-->
     <item
         android:id="@+id/menu_enable_custom_export"
         android:checkable="true"

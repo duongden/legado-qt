@@ -16,31 +16,31 @@ class ItemTouchCallback(private val callback: Callback) : ItemTouchHelper.Callba
     private var swipeRefreshLayout: SwipeRefreshLayout? = null
 
     /**
-     * 是否可以拖拽
+     * Can drag
      */
     var isCanDrag = false
 
     /**
-     * 是否可以被滑动
+     * Can swipe
      */
     var isCanSwipe = false
 
     /**
-     * 当Item被长按的时候是否可以被拖拽
+     * Whether Item can be dragged on long press
      */
     override fun isLongPressDragEnabled(): Boolean {
         return isCanDrag
     }
 
     /**
-     * Item是否可以被滑动(H：左右滑动，V：上下滑动)
+     * Can Item be swiped (H: Horizontal, V: Vertical)
      */
     override fun isItemViewSwipeEnabled(): Boolean {
         return isCanSwipe
     }
 
     /**
-     * 当用户拖拽或者滑动Item的时候需要我们告诉系统滑动或者拖拽的方向
+     * Tell system drag/swipe direction when user drags/swipes Item
      */
     override fun getMovementFlags(
         recyclerView: RecyclerView,
@@ -48,7 +48,7 @@ class ItemTouchCallback(private val callback: Callback) : ItemTouchHelper.Callba
     ): Int {
         val layoutManager = recyclerView.layoutManager
         if (layoutManager is GridLayoutManager) {// GridLayoutManager
-            // flag如果值是0，相当于这个功能被关闭
+            // If flag is 0, this feature is disabled
             val dragFlag =
                 ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT or ItemTouchHelper.UP or ItemTouchHelper.DOWN
             val swipeFlag = 0
@@ -61,11 +61,11 @@ class ItemTouchCallback(private val callback: Callback) : ItemTouchHelper.Callba
             var dragFlag = 0
             var swipeFlag = 0
 
-            // 为了方便理解，相当于分为横着的ListView和竖着的ListView
-            if (orientation == LinearLayoutManager.HORIZONTAL) {// 如果是横向的布局
+            // For easier understanding, equivalent to horizontal ListView and vertical ListView
+            if (orientation == LinearLayoutManager.HORIZONTAL) {// If horizontal layout
                 swipeFlag = ItemTouchHelper.UP or ItemTouchHelper.DOWN
                 dragFlag = ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
-            } else if (orientation == LinearLayoutManager.VERTICAL) {// 如果是竖向的布局，相当于ListView
+            } else if (orientation == LinearLayoutManager.VERTICAL) {// If vertical layout, equivalent to ListView
                 dragFlag = ItemTouchHelper.UP or ItemTouchHelper.DOWN
                 swipeFlag = ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
             }
@@ -75,11 +75,11 @@ class ItemTouchCallback(private val callback: Callback) : ItemTouchHelper.Callba
     }
 
     /**
-     * 当Item被拖拽的时候被回调
+     * Called when Item is dragged
      *
      * @param recyclerView     recyclerView
-     * @param srcViewHolder    拖拽的ViewHolder
-     * @param targetViewHolder 目的地的viewHolder
+     * @param srcViewHolder    Dragged ViewHolder
+     * @param targetViewHolder Destination ViewHolder
      */
     override fun onMove(
         recyclerView: RecyclerView,
@@ -118,27 +118,27 @@ class ItemTouchCallback(private val callback: Callback) : ItemTouchHelper.Callba
     interface Callback {
 
         /**
-         * 当某个Item被滑动删除的时候
+         * When an Item is swiped to delete
          *
-         * @param adapterPosition item的position
+         * @param adapterPosition item position
          */
         fun onSwiped(adapterPosition: Int) {
 
         }
 
         /**
-         * 当两个Item位置互换的时候被回调
+         * Called when two Items swap positions
          *
-         * @param srcPosition    拖拽的item的position
-         * @param targetPosition 目的地的Item的position
-         * @return 开发者处理了操作应该返回true，开发者没有处理就返回false
+         * @param srcPosition    Dragged item position
+         * @param targetPosition Destination item position
+         * @return Return true if developer handled operation, false otherwise
          */
         fun swap(srcPosition: Int, targetPosition: Int): Boolean {
             return true
         }
 
         /**
-         * 手指松开
+         * Finger release
          */
         fun onClearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
 

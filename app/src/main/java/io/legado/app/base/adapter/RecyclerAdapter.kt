@@ -343,7 +343,7 @@ abstract class RecyclerAdapter<ITEM, VB : ViewBinding>(protected val context: Co
     protected open fun getItemViewType(item: ITEM, position: Int) = 0
 
     /**
-     * grid 模式下使用
+     * Used in grid mode
      */
     protected open fun getSpanSize(viewType: Int, position: Int) = 1
 
@@ -458,8 +458,7 @@ abstract class RecyclerAdapter<ITEM, VB : ViewBinding>(protected val context: Co
     }
 
     /**
-     * 如果使用了事件回调,回调里不要直接使用item,会出现不更新的问题,
-     * 使用getItem(holder.layoutPosition)来获取item
+     * If event callback used, don't use item directly, use getItem(holder.layoutPosition) to avoid update fail
      */
     abstract fun convert(
         holder: ItemViewHolder,
@@ -469,7 +468,7 @@ abstract class RecyclerAdapter<ITEM, VB : ViewBinding>(protected val context: Co
     )
 
     /**
-     * 注册事件
+     * Register event
      */
     abstract fun registerListener(holder: ItemViewHolder, binding: VB)
 

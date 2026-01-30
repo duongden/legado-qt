@@ -38,24 +38,24 @@ import splitties.init.appCtx
         childColumns = ["bookUrl"],
         onDelete = ForeignKey.CASCADE
     ))]
-)    // 删除书籍时自动删除章节
+)    // Auto delete chapters when deleting book
 data class BookChapter(
-    var url: String = "",               // 章节地址
-    var title: String = "",             // 章节标题
-    var isVolume: Boolean = false,      // 是否是卷名
-    var baseUrl: String = "",           // 用来拼接相对url
-    var bookUrl: String = "",           // 书籍地址
-    var index: Int = 0,                 // 章节序号
-    var isVip: Boolean = false,         // 是否VIP
-    var isPay: Boolean = false,         // 是否已购买
-    var resourceUrl: String? = null,    // 音频真实URL
-    var tag: String? = null,            // 更新时间或其他章节附加信息
-    var wordCount: String? = null,      // 本章节字数
-    var start: Long? = null,            // 章节起始位置
-    var end: Long? = null,              // 章节终止位置
-    var startFragmentId: String? = null,  //EPUB书籍当前章节的fragmentId
-    var endFragmentId: String? = null,    //EPUB书籍下一章节的fragmentId
-    var variable: String? = null        //变量
+    var url: String = "",               // Chapter URL
+    var title: String = "",             // Chapter Title
+    var isVolume: Boolean = false,      // Is Volume Name
+    var baseUrl: String = "",           // Used to splice relative url
+    var bookUrl: String = "",           // Book URL
+    var index: Int = 0,                 // Chapter Order
+    var isVip: Boolean = false,         // Is VIP
+    var isPay: Boolean = false,         // Is Purchased
+    var resourceUrl: String? = null,    // Audio real URL
+    var tag: String? = null,            // Update time or other chapter extra info
+    var wordCount: String? = null,      // Current chapter word count
+    var start: Long? = null,            // Chapter start position
+    var end: Long? = null,              // Chapter end position
+    var startFragmentId: String? = null,  //EPUB book current chapter fragmentId
+    var endFragmentId: String? = null,    //EPUB book next chapter fragmentId
+    var variable: String? = null        //Variable
 ) : Parcelable, RuleDataInterface {
 
     @delegate:Transient
@@ -141,7 +141,7 @@ data class BookChapter(
     }
 
     fun getAbsoluteURL(): String {
-        //二级目录解析的卷链接为空 返回目录页的链接
+        //Volume link null in secondary catalog parse, return catalog page link
         if (url.startsWith(title) && isVolume) return baseUrl
         val urlMatcher = AnalyzeUrl.paramPattern.matcher(url)
         val urlBefore = if (urlMatcher.find()) url.substring(0, urlMatcher.start()) else url

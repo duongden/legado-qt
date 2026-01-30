@@ -35,11 +35,11 @@ object QRCodeUtils {
     const val DEFAULT_REQ_HEIGHT = 640
 
     /**
-     * 生成二维码
-     * @param content 二维码的内容
-     * @param heightPix 二维码的高
-     * @param logo 二维码中间的logo
-     * @param ratio  logo所占比例 因为二维码的最大容错率为30%，所以建议ratio的范围小于0.3
+     * Generate QR code
+     * @param content Content of QR code
+     * @param heightPix Height of QR code
+     * @param logo Logo in the center of QR code
+     * @param ratio Logo ratio, because max error correction rate of QR code is 30%, suggested ratio < 0.3
      * @param errorCorrectionLevel
      */
     fun createQRCode(
@@ -49,24 +49,24 @@ object QRCodeUtils {
         @FloatRange(from = 0.0, to = 1.0) ratio: Float = 0.2f,
         errorCorrectionLevel: ErrorCorrectionLevel = ErrorCorrectionLevel.H
     ): Bitmap? {
-        //配置参数
+        // Config parameters
         val hints: MutableMap<EncodeHintType, Any> = EnumMap(EncodeHintType::class.java)
         hints[EncodeHintType.CHARACTER_SET] = "utf-8"
-        //容错级别
+        // Error correction level
         hints[EncodeHintType.ERROR_CORRECTION] = errorCorrectionLevel
-        //设置空白边距的宽度
+        // Set width of blank margin
         hints[EncodeHintType.MARGIN] = 1 //default is 4
         return createQRCode(content, heightPix, logo, ratio, hints)
     }
 
     /**
-     * 生成二维码
-     * @param content 二维码的内容
-     * @param heightPix 二维码的高
-     * @param logo 二维码中间的logo
-     * @param ratio  logo所占比例 因为二维码的最大容错率为30%，所以建议ratio的范围小于0.3
+     * Generate QR code
+     * @param content Content of QR code
+     * @param heightPix Height of QR code
+     * @param logo Logo in the center of QR code
+     * @param ratio Logo ratio, because max error correction rate of QR code is 30%, suggested ratio < 0.3
      * @param hints
-     * @param codeColor 二维码的颜色
+     * @param codeColor Color of QR code
      * @return
      */
     fun createQRCode(
@@ -78,12 +78,12 @@ object QRCodeUtils {
         codeColor: Int = Color.BLACK
     ): Bitmap? {
         try {
-            // 图像数据转换，使用了矩阵转换
+            // Image data conversion, used matrix conversion
             val bitMatrix =
                 QRCodeWriter().encode(content, BarcodeFormat.QR_CODE, heightPix, heightPix, hints)
             val pixels = IntArray(heightPix * heightPix)
-            // 下面这里按照二维码的算法，逐个生成二维码的图片，
-            // 两个for循环是图片横列扫描的结果
+            // Here generate QR code image pixel by pixel according to algorithm
+            // Two for loops are result of image row scanning
             for (y in 0 until heightPix) {
                 for (x in 0 until heightPix) {
                     if (bitMatrix[x, y]) {
@@ -94,7 +94,7 @@ object QRCodeUtils {
                 }
             }
 
-            // 生成二维码图片的格式
+            // Format of generated QR code image
             var bitmap: Bitmap? = Bitmap.createBitmap(heightPix, heightPix, Bitmap.Config.ARGB_8888)
             bitmap!!.setPixels(pixels, 0, heightPix, 0, 0, heightPix, heightPix)
             if (logo != null) {
@@ -108,10 +108,10 @@ object QRCodeUtils {
     }
 
     /**
-     * 在二维码中间添加Logo图案
+     * Add Logo image in the center of QR code
      * @param src
      * @param logo
-     * @param ratio  logo所占比例 因为二维码的最大容错率为30%，所以建议ratio的范围小于0.3
+     * @param ratio Logo ratio, because max error correction rate of QR code is 30%, suggested ratio < 0.3
      * @return
      */
     private fun addLogo(
@@ -126,7 +126,7 @@ object QRCodeUtils {
             return src
         }
 
-        //获取图片的宽高
+        // Get image width and height
         val srcWidth = src.width
         val srcHeight = src.height
         val logoWidth = logo.width
@@ -138,7 +138,7 @@ object QRCodeUtils {
             return src
         }
 
-        //logo大小为二维码整体大小
+        // Logo size relative to overall QR code size
         val scaleFactor = srcWidth * ratio / logoWidth
         var bitmap: Bitmap? = Bitmap.createBitmap(srcWidth, srcHeight, Bitmap.Config.ARGB_8888)
         try {
@@ -166,9 +166,9 @@ object QRCodeUtils {
     }
 
     /**
-     * 解析一维码/二维码图片
-     * @param bitmap 解析的图片
-     * @param hints 解析编码类型
+     * Parse barcode/QR code
+     * @param bitmap Image
+     * @param hints Hints
      * @return
      */
     fun parseCode(
@@ -182,9 +182,9 @@ object QRCodeUtils {
     }
 
     /**
-     * 解析一维码/二维码图片
-     * @param bitmap 解析的图片
-     * @param hints 解析编码类型
+     * Parse 1D/QR code image
+     * @param bitmap Image to parse
+     * @param hints Decode hint types
      * @return
      */
     fun parseCodeResult(
@@ -201,7 +201,7 @@ object QRCodeUtils {
     }
 
     /**
-     * 解析一维码/二维码图片
+     * Parse 1D/QR code image
      * @param source
      * @param hints
      * @return
@@ -229,8 +229,8 @@ object QRCodeUtils {
     }
 
     /**
-     * 解析二维码图片
-     * @param bitmapPath 需要解析的图片路径
+     * Parse QR code
+     * @param bitmapPath Image path
      * @return
      */
     fun parseQRCode(bitmapPath: String?): String? {
@@ -239,10 +239,10 @@ object QRCodeUtils {
     }
 
     /**
-     * 解析二维码图片
-     * @param bitmapPath 需要解析的图片路径
-     * @param reqWidth 请求目标宽度，如果实际图片宽度大于此值，会自动进行压缩处理，当 reqWidth 和 reqHeight都小于或等于0时，则不进行压缩处理
-     * @param reqHeight 请求目标高度，如果实际图片高度大于此值，会自动进行压缩处理，当 reqWidth 和 reqHeight都小于或等于0时，则不进行压缩处理
+     * Parse QR code image
+     * @param bitmapPath Image path to parse
+     * @param reqWidth Request target width, compress if actual width is larger. No compression if <= 0
+     * @param reqHeight Request target height, compress if actual height is larger. No compression if <= 0
      * @return
      */
     fun parseQRCodeResult(
@@ -254,8 +254,8 @@ object QRCodeUtils {
     }
 
     /**
-     * 解析一维码/二维码图片
-     * @param bitmapPath 需要解析的图片路径
+     * Parse barcode/QR code
+     * @param bitmapPath Image path
      * @return
      */
     fun parseCode(
@@ -268,11 +268,11 @@ object QRCodeUtils {
     }
 
     /**
-     * 解析一维码/二维码图片
-     * @param bitmapPath 需要解析的图片路径
-     * @param reqWidth 请求目标宽度，如果实际图片宽度大于此值，会自动进行压缩处理，当 reqWidth 和 reqHeight都小于或等于0时，则不进行压缩处理
-     * @param reqHeight 请求目标高度，如果实际图片高度大于此值，会自动进行压缩处理，当 reqWidth 和 reqHeight都小于或等于0时，则不进行压缩处理
-     * @param hints 解析编码类型
+     * Parse 1D/QR code image
+     * @param bitmapPath Image path to parse
+     * @param reqWidth Request target width, compress if actual width is larger. No compression if <= 0
+     * @param reqHeight Request target height, compress if actual height is larger. No compression if <= 0
+     * @param hints Decode hint types
      * @return
      */
     fun parseCodeResult(
@@ -305,12 +305,12 @@ object QRCodeUtils {
         var result: Result? = null
         try {
             try {
-                //采用HybridBinarizer解析
+                // Parse using HybridBinarizer
                 result = reader.decodeWithState(BinaryBitmap(HybridBinarizer(source)))
             } catch (_: Exception) {
             }
             if (result == null) {
-                //如果没有解析成功，再采用GlobalHistogramBinarizer解析一次
+                // If parse failed, try GlobalHistogramBinarizer again
                 result = reader.decodeWithState(BinaryBitmap(GlobalHistogramBinarizer(source)))
             }
         } catch (_: Exception) {
@@ -320,31 +320,31 @@ object QRCodeUtils {
 
 
     /**
-     * 压缩图片
+     * Compress image
      * @param path
      * @return
      */
     private fun compressBitmap(path: String?, reqWidth: Int, reqHeight: Int): Bitmap {
-        if (reqWidth > 0 && reqHeight > 0) { //都大于进行判断是否压缩
+        if (reqWidth > 0 && reqHeight > 0) { // Check compression if both are larger
             val newOpts = BitmapFactory.Options()
-            // 开始读入图片，此时把options.inJustDecodeBounds 设回true了
-            newOpts.inJustDecodeBounds = true //获取原始图片大小
-            BitmapFactory.decodeFile(path, newOpts) // 此时返回bm为空
+            // Start reading image, set options.inJustDecodeBounds back to true
+            newOpts.inJustDecodeBounds = true // Get original image size
+            BitmapFactory.decodeFile(path, newOpts) // BM returns null at this time
             val width = newOpts.outWidth.toFloat()
             val height = newOpts.outHeight.toFloat()
-            // 缩放比，由于是固定比例缩放，只用高或者宽其中一个数据进行计算即可
-            var wSize = 1 // wSize=1表示不缩放
-            if (width > reqWidth) { // 如果宽度大的话根据宽度固定大小缩放
+            // Scale ratio, since fixed ratio scaling, only need to calculate using one of width or height
+            var wSize = 1 // wSize=1 means no scaling
+            if (width > reqWidth) { // If width is larger, scale based on width fixed size
                 wSize = (width / reqWidth).toInt()
             }
-            var hSize = 1 // wSize=1表示不缩放
-            if (height > reqHeight) { // 如果高度高的话根据宽度固定大小缩放
+            var hSize = 1 // wSize=1 means no scaling
+            if (height > reqHeight) { // If height is larger, scale based on height fixed size
                 hSize = (height / reqHeight).toInt()
             }
             var size = max(wSize, hSize)
             if (size <= 0) size = 1
-            newOpts.inSampleSize = size // 设置缩放比例
-            // 重新读入图片，注意此时已经把options.inJustDecodeBounds 设回false了
+            newOpts.inSampleSize = size // Set scale ratio
+            // Re-read image, note options.inJustDecodeBounds is set back to false
             newOpts.inJustDecodeBounds = false
             return BitmapFactory.decodeFile(path, newOpts)
         }
@@ -353,7 +353,7 @@ object QRCodeUtils {
 
 
     /**
-     * 获取RGBLuminanceSource
+     * Get RGBLuminanceSource
      * @param bitmap
      * @return
      */
@@ -366,7 +366,7 @@ object QRCodeUtils {
     }
 
     /**
-     * 生成条形码
+     * Generate Barcode
      * @param content
      * @param format
      * @param desiredWidth
@@ -421,7 +421,7 @@ object QRCodeUtils {
     }
 
     /**
-     * 条形码下面添加文本信息
+     * Add text info below barcode
      * @param src
      * @param code
      * @param textSize
@@ -442,7 +442,7 @@ object QRCodeUtils {
             return src
         }
 
-        //获取图片的宽高
+        // Get image width and height
         val srcWidth = src.width
         val srcHeight = src.height
         if (srcWidth <= 0 || srcHeight <= 0) {

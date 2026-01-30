@@ -31,11 +31,11 @@ object DirectLinkUpload {
     ): String {
         val url = rule.uploadUrl
         if (url.isBlank()) {
-            throw NoStackTraceException("上传url未配置")
+            throw NoStackTraceException(appCtx.getString(io.legado.app.R.string.upload_url_not_configured))
         }
         val downloadUrlRule = rule.downloadUrlRule
         if (downloadUrlRule.isBlank()) {
-            throw NoStackTraceException("下载地址规则未配置")
+            throw NoStackTraceException(appCtx.getString(io.legado.app.R.string.download_url_rule_not_configured))
         }
         var mFileName = fileName
         var mFile = file
@@ -65,7 +65,7 @@ object DirectLinkUpload {
             .setCoroutineContext(coroutineContext)
         val downloadUrl = analyzeRule.getString(downloadUrlRule)
         if (downloadUrl.isBlank()) {
-            throw NoStackTraceException("上传失败,${res.body}")
+            throw NoStackTraceException(appCtx.getString(io.legado.app.R.string.upload_failed, res.body))
         }
         return downloadUrl
     }
@@ -101,10 +101,10 @@ object DirectLinkUpload {
 
     @Keep
     data class Rule(
-        var uploadUrl: String, //创建分享链接
-        var downloadUrlRule: String, //下载链接规则
-        var summary: String, //注释
-        var compress: Boolean = false, //是否压缩
+        var uploadUrl: String, //Create share link
+        var downloadUrlRule: String, //Download link rule
+        var summary: String, //Comment
+        var compress: Boolean = false, //Is compressed
     ) {
 
         override fun toString(): String {

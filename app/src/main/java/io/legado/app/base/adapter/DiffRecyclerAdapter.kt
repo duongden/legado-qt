@@ -113,7 +113,7 @@ abstract class DiffRecyclerAdapter<ITEM, VB : ViewBinding>(protected val context
     fun getItems(): List<ITEM> = asyncListDiffer.currentList
 
     /**
-     * grid 模式下使用
+     * Used in grid mode
      */
     protected open fun getSpanSize(viewType: Int, position: Int) = 1
 
@@ -132,7 +132,7 @@ abstract class DiffRecyclerAdapter<ITEM, VB : ViewBinding>(protected val context
     final override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {}
 
     open fun onCurrentListChanged() {
-        //可继承
+        //Inheritable
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -205,8 +205,7 @@ abstract class DiffRecyclerAdapter<ITEM, VB : ViewBinding>(protected val context
     }
 
     /**
-     * 如果使用了事件回调,回调里不要直接使用item,会出现不更新的问题,
-     * 使用getItem(holder.layoutPosition)来获取item
+     * If event callback used, don't use item directly, use getItem(holder.layoutPosition) to avoid update fail
      */
     abstract fun convert(
         holder: ItemViewHolder,
@@ -216,7 +215,7 @@ abstract class DiffRecyclerAdapter<ITEM, VB : ViewBinding>(protected val context
     )
 
     /**
-     * 注册事件
+     * Register event
      */
     abstract fun registerListener(holder: ItemViewHolder, binding: VB)
 

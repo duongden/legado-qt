@@ -3,31 +3,31 @@ package io.legado.app.help
 
 @Suppress("RegExpRedundantEscape")
 object RuleComplete {
-    // 需要补全
+    // Needs completion
     private val needComplete = Regex(
         """(?<!(@|/|^|[|%&]{2})(attr|text|ownText|textNodes|href|content|html|alt|all|value|src)(\(\))?)(?<seq>\&{2}|%%|\|{2}|$)"""
     )
 
-    // 不能补全 存在js/json/{{xx}}的复杂情况
+    // Cannot complete, complex cases with js/json/{{xx}} exist
     private val notComplete = Regex("""^:|^##|\{\{|@js:|<js>|@Json:|\$\.""")
 
-    // 修正从图片获取信息
+    // Correct info fetching from image
     private val fixImgInfo =
         Regex("""(?<=(^|tag\.|[\+/@>~| &]))img(?<at>(\[@?.+\]|\.[-\w]+)?)[@/]+text(\(\))?(?<seq>\&{2}|%%|\|{2}|$)""")
 
     private val isXpath = Regex("^//|^@Xpath:")
 
     /**
-     * 对简单规则进行补全，简化部分书源规则的编写
-     * 对JSOUP/XPath/CSS规则生效
-     * @author 希弥
-     * @return 补全后的规则 或 原规则
-     * @param rules 需要补全的规则
-     * @param preRule 预处理规则或列表规则
-     * @param type 补全结果的类型，可选的值有:
-     *  1 文字(默认)
-     *  2 链接
-     *  3 图片
+     * Complete simple rules, simplify source rule writing
+     * Effective for JSOUP/XPath/CSS rules
+     * @author Ximi
+     * @return Completed rule or original rule
+     * @param rules Rule to complete
+     * @param preRule Pre-process or list rule
+     * @param type Result type:
+     *  1 Text (Default)
+     *  2 Link
+     *  3 Image
      */
     fun autoComplete(
         rules: String?,
@@ -38,25 +38,25 @@ object RuleComplete {
             return rules
         }
 
-        /** 尾部##分割的正则或由,分割的参数 */
+        /** Regex split by trailing ## or params split by , */
         val tailStr: String
 
-        /** 分割字符 */
+        /** Split character */
         val splitStr: String
 
-        /**  用于获取文字时添加的规则 */
+        /**  Rule added when getting text */
         val textRule: String
 
-        /**  用于获取链接时添加的规则 */
+        /**  Rule added when getting link */
         val linkRule: String
 
-        /**  用于获取图片时添加的规则 */
+        /**  Rule added when getting image */
         val imgRule: String
 
-        /**  用于获取图片alt属性时添加的规则 */
+        /**  Rule added when getting image alt attribute */
         val imgText: String
 
-        // 分离尾部规则
+        // Separate tail rule
         val regexSplit = rules.split("""##|,\{""".toRegex(), 2)
         val cleanedRule = regexSplit[0]
         if (regexSplit.size > 1) {

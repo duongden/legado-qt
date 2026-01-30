@@ -36,7 +36,7 @@ import splitties.views.backgroundColor
 import java.util.Date
 
 /**
- * 页面视图
+ * Page view
  */
 class PageView(context: Context) : FrameLayout(context) {
 
@@ -122,7 +122,7 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     /**
-     * 显示状态栏时隐藏header
+     * Hide header when showing status bar
      */
     fun upStatusBar() = with(binding.vwStatusBar) {
 //        setPadding(paddingLeft, context.statusBarHeight, paddingRight, paddingBottom)
@@ -152,7 +152,7 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     /**
-     * 更新阅读信息
+     * Update reading info
      */
     private fun upTipStyle() = binding.run {
         tvHeaderLeft.tag = null
@@ -246,8 +246,8 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     /**
-     * 获取信息视图
-     * @param tip 信息类型
+     * Get info view
+     * @param tip Info type
      */
     private fun getTipView(tip: Int): BatteryView? = binding.run {
         return when (tip) {
@@ -262,7 +262,7 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     /**
-     * 更新背景
+     * Update background
      */
     fun upBg() {
         binding.vwRoot.background = LayerDrawable(
@@ -275,7 +275,7 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     /**
-     * 更新背景透明度
+     * Update background opacity
      */
     fun upBgAlpha() {
         ReadBookConfig.bg?.alpha = (ReadBookConfig.bgAlpha / 100f * 255).toInt()
@@ -283,7 +283,7 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     /**
-     * 更新时间信息
+     * Update time info
      */
     fun upTime() {
         tvTime?.text = timeFormat.format(Date(System.currentTimeMillis()))
@@ -291,7 +291,7 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     /**
-     * 更新电池信息
+     * Update battery info
      */
     @SuppressLint("SetTextI18n")
     fun upBattery(battery: Int) {
@@ -302,7 +302,7 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     /**
-     * 更新电池信息
+     * Update battery info
      */
     @SuppressLint("SetTextI18n")
     private fun upTimeBattery() {
@@ -381,22 +381,22 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     /**
-     * 滚动事件
+     * Scroll event
      */
     fun scroll(offset: Int) {
         binding.contentTextView.scroll(offset)
     }
 
     /**
-     * 更新是否开启选择功能
+     * Update selection enabled status
      */
     fun upSelectAble(selectAble: Boolean) {
         binding.contentTextView.selectAble = selectAble
     }
 
     /**
-     * 优先处理页面内单击
-     * @return true:已处理, false:未处理
+     * Prioritize in-page click
+     * @return true: handled, false: unhandled
      */
     fun onClick(x: Float, y: Float): Boolean {
         return binding.contentTextView.click(x, y - headerHeight)

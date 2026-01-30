@@ -105,7 +105,7 @@ class DictRuleEditDialog() : BaseDialogFragment(R.layout.dialog_dict_rule_edit, 
         fun pasteRule(success: (DictRule) -> Unit) {
             val text = context.getClipText()
             if (text.isNullOrBlank()) {
-                context.toastOnUi("剪贴板没有内容")
+                context.toastOnUi(R.string.clipboard_empty)
                 return
             }
             execute {
@@ -113,7 +113,7 @@ class DictRuleEditDialog() : BaseDialogFragment(R.layout.dialog_dict_rule_edit, 
             }.onSuccess {
                 success.invoke(it)
             }.onError {
-                context.toastOnUi("格式不对")
+                context.toastOnUi(R.string.invalid_format)
             }
         }
 

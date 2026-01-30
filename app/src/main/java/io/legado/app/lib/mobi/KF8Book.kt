@@ -43,7 +43,7 @@ class KF8Book(
     }
 
     /**
-     * 建立 section id -> toc 的 map
+     * Build section id -> toc map
      */
     private fun processSectionsMap() {
         sectionIdMap = linkedMapOf()

@@ -2,11 +2,11 @@ package io.legado.app.utils
 
 import io.legado.app.help.config.AppConfig
 
-// 匹配待“输入的章节”字符串
+// Match "input chapter" string
 private val regexEpisode = Regex("\\d+(-\\d+)?(,\\d+(-\\d+)?)*")
 
 /**
- * 是否启用自定义导出
+ * Whether to enable custom export
  *
  * @author Discut
  */
@@ -15,12 +15,12 @@ fun enableCustomExport(): Boolean {
 }
 
 /**
- * 验证 输入的范围 是否正确
+ * Verify if input range is correct
  *
  * @since 1.0.0
  * @author Discut
- * @param text 输入的范围 字符串
- * @return 是否正确
+ * @param text Input range string
+ * @return Is correct
  */
 fun verificationField(text: String): Boolean {
     return text.matches(regexEpisode)

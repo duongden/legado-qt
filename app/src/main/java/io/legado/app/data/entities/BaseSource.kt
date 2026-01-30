@@ -27,17 +27,17 @@ import org.intellij.lang.annotations.Language
 @Suppress("unused")
 interface BaseSource : JsExtensions {
     /**
-     * 并发率
+     * Concurrency rate
      */
     var concurrentRate: String?
 
     /**
-     * 登录地址
+     * Login URL
      */
     var loginUrl: String?
 
     /**
-     * 登录UI
+     * Login UI
      */
     var loginUi: String?
 
@@ -47,12 +47,12 @@ interface BaseSource : JsExtensions {
     var header: String?
 
     /**
-     * 启用cookieJar
+     * Enable cookieJar
      */
     var enabledCookieJar: Boolean?
 
     /**
-     * js库
+     * js library
      */
     var jsLib: String?
 
@@ -99,7 +99,7 @@ interface BaseSource : JsExtensions {
     }
 
     /**
-     * 解析header规则
+     * Parse header rule
      */
     fun getHeaderMap(hasLoginHeader: Boolean = false) = HashMap<String, String>().apply {
         header?.let {
@@ -133,7 +133,7 @@ interface BaseSource : JsExtensions {
     }
 
     /**
-     * 获取用于登录的头部信息
+     * Get login header info
      */
     fun getLoginHeader(): String? {
         return CacheManager.get("loginHeader_${getKey()}")
@@ -145,7 +145,7 @@ interface BaseSource : JsExtensions {
     }
 
     /**
-     * 保存登录头部信息,map格式,访问时自动添加
+     * Save login headers, map format, auto added on access
      */
     fun putLoginHeader(header: String) {
         val headerMap = GSON.fromJsonObject<Map<String, String>>(header).getOrNull()
@@ -162,8 +162,8 @@ interface BaseSource : JsExtensions {
     }
 
     /**
-     * 获取用户信息,可以用来登录
-     * 用户信息采用aes加密存储
+     * Get user info, for login
+     * User info stored under AES encryption
      */
     fun getLoginInfo(): String? {
         try {
@@ -181,7 +181,7 @@ interface BaseSource : JsExtensions {
     }
 
     /**
-     * 保存用户信息,aes加密
+     * Save user info, aes encrypted
      */
     fun putLoginInfo(info: String): Boolean {
         return try {
@@ -212,14 +212,14 @@ interface BaseSource : JsExtensions {
     }
 
     /**
-     * 获取自定义变量
+     * Get custom variable
      */
     fun getVariable(): String {
         return CacheManager.get("sourceVariable_${getKey()}") ?: ""
     }
 
     /**
-     * 保存数据
+     * Save data
      */
     fun put(key: String, value: String): String {
         CacheManager.put("v_${getKey()}_${key}", value)
@@ -227,14 +227,14 @@ interface BaseSource : JsExtensions {
     }
 
     /**
-     * 获取保存的数据
+     * Get saved data
      */
     fun get(key: String): String {
         return CacheManager.get("v_${getKey()}_${key}") ?: ""
     }
 
     /**
-     * 执行JS
+     * Execute JS
      */
     @Throws(Exception::class)
     fun evalJS(jsStr: String, bindingsConfig: ScriptBindings.() -> Unit = {}): Any? {

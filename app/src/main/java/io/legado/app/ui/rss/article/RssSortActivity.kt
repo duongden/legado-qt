@@ -117,11 +117,11 @@ class RssSortActivity : VMBaseActivity<ActivityRssArtivlesBinding, RssSortViewMo
         lifecycleScope.launch {
             val source = viewModel.rssSource
             if (source == null) {
-                toastOnUi("源不存在")
+                toastOnUi(R.string.rss_source_not_exist)
                 return@launch
             }
             val comment =
-                source.getDisplayVariableComment("源变量可在js中通过source.getVariable()获取")
+                source.getDisplayVariableComment(getString(R.string.source_variable_help))
             val variable = withContext(Dispatchers.IO) { source.getVariable() }
             showDialogFragment(
                 VariableDialog(

@@ -32,7 +32,7 @@ open class WelcomeActivity : BaseActivity<ActivityWelcomeBinding>() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         binding.ivBook.setColorFilter(accentColor)
         binding.vwTitleLine.setBackgroundColor(accentColor)
-        // 避免从桌面启动程序后，会重新实例化入口类的activity
+        // Avoid re-instantiating entry activity after launching from desktop
         if (intent.flags and Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT != 0) {
             finish()
         } else {

@@ -136,24 +136,24 @@ class ChapterListAdapter(context: Context, val callback: Callback) :
                 }
                 tvChapterName.setTranslatedText(getDisplayTitle(item))
                 if (item.isVolume) {
-                    //卷名，如第一卷 突出显示
+                    //Volume name, e.g. Volume 1 Highlight
                     tvChapterItem.setBackgroundColor(context.getCompatColor(R.color.btn_bg_press))
                 } else {
-                    //普通章节 保持不变
+                    //Normal chapter keep unchanged
                     tvChapterItem.background =
                         ThemeUtils.resolveDrawable(context, android.R.attr.selectableItemBackground)
                 }
 
-                //卷名不显示
+                //Volume name not shown
                 if (!item.tag.isNullOrEmpty() && !item.isVolume) {
-                    //更新时间规则
+                    //Update time rule
                     tvTag.text = item.tag
                     tvTag.visible()
                 } else {
                     tvTag.gone()
                 }
                 if (AppConfig.tocCountWords && !item.wordCount.isNullOrEmpty() && !item.isVolume) {
-                    //章节字数
+                    //Chapter word count
                     tvWordCount.text = item.wordCount
                     tvWordCount.visible()
                 } else {

@@ -85,7 +85,7 @@ class RssSourceActivity : VMBaseActivity<ActivityRssSourceBinding, RssSourceView
                 )
             }
         }.onFailure {
-            toastOnUi("readTextError:${it.localizedMessage}")
+            toastOnUi(getString(R.string.read_text_error, it.localizedMessage))
         }
     }
     private val exportResult = registerForActivityResult(HandleFileContract()) {
@@ -341,7 +341,7 @@ class RssSourceActivity : VMBaseActivity<ActivityRssSourceBinding, RssSourceView
                     appDb.rssSourceDao.flowSearch(searchKey)
                 }
             }.catch {
-                AppLog.put("订阅源管理界面更新数据出错", it)
+                AppLog.put(getString(R.string.error_update_rss_source_manage), it)
             }.flowOn(IO).conflate().collect {
                 adapter.setItems(it, adapter.diffItemCallback)
                 delay(100)
@@ -365,7 +365,7 @@ class RssSourceActivity : VMBaseActivity<ActivityRssSourceBinding, RssSourceView
             ?.toMutableList() ?: mutableListOf()
         alert(titleResource = R.string.import_on_line) {
             val alertBinding = DialogEditTextBinding.inflate(layoutInflater).apply {
-                editView.hint = "url"
+                editView.hint = getString(R.string.url_hint)
                 editView.setFilterValues(cacheUrls)
                 editView.delCallBack = {
                     cacheUrls.remove(it)

@@ -87,10 +87,10 @@ class SearchContentViewModel(application: Application) : BaseViewModel(applicati
         queryIndexInContent: Int,
         query: String
     ): Pair<Int, String> {
-        // 左右移动20个字符，构建关键词周边文字，在搜索结果里显示
-        // 判断段落，只在关键词所在段落内分割
-        // 利用标点符号分割完整的句
-        // length和设置结合，自由调整周边文字长度
+        // Move left/right 20 chars, build keyword context, show in search results
+        // Check paragraph, only split within paragraph containing keyword
+        // Split complete sentences using punctuation
+        // length combined with settings, freely adjust surrounding text length
         val length = 20
         var po1 = queryIndexInContent - length
         var po2 = queryIndexInContent + query.length + length

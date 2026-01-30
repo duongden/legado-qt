@@ -29,7 +29,7 @@ import kotlin.coroutines.coroutineContext
 object WebBook {
 
     /**
-     * 搜索
+     * Search
      */
     fun searchBook(
         scope: CoroutineScope,
@@ -67,7 +67,7 @@ object WebBook {
             coroutineContext = coroutineContext
         )
         var res = analyzeUrl.getStrResponseAwait()
-        //检测书源是否已登录
+        //Check if source logged in
         bookSource.loginCheckJs?.let { checkJs ->
             if (checkJs.isNotBlank()) {
                 res = analyzeUrl.evalJS(checkJs, res) as StrResponse
@@ -88,7 +88,7 @@ object WebBook {
     }
 
     /**
-     * 发现
+     * Explore
      */
     fun exploreBook(
         scope: CoroutineScope,
@@ -117,7 +117,7 @@ object WebBook {
             coroutineContext = coroutineContext
         )
         var res = analyzeUrl.getStrResponseAwait()
-        //检测书源是否已登录
+        //Check if source logged in
         bookSource.loginCheckJs?.let { checkJs ->
             if (checkJs.isNotBlank()) {
                 res = analyzeUrl.evalJS(checkJs, result = res) as StrResponse
@@ -135,7 +135,7 @@ object WebBook {
     }
 
     /**
-     * 书籍信息
+     * Book info
      */
     fun getBookInfo(
         scope: CoroutineScope,
@@ -174,7 +174,7 @@ object WebBook {
                 coroutineContext = coroutineContext
             )
             var res = analyzeUrl.getStrResponseAwait()
-            //检测书源是否已登录
+            //Check if source logged in
             bookSource.loginCheckJs?.let { checkJs ->
                 if (checkJs.isNotBlank()) {
                     res = analyzeUrl.evalJS(checkJs, result = res) as StrResponse
@@ -194,7 +194,7 @@ object WebBook {
     }
 
     /**
-     * 目录
+     * Catalog
      */
     fun getChapterList(
         scope: CoroutineScope,
@@ -250,7 +250,7 @@ object WebBook {
                     coroutineContext = coroutineContext
                 )
                 var res = analyzeUrl.getStrResponseAwait()
-                //检测书源是否已登录
+                //Check if source logged in
                 bookSource.loginCheckJs?.let { checkJs ->
                     if (checkJs.isNotBlank()) {
                         res = analyzeUrl.evalJS(checkJs, result = res) as StrResponse
@@ -271,7 +271,7 @@ object WebBook {
     }
 
     /**
-     * 章节内容
+     * Chapter content
      */
     fun getContent(
         scope: CoroutineScope,
@@ -335,7 +335,7 @@ object WebBook {
                 jsStr = bookSource.getContentRule().webJs,
                 sourceRegex = bookSource.getContentRule().sourceRegex
             )
-            //检测书源是否已登录
+            //Check if source logged in
             bookSource.loginCheckJs?.let { checkJs ->
                 if (checkJs.isNotBlank()) {
                     res = analyzeUrl.evalJS(checkJs, result = res) as StrResponse
@@ -356,7 +356,7 @@ object WebBook {
     }
 
     /**
-     * 精准搜索
+     * Exact search
      */
     fun preciseSearch(
         scope: CoroutineScope,
@@ -400,7 +400,7 @@ object WebBook {
     }
 
     /**
-     * 检测重定向
+     * Check redirect
      */
     private fun checkRedirect(bookSource: BookSource, response: StrResponse) {
         response.raw.priorResponse?.let {

@@ -8,7 +8,7 @@ import androidx.webkit.WebViewFeature
 import io.legado.app.help.config.AppConfig
 
 /**
- * 设置是否夜间模式
+ * Set whether night mode
  */
 @SuppressLint("RequiresFeature")
 fun WebSettings.setDarkeningAllowed(allow: Boolean) {

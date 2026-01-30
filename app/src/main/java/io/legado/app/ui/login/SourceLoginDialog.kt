@@ -100,7 +100,7 @@ class SourceLoginDialog : BaseDialogFragment(R.layout.dialog_login, true) {
                 }
             }
         } catch (e: NullPointerException) {
-            AppLog.put("登录UI JSON 数据错误", e, true)
+            AppLog.put(getString(R.string.error_login_ui_json), e, true)
         }
         binding.toolBar.inflateMenu(R.menu.source_login)
         binding.toolBar.menu.applyTint(requireContext())
@@ -182,8 +182,8 @@ class SourceLoginDialog : BaseDialogFragment(R.layout.dialog_login, true) {
                         dismiss()
                     }
                 } catch (e: Exception) {
-                    AppLog.put("登录出错\n${e.localizedMessage}", e)
-                    context?.toastOnUi("登录出错\n${e.localizedMessage}")
+                    AppLog.put(getString(R.string.error_login, e.localizedMessage), e)
+                    context?.toastOnUi(getString(R.string.error_login, e.localizedMessage))
                     e.printOnDebug()
                 }
             }

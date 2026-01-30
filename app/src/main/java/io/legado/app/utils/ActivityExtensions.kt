@@ -88,7 +88,7 @@ fun Activity.fullScreen() {
 }
 
 /**
- * 设置状态栏颜色
+ * Set status bar color
  */
 @Suppress("DEPRECATION")
 fun Activity.setStatusBarColorAuto(
@@ -141,7 +141,7 @@ fun Activity.setLightStatusBar(isLightBar: Boolean) {
 }
 
 /**
- * 设置导航栏颜色
+ * Set navigation bar color
  */
 @Suppress("DEPRECATION")
 fun Activity.setNavigationBarColorAuto(@ColorInt color: Int) {
@@ -197,10 +197,10 @@ fun Activity.toggleSystemBar(show: Boolean) {
     }
 }
 
-/////以下方法需要在View完全被绘制出来之后调用，否则判断不了,在比如 onWindowFocusChanged（）方法中可以得到正确的结果/////
+/////Below methods must be called after View fully drawn, e.g. in onWindowFocusChanged(), otherwise cannot judge/////
 
 /**
- * 返回NavigationBar
+ * Return NavigationBar
  */
 val Activity.navigationBar: View?
     get() {
@@ -218,13 +218,13 @@ val Activity.navigationBar: View?
     }
 
 /**
- * 返回NavigationBar是否存在
+ * Return if NavigationBar exists
  */
 val Activity.isNavigationBarExist: Boolean
     get() = navigationBar != null
 
 /**
- * 返回NavigationBar高度
+ * Return NavigationBar height
  */
 val Activity.navigationBarHeight: Int
     @SuppressLint("InternalInsetResource", "DiscouragedApi")
@@ -237,7 +237,7 @@ val Activity.navigationBarHeight: Int
     }
 
 /**
- * 返回navigationBar位置
+ * Return navigationBar position
  */
 val Activity.navigationBarGravity: Int
     get() {
@@ -246,7 +246,7 @@ val Activity.navigationBarGravity: Int
     }
 
 /**
- * 显示目录help下的帮助文档
+ * Show help document under help directory
  */
 fun AppCompatActivity.showHelp(fileName: String) {
     val mdText = String(assets.open("web/help/md/${fileName}.md").readBytes())

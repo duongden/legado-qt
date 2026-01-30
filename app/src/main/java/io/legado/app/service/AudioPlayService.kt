@@ -57,7 +57,7 @@ import splitties.systemservices.powerManager
 import splitties.systemservices.wifiManager
 
 /**
- * 音频播放服务
+ * Audio playback service
  */
 class AudioPlayService : BaseService(),
     AudioManager.OnAudioFocusChangeListener,
@@ -206,7 +206,7 @@ class AudioPlayService : BaseService(),
     }
 
     /**
-     * 播放音频
+     * Play audio
      */
     @SuppressLint("WakelockTimeout")
     private fun play() {
@@ -234,14 +234,14 @@ class AudioPlayService : BaseService(),
             exoPlayer.seekTo(position.toLong())
             exoPlayer.prepare()
         }.onError {
-            AppLog.put("播放出错\n${it.localizedMessage}", it)
+            AppLog.put(getString(R.string.sc_play_error, it.localizedMessage), it)
             toastOnUi("$url ${it.localizedMessage}")
             stopSelf()
         }
     }
 
     /**
-     * 暂停播放
+     * Pause playback
      */
     private fun pause(abandonFocus: Boolean = true) {
         if (useWakeLock) {
@@ -266,7 +266,7 @@ class AudioPlayService : BaseService(),
     }
 
     /**
-     * 恢复播放
+     * Resume playback
      */
     @SuppressLint("WakelockTimeout")
     private fun resume() {
@@ -318,21 +318,21 @@ class AudioPlayService : BaseService(),
     }
 
     /**
-     * 播放状态监控
+     * Playback status monitor
      */
     override fun onPlaybackStateChanged(playbackState: Int) {
         super.onPlaybackStateChanged(playbackState)
         when (playbackState) {
             Player.STATE_IDLE -> {
-                // 空闲
+                // Idle
             }
 
             Player.STATE_BUFFERING -> {
-                // 缓冲中
+                // Buffering
             }
 
             Player.STATE_READY -> {
-                // 准备好
+                // Ready
                 AudioPlay.upLoading(false)
                 if (exoPlayer.playWhenReady) {
                     AudioPlay.status = Status.PLAY
@@ -348,7 +348,7 @@ class AudioPlayService : BaseService(),
             }
 
             Player.STATE_ENDED -> {
-                // 结束
+                // End
                 upPlayProgressJob?.cancel()
                 AudioPlay.playPositionChanged(exoPlayer.duration.toInt())
                 AudioPlay.next()
@@ -369,14 +369,14 @@ class AudioPlayService : BaseService(),
     }
 
     /**
-     * 播放错误事件
+     * Playback error event
      */
     override fun onPlayerError(error: PlaybackException) {
         super.onPlayerError(error)
         AudioPlay.status = Status.STOP
         postEvent(EventBus.AUDIO_STATE, Status.STOP)
         AudioPlay.upLoading(false)
-        val errorMsg = "音频播放出错\n${error.errorCodeName} ${error.errorCode}"
+        val errorMsg = getString(R.string.audio_play_error, error.errorCodeName, error.errorCode)
         AppLog.put(errorMsg, error)
         toastOnUi(errorMsg)
     }
@@ -397,7 +397,7 @@ class AudioPlayService : BaseService(),
     }
 
     /**
-     * 定时
+     * Timer
      */
     private fun doDs() {
         postEvent(EventBus.AUDIO_DS, timeMinute)
@@ -423,13 +423,13 @@ class AudioPlayService : BaseService(),
     }
 
     /**
-     * 每隔1秒发送播放进度
+     * Send playback progress every 1s
      */
     private fun upPlayProgress() {
         upPlayProgressJob?.cancel()
         upPlayProgressJob = lifecycleScope.launch {
             while (isActive) {
-                //更新buffer位置
+                //Update buffer position
                 AudioPlay.playPositionChanged(exoPlayer.currentPosition.toInt())
                 postEvent(EventBus.AUDIO_BUFFER_PROGRESS, exoPlayer.bufferedPosition.toInt())
                 postEvent(EventBus.AUDIO_PROGRESS, AudioPlay.durChapterPos)
@@ -441,7 +441,7 @@ class AudioPlayService : BaseService(),
     }
 
     /**
-     * 更新媒体状态
+     * Update media status
      */
     private fun upMediaSessionPlaybackState(state: Int) {
         mediaSessionCompat?.setPlaybackState(
@@ -464,7 +464,7 @@ class AudioPlayService : BaseService(),
     }
 
     /**
-     * 初始化MediaSession, 注册多媒体按钮
+     * Init MediaSession, register media buttons
      */
     @SuppressLint("UnspecifiedImmutableFlag")
     private fun initMediaSession() {
@@ -499,7 +499,7 @@ class AudioPlayService : BaseService(),
     }
 
     /**
-     * 断开耳机监听
+     * Disconnect headset listener
      */
     private fun initBroadcastReceiver() {
         broadcastReceiver = object : BroadcastReceiver() {
@@ -518,26 +518,26 @@ class AudioPlayService : BaseService(),
      */
     override fun onAudioFocusChange(focusChange: Int) {
         if (AppConfig.ignoreAudioFocus) {
-            AppLog.put("忽略音频焦点处理(有声)")
+            AppLog.put(getString(R.string.ignore_audio_focus_audio))
             return
         }
         when (focusChange) {
             AudioManager.AUDIOFOCUS_GAIN -> {
                 if (needResumeOnAudioFocusGain) {
-                    AppLog.put("音频焦点获得,继续播放")
+                    AppLog.put(getString(R.string.audio_focus_gain_resume))
                     resume()
                 } else {
-                    AppLog.put("音频焦点获得")
+                    AppLog.put(getString(R.string.audio_focus_gain))
                 }
             }
 
             AudioManager.AUDIOFOCUS_LOSS -> {
-                AppLog.put("音频焦点丢失,暂停播放")
+                AppLog.put(getString(R.string.audio_focus_loss_pause))
                 pause()
             }
 
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-                AppLog.put("音频焦点暂时丢失并会很快再次获得,暂停播放")
+                AppLog.put(getString(R.string.audio_focus_loss_transient_pause))
                 if (!pause) {
                     needResumeOnAudioFocusGain = true
                     pause(false)
@@ -545,8 +545,8 @@ class AudioPlayService : BaseService(),
             }
 
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-                // 短暂丢失焦点，这种情况是被其他应用申请了短暂的焦点希望其他声音能压低音量（或者关闭声音）凸显这个声音（比如短信提示音），
-                AppLog.put("音频焦点短暂丢失,不做处理")
+                // Transient focus loss, other app requested transient focus, hoping to duck/mute other audio (e.g. SMS notification),
+                AppLog.put(getString(R.string.audio_focus_loss_transient_can_duck))
             }
         }
     }
@@ -616,13 +616,13 @@ class AudioPlayService : BaseService(),
                 val notification = createNotification()
                 notificationManager.notify(NotificationId.AudioPlayService, notification.build())
             } catch (e: Exception) {
-                AppLog.put("创建音频播放通知出错,${e.localizedMessage}", e, true)
+                AppLog.put(getString(R.string.create_audio_notification_error, e.localizedMessage), e, true)
             }
         }
     }
 
     /**
-     * 更新通知
+     * Update notification
      */
     override fun startForegroundNotification() {
         execute {
@@ -630,8 +630,8 @@ class AudioPlayService : BaseService(),
                 val notification = createNotification()
                 startForeground(NotificationId.AudioPlayService, notification.build())
             } catch (e: Exception) {
-                AppLog.put("创建音频播放通知出错,${e.localizedMessage}", e, true)
-                //创建通知出错不结束服务就会崩溃,服务必须绑定通知
+                AppLog.put(getString(R.string.create_audio_notification_error, e.localizedMessage), e, true)
+                //Create notification error, not ending service crashes, service must bind notification
                 stopSelf()
             }
         }
@@ -649,7 +649,7 @@ class AudioPlayService : BaseService(),
     }
 
     /**
-     * 放弃音频焦点
+     * Abandon audio focus
      */
     private fun abandonFocus() {
         @Suppress("DEPRECATION")

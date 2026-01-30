@@ -34,15 +34,15 @@ class RemoteBookWebDav(
     override suspend fun getRemoteBookList(path: String): MutableList<RemoteBook> {
         if (!NetworkUtils.isAvailable()) throw NoStackTraceException("网络不可用")
         val remoteBooks = mutableListOf<RemoteBook>()
-        //读取文件列表
+        //Read file list
         val remoteWebDavFileList: List<WebDavFile> = WebDav(path, authorization).listFiles()
-        //转化远程文件信息到本地对象
+        //Convert remote file info to local object
         remoteWebDavFileList.forEach { webDavFile ->
             if (webDavFile.isDir
                 || bookFileRegex.matches(webDavFile.displayName)
                 || archiveFileRegex.matches(webDavFile.displayName)
             ) {
-                //扩展名符合阅读的格式则认为是书籍
+                //Extension matching reading format considered book
                 remoteBooks.add(RemoteBook(webDavFile))
             }
         }

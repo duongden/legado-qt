@@ -153,7 +153,7 @@ abstract class BaseReadAloudService : BaseService(),
         upMediaSessionPlaybackState(PlaybackStateCompat.STATE_PLAYING)
         setTimer(AppConfig.ttsTimer)
         if (AppConfig.ttsTimer > 0) {
-            toastOnUi("朗读定时 ${AppConfig.ttsTimer} 分钟")
+            toastOnUi(getString(R.string.read_aloud_timer_msg, AppConfig.ttsTimer))
         }
         execute {
             ImageLoader
@@ -269,7 +269,7 @@ abstract class BaseReadAloudService : BaseService(),
                 if (play) play() else pageChanged = true
             }
         }.onError {
-            AppLog.put("启动朗读出错\n${it.localizedMessage}", it, true)
+            AppLog.put(getString(R.string.start_read_aloud_error, it.localizedMessage), it, true)
         }
     }
 
@@ -395,7 +395,7 @@ abstract class BaseReadAloudService : BaseService(),
     }
 
     /**
-     * 定时
+     * Timer
      */
     @Synchronized
     private fun doDs() {
@@ -432,27 +432,27 @@ abstract class BaseReadAloudService : BaseService(),
         val requestFocus = MediaHelp.requestFocus(mFocusRequest)
         if (!requestFocus) {
             pauseReadAloud(false)
-            toastOnUi("未获取到音频焦点")
+            toastOnUi(getString(R.string.audio_focus_not_acquired))
         }
         return requestFocus
     }
 
     /**
-     * 放弃音频焦点
+     * Abandon audio focus
      */
     private fun abandonFocus() {
         AudioManagerCompat.abandonAudioFocusRequest(audioManager, mFocusRequest)
     }
 
     /**
-     * 更新媒体状态
+     * Update media status
      */
     private fun upMediaSessionPlaybackState(state: Int) {
         mediaSessionCompat.setPlaybackState(
             PlaybackStateCompat.Builder()
                 .setActions(MediaHelp.MEDIA_SESSION_ACTIONS)
                 .setState(state, nowSpeak.toLong(), 1f)
-                // 为系统媒体控件添加定时按钮
+                // Add timer button to system media controls
                 .addCustomAction(
                     PlaybackStateCompat.CustomAction.Builder(
                         "ACTION_ADD_TIMER",
@@ -465,7 +465,7 @@ abstract class BaseReadAloudService : BaseService(),
     }
 
     /**
-     * 初始化MediaSession, 注册多媒体按钮
+     * Init MediaSession, register media buttons
      */
     @SuppressLint("UnspecifiedImmutableFlag")
     private fun initMediaSession() {
@@ -525,7 +525,7 @@ abstract class BaseReadAloudService : BaseService(),
     }
 
     /**
-     * 注册多媒体按钮监听
+     * Register media button listener
      */
     private fun initBroadcastReceiver() {
         val intentFilter = IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
@@ -537,26 +537,26 @@ abstract class BaseReadAloudService : BaseService(),
      */
     override fun onAudioFocusChange(focusChange: Int) {
         if (AppConfig.ignoreAudioFocus) {
-            AppLog.put("忽略音频焦点处理(TTS)")
+            AppLog.put(getString(R.string.ignore_audio_focus_tts))
             return
         }
         when (focusChange) {
             AudioManager.AUDIOFOCUS_GAIN -> {
                 if (needResumeOnAudioFocusGain) {
-                    AppLog.put("音频焦点获得,继续朗读")
+                    AppLog.put(getString(R.string.audio_focus_gain_resume_read_aloud))
                     resumeReadAloud()
                 } else {
-                    AppLog.put("音频焦点获得")
+                    AppLog.put(getString(R.string.audio_focus_gain))
                 }
             }
 
             AudioManager.AUDIOFOCUS_LOSS -> {
-                AppLog.put("音频焦点丢失,暂停朗读")
+                AppLog.put(getString(R.string.audio_focus_loss_pause_read_aloud))
                 pauseReadAloud()
             }
 
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-                AppLog.put("音频焦点暂时丢失并会很快再次获得,暂停朗读")
+                AppLog.put(getString(R.string.audio_focus_loss_transient_pause_read_aloud))
                 if (!pause) {
                     needResumeOnAudioFocusGain = true
                     pauseReadAloud(false)
@@ -564,8 +564,8 @@ abstract class BaseReadAloudService : BaseService(),
             }
 
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-                // 短暂丢失焦点，这种情况是被其他应用申请了短暂的焦点希望其他声音能压低音量（或者关闭声音）凸显这个声音（比如短信提示音），
-                AppLog.put("音频焦点短暂丢失,不做处理")
+                // Transient focus loss, other app requested transient focus, hoping to duck/mute other audio (e.g. SMS notification),
+                AppLog.put(getString(R.string.audio_focus_loss_transient_can_duck))
             }
         }
     }
@@ -576,7 +576,7 @@ abstract class BaseReadAloudService : BaseService(),
                 val notification = createNotification()
                 notificationManager.notify(NotificationId.ReadAloudService, notification.build())
             } catch (e: Exception) {
-                AppLog.put("创建朗读通知出错,${e.localizedMessage}", e, true)
+                AppLog.put(getString(R.string.create_read_aloud_notification_error, e.localizedMessage), e, true)
             }
         }
     }
@@ -623,7 +623,7 @@ abstract class BaseReadAloudService : BaseService(),
             .setSound(null)
             .setLights(0, 0, 0)
         builder.setLargeIcon(cover)
-        // 按钮定义：上一章、播放、停止、下一章、定时
+        // Button definitions: Prev Chapter, Play, Stop, Next Chapter, Timer
         builder.addAction(
             R.drawable.ic_skip_previous,
             getString(R.string.previous_chapter),
@@ -662,7 +662,7 @@ abstract class BaseReadAloudService : BaseService(),
     }
 
     /**
-     * 更新通知
+     * Update notification
      */
     override fun startForegroundNotification() {
         execute {
@@ -670,8 +670,8 @@ abstract class BaseReadAloudService : BaseService(),
                 val notification = createNotification()
                 startForeground(NotificationId.ReadAloudService, notification.build())
             } catch (e: Exception) {
-                AppLog.put("创建朗读通知出错,${e.localizedMessage}", e, true)
-                //创建通知出错不结束服务就会崩溃,服务必须绑定通知
+                AppLog.put(getString(R.string.create_read_aloud_notification_error, e.localizedMessage), e, true)
+                //Create notification error, not ending service crashes, service must bind notification
                 stopSelf()
             }
         }
@@ -687,7 +687,7 @@ abstract class BaseReadAloudService : BaseService(),
 
     open fun nextChapter() {
         ReadBook.upReadTime()
-        AppLog.putDebug("${ReadBook.curTextChapter?.chapter?.title} 朗读结束跳转下一章并朗读")
+        AppLog.putDebug(getString(R.string.read_aloud_next_chapter_msg, ReadBook.curTextChapter?.chapter?.title))
         resumeReadAloudInternal()
         if (!ReadBook.moveToNextChapter(true)) {
             stopSelf()
@@ -747,25 +747,25 @@ abstract class BaseReadAloudService : BaseService(),
             when (state) {
                 TelephonyManager.CALL_STATE_IDLE -> {
                     if (needResumeOnCallStateIdle) {
-                        AppLog.put("来电结束,继续朗读")
+                        AppLog.put(getString(R.string.call_ended_resume_read_aloud))
                         resumeReadAloud()
                     } else {
-                        AppLog.put("来电结束")
+                        AppLog.put(getString(R.string.call_ended))
                     }
                 }
 
                 TelephonyManager.CALL_STATE_RINGING -> {
                     if (!pause) {
-                        AppLog.put("来电响铃,暂停朗读")
+                        AppLog.put(getString(R.string.call_ringing_pause_read_aloud))
                         needResumeOnCallStateIdle = true
                         pauseReadAloud()
                     } else {
-                        AppLog.put("来电响铃")
+                        AppLog.put(getString(R.string.call_ringing))
                     }
                 }
 
                 TelephonyManager.CALL_STATE_OFFHOOK -> {
-                    AppLog.put("来电接听,不做处理")
+                    AppLog.put(getString(R.string.call_answered_no_action))
                 }
             }
         }

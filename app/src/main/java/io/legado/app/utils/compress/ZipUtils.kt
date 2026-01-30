@@ -275,7 +275,7 @@ object ZipUtils {
         return files
     }
 
-    /* 遍历目录获取所有文件名 */
+    /* Traverse directory to get all file names */
     @Throws(SecurityException::class)
     fun getFilesName(
         inputStream: InputStream,

@@ -62,7 +62,7 @@ class ThemeListDialog : BaseDialogFragment(R.layout.dialog_recycler_view),
                     if (ThemeConfig.addConfig(it)) {
                         initData()
                     } else {
-                        toastOnUi("格式不对,添加失败")
+                        toastOnUi(R.string.sc_format_error_add_failed)
                     }
                 }
             }
@@ -82,7 +82,7 @@ class ThemeListDialog : BaseDialogFragment(R.layout.dialog_recycler_view),
 
     fun share(index: Int) {
         val json = GSON.toJson(ThemeConfig.configList[index])
-        requireContext().share(json, "主题分享")
+        requireContext().share(json, getString(R.string.sc_theme_share))
     }
 
     inner class Adapter(context: Context) :

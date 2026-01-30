@@ -15,7 +15,7 @@ class DictRuleViewModel(application: Application) : BaseViewModel(application) {
         execute {
             appDb.dictRuleDao.update(*dictRule)
         }.onError {
-            val msg = "更新字典规则出错\n${it.localizedMessage}"
+            val msg = context.getString(io.legado.app.R.string.error_update_dict_rule, it.localizedMessage)
             AppLog.put(msg, it)
             context.toastOnUi(msg)
         }
@@ -25,7 +25,7 @@ class DictRuleViewModel(application: Application) : BaseViewModel(application) {
         execute {
             appDb.dictRuleDao.delete(*dictRule)
         }.onError {
-            val msg = "删除字典规则出错\n${it.localizedMessage}"
+            val msg = context.getString(io.legado.app.R.string.error_delete_dict_rule, it.localizedMessage)
             AppLog.put(msg, it)
             context.toastOnUi(msg)
         }

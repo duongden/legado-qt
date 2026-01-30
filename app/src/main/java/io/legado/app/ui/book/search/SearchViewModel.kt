@@ -93,7 +93,7 @@ class SearchViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * 开始搜索
+     * Start search
      */
     fun search(key: String) {
         execute {
@@ -112,7 +112,7 @@ class SearchViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * 停止搜索
+     * Stop search
      */
     fun stop() {
         searchModel.cancelSearch()
@@ -127,7 +127,7 @@ class SearchViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * 保存搜索关键字
+     * Save search keyword
      */
     fun saveSearchKey(key: String) {
         execute {
@@ -140,7 +140,7 @@ class SearchViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * 清楚搜索关键字
+     * Clear search keyword
      */
     fun clearHistory() {
         execute {
