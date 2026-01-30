@@ -30,9 +30,8 @@ import io.legado.app.utils.showDialogFragment
 import io.legado.app.utils.viewbindingdelegate.viewBinding
 
 /**
- * 图片验证码对话框
- * 结果保存在内存中
- * val key = "${sourceOrigin ?: ""}_verificationResult"
+ * Verification result can be retrieved from CacheManager using key:
+ * "${sourceOrigin ?: ""}_verificationResult"
  * CacheManager.get(key)
  */
 class VerificationCodeDialog() : BaseDialogFragment(R.layout.dialog_verification_code_view),
@@ -110,7 +109,7 @@ class VerificationCodeDialog() : BaseDialogFragment(R.layout.dialog_verification
                     isFirstResource: Boolean
                 ): Boolean {
                     val bitmap = resource.copy(resource.config!!, true)
-                    ImageProvider.put(url, bitmap) // 传给 PhotoDialog
+                    ImageProvider.put(url, bitmap) // Pass to PhotoDialog
                     return false
                 }
             })

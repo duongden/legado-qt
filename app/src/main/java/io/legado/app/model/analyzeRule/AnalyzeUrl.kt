@@ -112,7 +112,7 @@ class AnalyzeUrl(
     private var webViewDelayTime: Long = 0
     private val concurrentRateLimiter = ConcurrentRateLimiter(source)
 
-    // 服务器ID
+    // Server ID
     var serverID: Long? = null
         private set
 
@@ -134,20 +134,20 @@ class AnalyzeUrl(
     }
 
     /**
-     * 处理url
+     * Process url
      */
     fun initUrl() {
         ruleUrl = mUrl
-        //执行@js,<js></js>
+        //Execute @js,<js></js>
         analyzeJs()
-        //替换参数
+        //Replace params
         replaceKeyPageJs()
-        //处理URL
+        //Process URL
         analyzeUrl()
     }
 
     /**
-     * 执行@js,<js></js>
+     * Execute @js,<js></js>
      */
     private fun analyzeJs() {
         var start = 0
@@ -175,13 +175,13 @@ class AnalyzeUrl(
     }
 
     /**
-     * 替换关键字,页数,JS
+     * Replace keywords, page count, JS
      */
-    private fun replaceKeyPageJs() { //先替换内嵌规则再替换页数规则，避免内嵌规则中存在大于小于号时，规则被切错
+    private fun replaceKeyPageJs() { //Replace inline rules then page rules, avoid wrong split when inline rules contain <>
         //js
         if (ruleUrl.contains("{{") && ruleUrl.contains("}}")) {
-            val analyze = RuleAnalyzer(ruleUrl) //创建解析
-            //替换所有内嵌{{js}}
+            val analyze = RuleAnalyzer(ruleUrl) //Create parser
+            //Replace all inline {{js}}
             val url = analyze.innerRule("{{", "}}") {
                 val jsEval = evalJS(it) ?: ""
                 when {
@@ -197,7 +197,7 @@ class AnalyzeUrl(
             val matcher = pagePattern.matcher(ruleUrl)
             while (matcher.find()) {
                 val pages = matcher.group(1)!!.split(",")
-                ruleUrl = if (page < pages.size) { //pages[pages.size - 1]等同于pages.last()
+                ruleUrl = if (page < pages.size) { //pages[pages.size - 1] same as pages.last()
                     ruleUrl.replace(matcher.group(), pages[page - 1].trim { it <= ' ' })
                 } else {
                     ruleUrl.replace(matcher.group(), pages.last().trim { it <= ' ' })
@@ -207,10 +207,10 @@ class AnalyzeUrl(
     }
 
     /**
-     * 解析Url
+     * Parse Url
      */
     private fun analyzeUrl() {
-        //replaceKeyPageJs已经替换掉额外内容，此处url是基础形式，可以直接切首个‘,’之前字符串。
+        //replaceKeyPageJs already replaced extras, url here is base form, can cut before first ',' string.
         val urlMatcher = paramPattern.matcher(ruleUrl)
         val urlNoOption =
             if (urlMatcher.find()) ruleUrl.substring(0, urlMatcher.start()) else ruleUrl
@@ -270,7 +270,8 @@ class AnalyzeUrl(
     }
 
     /**
-     * 解析QueryMap <key>=<value>
+     * Parse form fields, encoding value supports:
+     * name=<value>
      * name=
      * name=name
      * name=<BASE64> eg name=bmFtZQ==
@@ -342,7 +343,7 @@ class AnalyzeUrl(
     }
 
     /**
-     * 执行JS
+     * Execute JS
      */
     fun evalJS(jsStr: String, result: Any? = null): Any? {
         val bindings = buildScriptBindings { bindings ->
@@ -578,7 +579,7 @@ class AnalyzeUrl(
     }
 
     /**
-     * 上传文件
+     * Upload file
      */
     suspend fun upload(fileName: String, file: Any, contentType: String): StrResponse {
         return getProxyClient(proxy).newCallStrResponse(retry) {
@@ -603,14 +604,13 @@ class AnalyzeUrl(
      */
     private fun setCookie() {
         val cookie = kotlin.run {
-            /* 每次调用getXX cookieJar已经保存过了
+            /* Every time getXX is called cookieJar has already been saved */
             if (enabledCookieJar) {
                 val key = "${domain}_cookieJar"
                 CacheManager.getFromMemory(key)?.let {
-                    return@run it
+                    return@run it as? String ?: ""
                 }
             }
-            */
             CookieStore.getCookie(domain)
         }
         if (cookie.isNotEmpty()) {
@@ -626,10 +626,10 @@ class AnalyzeUrl(
     }
 
     /**
-     * 保存cookieJar中的cookie在访问结束时就保存,不等到下次访问
+     * Save cookies in cookieJar at end of access, don't wait for next access
      */
     private fun saveCookie() {
-        //书源启用保存cookie时 添加内存中的cookie到数据库
+        //When source enables save cookie, add memory cookies to DB
         if (enabledCookieJar) {
             val key = "${domain}_cookieJar"
             CacheManager.getFromMemory(key)?.let {
@@ -681,36 +681,36 @@ class AnalyzeUrl(
         private var headers: Any? = null,
         private var body: Any? = null,
         /**
-         * 源Url
+         * Source Url
          **/
         private var origin: String? = null,
         /**
-         * 重试次数
+         * Retry count
          **/
         private var retry: Int? = null,
         /**
-         * 类型
+         * Type
          **/
         private var type: String? = null,
         /**
-         * 是否使用webView
+         * Whether to use webView
          **/
         private var webView: Any? = null,
         /**
-         * webView中执行的js
+         * js executed in webView
          **/
         private var webJs: String? = null,
         /**
-         * 解析完url参数时执行的js
-         * 执行结果会赋值给url
+         * JS executed after parsing url parameters
+         * Execution result will be assigned to url
          */
         private var js: String? = null,
         /**
-         * 服务器id
+         * Server id
          */
         private var serverID: Long? = null,
         /**
-         * webview等待页面加载完毕的延迟时间（毫秒）
+         * webview wait delay for page load completion (ms)
          */
         private var webViewDelayTime: Long? = null,
     ) {
@@ -831,15 +831,15 @@ class AnalyzeUrl(
 
     data class ConcurrentRecord(
         /**
-         * 是否按频率
+         * Whether by frequency
          */
         val isConcurrent: Boolean,
         /**
-         * 开始访问时间
+         * Start access time
          */
         var time: Long,
         /**
-         * 正在访问的个数
+         * Number of current accesses
          */
         var frequency: Int
     )

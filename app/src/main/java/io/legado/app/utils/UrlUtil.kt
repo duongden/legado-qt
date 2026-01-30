@@ -12,9 +12,9 @@ import java.net.URLDecoder
 
 object UrlUtil {
 
-    // 有时候文件名在query里，截取path会截到其他内容
-    // https://www.example.com/download.php?filename=文件.txt
-    // https://www.example.com/txt/文件.txt?token=123456
+
+    // Sometimes filename is in query, cutting path might include other content
+    // Example: https://www.example.com/txt/file.txt?token=123456
     private val unExpectFileSuffixs = arrayOf(
         "php", "html"
     )
@@ -42,13 +42,13 @@ object UrlUtil {
     }
 
 
-    /* 阅读定义的url,{urlOption} */
+    /* Legado defined url,{urlOption} */
     fun getFileName(analyzeUrl: AnalyzeUrl): String? {
         return getFileName(analyzeUrl.url, analyzeUrl.headerMap)
     }
 
     /**
-     * 根据网络url获取文件信息 文件名
+     * Get file info filename from network url
      */
     @Suppress("MemberVisibilityCanBePrivate")
     fun getFileName(fileUrl: String, headerMap: Map<String, String>? = null): String? {
@@ -67,14 +67,14 @@ object UrlUtil {
         url: URL,
         headerMap: Map<String, String>? = null
     ): String? {
-        // HEAD方式获取链接响应头信息
+        // Get link response header info via HEAD method
         val conn: HttpURLConnection = url.openConnection() as HttpURLConnection
         conn.requestMethod = "HEAD"
-        // 下载链接可能还需要header才能成功访问
+        // Download link might need header to access successfully
         headerMap?.forEach { (key, value) ->
             conn.setRequestProperty(key, value)
         }
-        // 禁止重定向 否则获取不到响应头返回的Location
+        // Disable redirect, otherwise cannot get Location from response header
         conn.instanceFollowRedirects = false
         conn.connect()
 
@@ -94,12 +94,12 @@ object UrlUtil {
         }
 
         // val fileSize = conn.getContentLengthLong() / 1024
-        /** Content-Disposition 存在三种情况 文件名应该用引号 有些用空格
+        /** Content-Disposition exists in three cases, filename should use quotes, some use spaces
          * filename="filename"
          * filename*="charset''filename"
          */
         val raw: String? = conn.getHeaderField("Content-Disposition")
-        // Location跳转到实际链接
+        // Location jumps to actual link
         val redirectUrl: String? = conn.getHeaderField("Location")
 
         return if (raw != null) {
@@ -115,7 +115,7 @@ object UrlUtil {
                     names.add(URLDecoder.decode(data[1], data[0]))
                 } else {
                     names.add(fileName)
-                    /* 好像不用这样
+                    /* Seems not needed
                     names.add(
                             String(
                             fileName.toByteArray(StandardCharsets.ISO_8859_1),
@@ -150,14 +150,14 @@ object UrlUtil {
 
     private val fileSuffixRegex = Regex("^[a-z\\d]+$", RegexOption.IGNORE_CASE)
 
-    /* 获取合法的文件后缀 */
+    /* Get legal file suffix */
     fun getSuffix(str: String, default: String? = null): String {
         val suffix = CustomUrl(str).getUrl()
             .substringAfterLast("/")
             .substringBefore("?")
             .substringBefore("#")
             .substringAfterLast(".", "")
-        //检查截取的后缀字符是否合法 [a-zA-Z0-9]
+        // Check if truncated suffix characters are legal [a-zA-Z0-9]
         return if (suffix.length > 5 || !suffix.matches(fileSuffixRegex)) {
             if (default == null) {
                 AppLog.put("Cannot find legal suffix:\n target: $str\n suffix: $suffix")

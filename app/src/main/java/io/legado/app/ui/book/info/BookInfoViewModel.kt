@@ -189,9 +189,10 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
                     val dbBook = appDb.bookDao.getBook(book.name, book.author)
                     if (!inBookshelf && dbBook != null && !dbBook.isNotShelf && dbBook.origin == book.origin) {
                         /**
-                         * book 来自搜索时(inBookshelf == false)，搜索的书名不存在于书架，但是加载详情后，书名更新，存在同名书籍
-                         * 此时 book 的数据会与数据库中的不同，需要更新 #3652 #4619
-                         * book 加载详情后虽然书名作者相同，但是又可能不是数据库中(书源不同)的那本书 #3149
+                         * When book comes from search (inBookshelf == false), the searched book title does not exist in bookshelf,
+                         * but after loading details, title updates and duplicate exists.
+                         * At this time book data differs from database, needs update #3652 #4619
+                         * After book loads details, although title/author same, it might not be the same book in database (different source) #3149
                          */
                         dbBook.updateTo(it)
                         inBookshelf = true
@@ -242,7 +243,7 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
                     if (inBookshelf) {
                         appDb.bookDao.replace(oldBook, book)
                         /**
-                         * runPreUpdateJs 有可能会修改 book 的 bookUrl
+                         * runPreUpdateJs might modify book's bookUrl
                          */
                         if (oldBook.bookUrl != book.bookUrl) {
                             BookHelp.updateCacheFolder(oldBook, book)
@@ -291,7 +292,7 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
         }
     }
 
-    /* 导入或者下载在线文件 */
+    /* Import or download online file */
     fun <T> importOrDownloadWebFile(webFile: WebFile, success: ((T) -> Unit)?) {
         bookSource ?: return
         execute {
@@ -515,13 +516,13 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
             return name
         }
 
-        // 后缀
+        // Suffix
         val suffix: String = UrlUtil.getSuffix(name)
 
-        // txt epub umd pdf等文件
+        // txt epub umd pdf etc files
         val isSupported: Boolean = AppPattern.bookFileRegex.matches(name)
 
-        // 压缩包形式的txt epub umd pdf文件
+        // Archive format txt epub umd pdf files
         val isSupportDecompress: Boolean = AppPattern.archiveFileRegex.matches(name)
 
     }
