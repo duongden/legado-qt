@@ -166,6 +166,23 @@
             >Bật</span
           >
         </li>
+        <li class="translate-mode">
+          <i>Chế độ dịch</i>
+          <span
+            class="translate-mode-item"
+            :key="0"
+            :class="{ selected: isTranslateMode == false }"
+            @click="setTranslateMode(false)"
+            >Tắt</span
+          >
+          <span
+            class="translate-mode-item"
+            :key="1"
+            :class="{ selected: isTranslateMode == true }"
+            @click="setTranslateMode(true)"
+            >Bật</span
+          >
+        </li>
       </ul>
     </div>
   </div>
@@ -354,6 +371,12 @@ const infiniteLoading = computed(() => {
 const setInfiniteLoading = (loading: boolean) => {
   store.config.infiniteLoading = loading
 }
+
+//Translate Mode
+const isTranslateMode = computed(() => store.isTranslateMode)
+const setTranslateMode = (enable: boolean) => {
+  store.setTranslateMode(enable)
+}
 </script>
 
 <style lang="scss" scoped>
@@ -448,7 +471,8 @@ const setInfiniteLoading = (loading: boolean) => {
          margin-top: 0; /* Handled by li margin-bottom */
 
         .font-item,
-        .infinite-loading-item {
+        .infinite-loading-item,
+        .translate-mode-item {
           width: auto; /* Allow auto width for longer font names */
           min-width: 78px;
           padding: 0 10px; /* Add padding for auto width */
@@ -476,7 +500,8 @@ const setInfiniteLoading = (loading: boolean) => {
         }
 
         .font-item:hover,
-        .infinite-loading-item:hover {
+        .infinite-loading-item:hover,
+        .translate-mode-item:hover {
           border: 1px solid #ed4259;
           color: #ed4259;
         }
@@ -551,9 +576,11 @@ const setInfiniteLoading = (loading: boolean) => {
   }
 
   :deep(.font-list),
-  .infinite-loading {
+  .infinite-loading,
+  .translate-mode {
     .font-item,
-    .infinite-loading-item {
+    .infinite-loading-item,
+    .translate-mode-item {
       border: 1px solid #666;
       background: rgba(45, 45, 45, 0.5);
     }
@@ -584,9 +611,11 @@ const setInfiniteLoading = (loading: boolean) => {
   }
 
   :deep(.font-list),
-  .infinite-loading {
+  .infinite-loading,
+  .translate-mode {
     .font-item,
-    .infinite-loading-item {
+    .infinite-loading-item,
+    .translate-mode-item {
       background: rgba(255, 255, 255, 0.5);
       border: 1px solid rgba(0, 0, 0, 0.1);
     }

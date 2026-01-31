@@ -43,6 +43,7 @@ export const useBookStore = defineStore('book', {
       config: default_config,
       miniInterface: false,
       readSettingsVisible: false,
+      isTranslateMode: false,
     }
   },
   getters: {
@@ -68,7 +69,7 @@ export const useBookStore = defineStore('book', {
   actions: {
     /** 从后端加载书架书籍，优先返回内存缓存 */
     async loadBookShelf(): Promise<Book[]> {
-      const fetchBookshellf_promise = API.getBookShelf().then(resp => {
+      const fetchBookshellf_promise = API.getBookShelf(this.isTranslateMode).then(resp => {
         console.log('API.getBookShelf数据返回')
         const { isSuccess, data, errorMsg } = resp.data
         if (isSuccess === true) {
@@ -111,6 +112,7 @@ export const useBookStore = defineStore('book', {
       const { bookUrl, name, chapterIndex } = book
       const fetchChapterList_promise = API.getChapterList(
         bookUrl as string,
+        this.isTranslateMode
       ).then(res => {
         const { isSuccess, data, errorMsg } = res.data
         if (isSuccess === false) {
@@ -203,8 +205,15 @@ export const useBookStore = defineStore('book', {
         )
       }
       // 直接关闭浏览器时 http请求可能被取消
-      // return API.saveBookProgress(this.bookProgress)
       return API.saveBookProgressWithBeacon(this.bookProgress)
+    },
+    setTranslateMode(enable: boolean) {
+      this.isTranslateMode = enable
+      this.shelf = []
+      this.catalog = []
+    },
+    toggleTranslateMode() {
+      this.setTranslateMode(!this.isTranslateMode)
     },
   },
 })

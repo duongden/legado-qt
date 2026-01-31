@@ -104,12 +104,14 @@
       </div>
     </div>
   </div>
+  <TranslateToggle />
 </template>
 
 <script setup lang="ts">
 import jump from '@/plugins/jump'
 import settings from '@/config/themeConfig'
 import API from '@api'
+import TranslateToggle from '@/components/TranslateToggle.vue'
 import { useLoading } from '@/hooks/loading'
 import { useThrottleFn } from '@vueuse/shared'
 import { isNullOrBlank } from '@/utils/utils'
@@ -156,6 +158,15 @@ watch(
     sessionStorage.setItem('chapterPos', book.chapterPos.toString())
   },
   { deep: 1 },
+)
+
+// 监听翻译模式变化
+watch(
+  () => store.isTranslateMode,
+  () => {
+    // 重新加载当前章节内容
+    getContent(chapterIndex.value, true, chapterPos.value)
+  },
 )
 
 // 无限滚动
@@ -300,7 +311,7 @@ const getContent = (index: number, reloadChapter = true, chapterPos = 0) => {
   const { title, index: chapterIndex } = catalog.value[index]
 
   loadingWrapper(
-    API.getBookContent(bookUrl, chapterIndex).then(
+    API.getBookContent(bookUrl, chapterIndex, store.isTranslateMode).then(
       res => {
         if (res.data.isSuccess) {
           const data = res.data.data

@@ -12,6 +12,7 @@ import io.legado.app.service.WebService
 import io.legado.app.utils.GSON
 import io.legado.app.utils.LogUtils
 import io.legado.app.utils.stackTraceStr
+import io.legado.app.utils.TranslateUtils
 import io.legado.app.web.utils.AssetsWeb
 import kotlinx.coroutines.runBlocking
 import okio.Pipe
@@ -77,7 +78,10 @@ class HttpServer(port: Int) : NanoHTTPD(port) {
                     returnData = when (uri) {
                         "/getBookSource" -> BookSourceController.getSource(parameters)
                         "/getBookSources" -> BookSourceController.sources
-                        "/getBookshelf" -> BookController.bookshelf
+                        "/getBookshelf" -> {
+                            val translate = parameters["translate"]?.firstOrNull()?.toBoolean() ?: false
+                            BookController.getBookshelf(translate)
+                        }
                         "/getChapterList" -> BookController.getChapterList(parameters)
                         "/refreshToc" -> BookController.refreshToc(parameters)
                         "/getBookContent" -> BookController.getBookContent(parameters)

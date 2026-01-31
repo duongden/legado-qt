@@ -3,12 +3,14 @@
     <source-tab-form class="left" :config="config" />
     <tool-bar />
     <source-tab-tools class="right" />
+    <TranslateToggle />
   </div>
 </template>
 <script setup lang="ts">
 import bookSourceConfig from '@/config/bookSourceEditConfig'
 import rssSourceConfig from '@/config/rssSourceEditConfig'
 import '@/assets/sourceeditor.css'
+import TranslateToggle from '@/components/TranslateToggle.vue'
 import { useDark } from '@vueuse/core'
 import type { SourceConfig } from '@/config/sourceConfig'
 

@@ -95,7 +95,8 @@ class ContentProcessor private constructor(
         includeTitle: Boolean = true,
         useReplace: Boolean = true,
         chineseConvert: Boolean = true,
-        reSegment: Boolean = true
+        reSegment: Boolean = true,
+        translate: Boolean = io.legado.app.utils.TranslateUtils.isTranslateEnabled()
     ): BookContent {
         var mContent = content
         var sameTitleRemoved = false
@@ -183,14 +184,14 @@ class ContentProcessor private constructor(
                 getTitleReplaceRules(),
                 useReplace = useReplace && book.getUseReplaceRule()
             )
-            if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+            if (translate) {
                 displayTitle = kotlinx.coroutines.runBlocking { io.legado.app.utils.TranslateUtils.translateMeta(displayTitle) }
                 mContent = kotlinx.coroutines.runBlocking { io.legado.app.utils.TranslateUtils.translateContent(mContent) }
                 mContent = displayTitle + "\n" + mContent
             } else {
                  mContent = displayTitle + "\n" + mContent
             }
-        } else if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+        } else if (translate) {
              mContent = kotlinx.coroutines.runBlocking { io.legado.app.utils.TranslateUtils.translateContent(mContent) }
         }
         if (isAndroid8) {

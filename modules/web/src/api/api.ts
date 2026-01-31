@@ -21,8 +21,8 @@ export type LeagdoApiResponse<T> = {
 export let legado_http_entry_point = ''
 export let legado_webSocket_entry_point = ''
 
-let wsOnError: typeof WebSocket.prototype.onerror = () => {}
-let wsOnMessage: typeof WebSocket.prototype.onmessage = () => {}
+let wsOnError: typeof WebSocket.prototype.onerror = () => { }
+let wsOnMessage: typeof WebSocket.prototype.onmessage = () => { }
 export const setWebsocketOnMessage = (callback: typeof wsOnMessage) =>
   (wsOnMessage = callback)
 export const setWebsocketOnError = (callback: typeof wsOnError) => {
@@ -49,7 +49,7 @@ const getReadConfig = async (http_url = legado_http_entry_point) => {
   if (data.isSuccess) {
     try {
       return JSON.parse(data.data) as webReadConfig
-    } catch {}
+    } catch { }
   }
 }
 const saveReadConfig = (config: webReadConfig) =>
@@ -69,22 +69,24 @@ const saveBookProgressWithBeacon = (bookProgress: BookProgress) => {
   )
 }
 
-const getBookShelf = () => ajax.get<LeagdoApiResponse<Book[]>>('getBookshelf')
+const getBookShelf = (isTranslate?: boolean) => ajax.get<LeagdoApiResponse<Book[]>>('getBookshelf' + (isTranslate !== undefined ? `?translate=${isTranslate}` : ''))
 
-const getChapterList = (/** @type {string} */ bookUrl: string) =>
+const getChapterList = (/** @type {string} */ bookUrl: string, isTranslate?: boolean) =>
   ajax.get<LeagdoApiResponse<BookChapter[]>>(
-    'getChapterList?url=' + encodeURIComponent(bookUrl),
+    'getChapterList?url=' + encodeURIComponent(bookUrl) + (isTranslate !== undefined ? `&translate=${isTranslate}` : ''),
   )
 
 const getBookContent = (
   /** @type {string} */ bookUrl: string,
   /** @type {number} */ chapterIndex: number,
+  isTranslate?: boolean,
 ) =>
   ajax.get<LeagdoApiResponse<string>>(
     'getBookContent?url=' +
-      encodeURIComponent(bookUrl) +
-      '&index=' +
-      chapterIndex,
+    encodeURIComponent(bookUrl) +
+    '&index=' +
+    chapterIndex +
+    (isTranslate !== undefined ? `&translate=${isTranslate}` : ''),
   )
 
 // webSocket
@@ -194,11 +196,11 @@ const getProxyImageUrl = (
   if (src.startsWith(legado_http_entry_point)) return src
   return new URL(
     'image?path=' +
-      encodeURIComponent(src) +
-      '&url=' +
-      encodeURIComponent(bookUrl) +
-      '&width=' +
-      width,
+    encodeURIComponent(src) +
+    '&url=' +
+    encodeURIComponent(bookUrl) +
+    '&width=' +
+    width,
     legado_http_entry_point,
   ).toString()
 }

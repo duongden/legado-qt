@@ -67,9 +67,30 @@ object TranslateUtils {
         translationCache.get(cacheKey)?.let { return it }
         
         return try {
-            val result = performTranslation(text)
-            translationCache.put(cacheKey, result)
-            result
+            // Protect HTML tags (especially <img>) from translation
+            // Identify tags
+            val matcher = Pattern.compile("<[^>]+>").matcher(text)
+            val tags = ArrayList<String>()
+            val sb = StringBuffer()
+            var i = 0
+            while (matcher.find()) {
+                tags.add(matcher.group())
+                matcher.appendReplacement(sb, "[[LG_TAG_$i]]")
+                i++
+            }
+            matcher.appendTail(sb)
+            
+            var translated = performTranslation(sb.toString())
+            
+            // Restore tags
+            // Use regex to find placeholders and replace back
+            for (j in 0 until i) {
+                // Use literal replacement to avoid issues with reserved chars
+                translated = translated.replace("[[LG_TAG_$j]]", tags[j])
+            }
+            
+            translationCache.put(cacheKey, translated)
+            translated
         } catch (e: Exception) {
             e.printStackTrace()
             text

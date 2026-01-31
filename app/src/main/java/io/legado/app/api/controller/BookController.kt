@@ -45,36 +45,41 @@ object BookController {
     /**
      * All books in bookshelf
      */
-    val bookshelf: ReturnData
-        get() {
-            val books = appDb.bookDao.all
-            val returnData = ReturnData()
-            return if (books.isEmpty()) {
-                returnData.setErrorMsg(appCtx.getString(R.string.no_books_added))
-            } else {
-                val data = when (AppConfig.bookshelfSort) {
-                    1 -> books.sortedByDescending { it.latestChapterTime }
-                    2 -> books.sortedWith { o1, o2 ->
-                        o1.name.cnCompare(o2.name)
-                    }
+    /**
+     * All books in bookshelf
+     */
+    /**
+     * All books in bookshelf
+     */
+    fun getBookshelf(translate: Boolean): ReturnData {
+        val books = appDb.bookDao.all
+        val returnData = ReturnData()
+        return if (books.isEmpty()) {
+            returnData.setErrorMsg(appCtx.getString(R.string.no_books_added))
+        } else {
+            val data = when (AppConfig.bookshelfSort) {
+                1 -> books.sortedByDescending { it.latestChapterTime }
+                2 -> books.sortedWith { o1, o2 ->
+                    o1.name.cnCompare(o2.name)
+                }
 
-                    3 -> books.sortedBy { it.order }
-                    else -> books.sortedByDescending { it.durChapterTime }
-                }
-                if (TranslateUtils.isTranslateEnabled()) {
-                    runBlocking {
-                        data.forEach {
-                            it.name = TranslateUtils.translateMeta(it.name)
-                            it.author = TranslateUtils.translateMeta(it.author)
-                            it.latestChapterTitle = TranslateUtils.translateMeta(it.latestChapterTitle)
-                            it.durChapterTitle = TranslateUtils.translateMeta(it.durChapterTitle)
-                            it.intro = TranslateUtils.translateMeta(it.intro)
-                        }
+                3 -> books.sortedBy { it.order }
+                else -> books.sortedByDescending { it.durChapterTime }
+            }
+            if (translate) {
+                runBlocking {
+                    data.forEach {
+                        it.name = TranslateUtils.translateMeta(it.name)
+                        it.author = TranslateUtils.translateMeta(it.author)
+                        it.latestChapterTitle = TranslateUtils.translateMeta(it.latestChapterTitle)
+                        it.durChapterTitle = TranslateUtils.translateMeta(it.durChapterTitle)
+                        it.intro = TranslateUtils.translateMeta(it.intro)
                     }
                 }
-                returnData.setData(data)
             }
+            returnData.setData(data)
         }
+    }
 
     /**
      * Get cover
@@ -146,7 +151,8 @@ object BookController {
                 appDb.bookChapterDao.delByBook(book.bookUrl)
                 appDb.bookChapterDao.insert(*toc.toTypedArray())
                 appDb.bookDao.update(book)
-                if (TranslateUtils.isTranslateEnabled()) {
+                val translate = parameters["translate"]?.firstOrNull()?.toBoolean() ?: TranslateUtils.isTranslateEnabled()
+                if (translate) {
                     runBlocking {
                         toc.forEach { it.title = TranslateUtils.translateMeta(it.title) }
                     }
@@ -164,7 +170,8 @@ object BookController {
                 appDb.bookChapterDao.delByBook(book.bookUrl)
                 appDb.bookChapterDao.insert(*toc.toTypedArray())
                 appDb.bookDao.update(book)
-                if (TranslateUtils.isTranslateEnabled()) {
+                val translate = parameters["translate"]?.firstOrNull()?.toBoolean() ?: TranslateUtils.isTranslateEnabled()
+                if (translate) {
                     runBlocking {
                         toc.forEach { it.title = TranslateUtils.translateMeta(it.title) }
                     }
@@ -189,7 +196,8 @@ object BookController {
         if (chapterList.isEmpty()) {
             return refreshToc(parameters)
         }
-        if (TranslateUtils.isTranslateEnabled()) {
+        val translate = parameters["translate"]?.firstOrNull()?.toBoolean() ?: false
+        if (translate) {
             runBlocking {
                 chapterList.forEach { it.title = TranslateUtils.translateMeta(it.title) }
             }
@@ -203,6 +211,7 @@ object BookController {
     fun getBookContent(parameters: Map<String, List<String>>): ReturnData {
         val bookUrl = parameters["url"]?.firstOrNull()
         val index = parameters["index"]?.firstOrNull()?.toInt()
+        val translate = parameters["translate"]?.firstOrNull()?.toBoolean() ?: false
         val returnData = ReturnData()
         if (bookUrl.isNullOrEmpty()) {
             return returnData.setErrorMsg(appCtx.getString(R.string.error_url_empty_specify_address))
@@ -228,7 +237,7 @@ object BookController {
         if (content != null) {
             val contentProcessor = ContentProcessor.get(book.name, book.origin)
             content = runBlocking {
-                contentProcessor.getContent(book, chapter, content, includeTitle = false)
+                contentProcessor.getContent(book, chapter, content, includeTitle = false, translate = translate)
                     .toString()
             }
             return returnData.setData(content)
@@ -239,7 +248,7 @@ object BookController {
             content = runBlocking {
                 WebBook.getContentAwait(bookSource, book, chapter).let {
                     val contentProcessor = ContentProcessor.get(book.name, book.origin)
-                    contentProcessor.getContent(book, chapter, it, includeTitle = false)
+                    contentProcessor.getContent(book, chapter, it, includeTitle = false, translate = translate)
                         .toString()
                 }
             }

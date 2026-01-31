@@ -75,6 +75,7 @@
         :isSearch="isSearching"
       ></book-items>
     </div>
+    <TranslateToggle />
   </div>
 </template>
 
@@ -82,6 +83,7 @@
 import '@/assets/bookshelf.css'
 import '@/assets/fonts/shelffont.css'
 import { useBookStore } from '@/store'
+import TranslateToggle from '@/components/TranslateToggle.vue'
 import githubUrl from '@/assets/imgs/github.png'
 import { useLoading } from '@/hooks/loading'
 import { Search as SearchIcon } from '@element-plus/icons-vue'
@@ -143,6 +145,16 @@ watchEffect(() => {
     )
   })
 })
+
+// 监听翻译模式变化
+watch(
+  () => store.isTranslateMode,
+  () => {
+    // 重新加载书架
+    loadingWrapper(store.loadBookShelf())
+  },
+)
+
 //搜索在线书籍
 const searchBook = () => {
   if (searchWord.value == '') return
