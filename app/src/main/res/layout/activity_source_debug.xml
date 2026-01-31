@@ -53,7 +53,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="调试搜索>>输入关键字，如："
+                android:text="Gỡ lỗi tìm kiếm >> Nhập từ khóa, ví dụ:"
                 android:textColor="@color/secondaryText"
                 tools:ignore="HardcodedText" />
 
@@ -103,7 +103,7 @@
                 android:id="@+id/text_fx_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="调试发现>>输入发现URL，如："
+                android:text="Gỡ lỗi khám phá >> Nhập URL khám phá, ví dụ:"
                 android:textColor="@color/secondaryText"
                 tools:ignore="HardcodedText" />
 
@@ -128,7 +128,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="调试详情页>>输入详情页URL，如："
+                android:text="Gỡ lỗi trang chi tiết >> Nhập URL trang chi tiết, ví dụ:"
                 android:textColor="@color/secondaryText"
                 tools:ignore="HardcodedText" />
 
@@ -153,7 +153,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="调试目录页>>输入目录页URL，如："
+                android:text="Gỡ lỗi trang mục lục >> Nhập URL trang mục lục, ví dụ:"
                 android:textColor="@color/secondaryText"
                 tools:ignore="HardcodedText" />
 
@@ -178,7 +178,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="调试正文页>>输入正文页URL，如："
+                android:text="Gỡ lỗi trang nội dung >> Nhập URL trang nội dung, ví dụ:"
                 android:textColor="@color/secondaryText"
                 tools:ignore="HardcodedText" />
 

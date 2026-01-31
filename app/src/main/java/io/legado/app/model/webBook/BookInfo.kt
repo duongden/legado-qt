@@ -36,7 +36,7 @@ object BookInfo {
         body ?: throw NoStackTraceException(
             appCtx.getString(R.string.error_get_web_content, baseUrl)
         )
-        Debug.log(bookSource.bookSourceUrl, "≡获取成功:${baseUrl}")
+        Debug.log(bookSource.bookSourceUrl, "${appCtx.getString(R.string.log_get_success)}${baseUrl}")
         Debug.log(bookSource.bookSourceUrl, body, state = 20)
         val analyzeRule = AnalyzeRule(book, bookSource)
         analyzeRule.setContent(body).setBaseUrl(baseUrl)
@@ -58,13 +58,13 @@ object BookInfo {
         infoRule.init?.let {
             if (it.isNotBlank()) {
                 coroutineContext.ensureActive()
-                Debug.log(bookSource.bookSourceUrl, "≡执行详情页初始化规则")
+                Debug.log(bookSource.bookSourceUrl, appCtx.getString(R.string.log_exec_intro_init_rule))
                 analyzeRule.setContent(analyzeRule.getElement(it))
             }
         }
         val mCanReName = canReName && !infoRule.canReName.isNullOrBlank()
         coroutineContext.ensureActive()
-        Debug.log(bookSource.bookSourceUrl, "┌获取书名")
+        Debug.log(bookSource.bookSourceUrl, appCtx.getString(R.string.log_get_book_name))
         BookHelp.formatBookName(analyzeRule.getString(infoRule.name)).let {
             if (it.isNotEmpty() && (mCanReName || book.name.isEmpty())) {
                 book.name = it
@@ -72,7 +72,7 @@ object BookInfo {
             Debug.log(bookSource.bookSourceUrl, "└${it}")
         }
         coroutineContext.ensureActive()
-        Debug.log(bookSource.bookSourceUrl, "┌获取作者")
+        Debug.log(bookSource.bookSourceUrl, appCtx.getString(R.string.log_get_author))
         BookHelp.formatBookAuthor(analyzeRule.getString(infoRule.author)).let {
             if (it.isNotEmpty() && (mCanReName || book.author.isEmpty())) {
                 book.author = it
@@ -80,7 +80,7 @@ object BookInfo {
             Debug.log(bookSource.bookSourceUrl, "└${it}")
         }
         coroutineContext.ensureActive()
-        Debug.log(bookSource.bookSourceUrl, "┌获取分类")
+        Debug.log(bookSource.bookSourceUrl, appCtx.getString(R.string.log_get_kind))
         try {
             analyzeRule.getStringList(infoRule.kind)
                 ?.joinToString(",")
@@ -91,10 +91,10 @@ object BookInfo {
         } catch (e: Exception) {
             coroutineContext.ensureActive()
             Debug.log(bookSource.bookSourceUrl, "└${e.localizedMessage}")
-            DebugLog.e("获取分类出错", e)
+            DebugLog.e(appCtx.getString(R.string.err_get_kind), e)
         }
         coroutineContext.ensureActive()
-        Debug.log(bookSource.bookSourceUrl, "┌获取字数")
+        Debug.log(bookSource.bookSourceUrl, appCtx.getString(R.string.log_get_word_count))
         try {
             wordCountFormat(analyzeRule.getString(infoRule.wordCount)).let {
                 if (it.isNotEmpty()) book.wordCount = it
@@ -103,10 +103,10 @@ object BookInfo {
         } catch (e: Exception) {
             coroutineContext.ensureActive()
             Debug.log(bookSource.bookSourceUrl, "└${e.localizedMessage}")
-            DebugLog.e("获取字数出错", e)
+            DebugLog.e(appCtx.getString(R.string.err_get_word_count), e)
         }
         coroutineContext.ensureActive()
-        Debug.log(bookSource.bookSourceUrl, "┌获取最新章节")
+        Debug.log(bookSource.bookSourceUrl, appCtx.getString(R.string.log_get_last_chapter))
         try {
             analyzeRule.getString(infoRule.lastChapter).let {
                 if (it.isNotEmpty()) book.latestChapterTitle = it
@@ -115,10 +115,10 @@ object BookInfo {
         } catch (e: Exception) {
             coroutineContext.ensureActive()
             Debug.log(bookSource.bookSourceUrl, "└${e.localizedMessage}")
-            DebugLog.e("获取最新章节出错", e)
+            DebugLog.e(appCtx.getString(R.string.err_get_last_chapter), e)
         }
         coroutineContext.ensureActive()
-        Debug.log(bookSource.bookSourceUrl, "┌获取简介")
+        Debug.log(bookSource.bookSourceUrl, appCtx.getString(R.string.log_get_intro))
         try {
             HtmlFormatter.format(analyzeRule.getString(infoRule.intro)).let {
                 if (it.isNotEmpty()) book.intro = it
@@ -127,10 +127,10 @@ object BookInfo {
         } catch (e: Exception) {
             coroutineContext.ensureActive()
             Debug.log(bookSource.bookSourceUrl, "└${e.localizedMessage}")
-            DebugLog.e("获取简介出错", e)
+            DebugLog.e(appCtx.getString(R.string.err_get_intro), e)
         }
         coroutineContext.ensureActive()
-        Debug.log(bookSource.bookSourceUrl, "┌获取封面链接")
+        Debug.log(bookSource.bookSourceUrl, appCtx.getString(R.string.log_get_cover_url))
         try {
             analyzeRule.getString(infoRule.coverUrl).let {
                 if (it.isNotEmpty()) {
@@ -142,11 +142,11 @@ object BookInfo {
         } catch (e: Exception) {
             coroutineContext.ensureActive()
             Debug.log(bookSource.bookSourceUrl, "└${e.localizedMessage}")
-            DebugLog.e("获取封面出错", e)
+            DebugLog.e(appCtx.getString(R.string.err_get_cover_url), e)
         }
         coroutineContext.ensureActive()
         if (!book.isWebFile) {
-            Debug.log(bookSource.bookSourceUrl, "┌获取目录链接")
+            Debug.log(bookSource.bookSourceUrl, appCtx.getString(R.string.log_get_toc_url))
             book.tocUrl = analyzeRule.getString(infoRule.tocUrl, isUrl = true)
             if (book.tocUrl.isEmpty()) book.tocUrl = baseUrl
             if (book.tocUrl == baseUrl) {
@@ -154,11 +154,11 @@ object BookInfo {
             }
             Debug.log(bookSource.bookSourceUrl, "└${book.tocUrl}")
         } else {
-            Debug.log(bookSource.bookSourceUrl, "┌获取文件下载链接")
+            Debug.log(bookSource.bookSourceUrl, appCtx.getString(R.string.log_get_download_url))
             book.downloadUrls = analyzeRule.getStringList(infoRule.downloadUrls, isUrl = true)
             if (book.downloadUrls.isNullOrEmpty()) {
                 Debug.log(bookSource.bookSourceUrl, "└")
-                throw NoStackTraceException("下载链接为空")
+                throw NoStackTraceException(appCtx.getString(R.string.err_download_url_empty))
             } else {
                 Debug.log(
                     bookSource.bookSourceUrl,

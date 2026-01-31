@@ -1,5 +1,6 @@
 package io.legado.app.model.webBook
 
+import io.legado.app.R
 import io.legado.app.constant.AppConst
 import io.legado.app.constant.AppLog
 import io.legado.app.constant.PreferKey
@@ -62,7 +63,7 @@ class SearchModel(private val scope: CoroutineScope, private val callBack: CallB
             searchBooks.clear()
             bookSourceParts = callBack.getSearchScope().getBookSourceParts()
             if (bookSourceParts.isEmpty()) {
-                callBack.onSearchCancel(NoStackTraceException("启用书源为空"))
+                callBack.onSearchCancel(NoStackTraceException(appCtx.getString(R.string.err_enable_source_empty)))
                 return
             }
             mSearchId = searchId
@@ -108,7 +109,7 @@ class SearchModel(private val scope: CoroutineScope, private val callBack: CallB
             }.onCompletion {
                 if (it == null) callBack.onSearchFinish(searchBooks.isEmpty(), hasMore)
             }.catch {
-                AppLog.put("书源搜索出错\n${it.localizedMessage}", it)
+                AppLog.put("${appCtx.getString(R.string.err_source_search)}\n${it.localizedMessage}", it)
             }.collect()
         }
     }
