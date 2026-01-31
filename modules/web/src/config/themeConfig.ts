@@ -55,12 +55,10 @@ const settings = {
     },
   ],
   fonts: [
-    'Microsoft YaHei, PingFangSC-Regular, HelveticaNeue-Light, Helvetica Neue Light, sans-serif',
-
-    'PingFangSC-Regular, -apple-system, Simsun',
-
-    'Kaiti',
-    '"Literata", "Noto Serif SC", serif',
+    '"Noto Sans", "Noto Sans SC", "Source Han Sans CN", "Microsoft YaHei", sans-serif',
+    '"Google Sans", "Product Sans", sans-serif',
+    '"Roboto", sans-serif',
+    '"Microsoft YaHei", sans-serif',
   ],
 }
 export default settings

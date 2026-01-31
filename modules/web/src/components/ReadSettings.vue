@@ -231,7 +231,7 @@ const setTheme = (theme: number) => {
 }
 
 //预置字体
-const fonts = ref(['雅黑', '宋体', '楷书', 'Literata'])
+const fonts = ref(['Mặc định', 'Google Sans', 'Roboto', 'YaHei'])
 const setFont = (font: number) => {
   store.config.font = font
 }
@@ -395,31 +395,35 @@ const setInfiniteLoading = (loading: boolean) => {
 
       li {
         list-style: none outside none;
+        display: flex; /* Use flexbox for alignment */
+        align-items: center; /* Vertically center */
+        margin-bottom: 24px; /* Space between items (replacing individual margin-tops) */
+        flex-wrap: wrap; /* Allow wrapping on very small screens if needed */
 
         i {
           font:
             12px / 16px PingFangSC-Regular,
             '-apple-system',
             Simsun;
-          display: inline-block;
-          min-width: 48px;
+          display: block; /* Flex item */
+          min-width: 80px; /* Increased from 48px to accommodate VN text */
           margin-right: 16px;
-          vertical-align: middle;
           color: #666;
+          white-space: nowrap; /* Prevent label wrapping if possible */
         }
 
         .theme-item {
-          line-height: 32px;
+          /* line-height: 32px; removed line-height dependency */
           width: 34px;
           height: 34px;
           margin-right: 16px;
-          margin-top: 5px;
+          /* margin-top: 5px; removed */
           border-radius: 100%;
-          display: inline-block;
+          display: flex; /* Centering content */
+          justify-content: center;
+          align-items: center;
           cursor: pointer;
-          text-align: center;
-          vertical-align: middle;
-
+          
           .iconfont {
             display: none;
           }
@@ -435,21 +439,28 @@ const setInfiniteLoading = (loading: boolean) => {
       }
 
       .font-list,
-      .infinite-loading {
-        margin-top: 28px;
+      .infinite-loading,
+      .font-size,
+      .read-width,
+      .letter-spacing,
+      .line-spacing,
+      .paragraph-spacing {
+         margin-top: 0; /* Handled by li margin-bottom */
 
         .font-item,
         .infinite-loading-item {
-          width: 78px;
+          width: auto; /* Allow auto width for longer font names */
+          min-width: 78px;
+          padding: 0 10px; /* Add padding for auto width */
           height: 34px;
           cursor: pointer;
           margin-right: 16px;
           border-radius: 2px;
-          text-align: center;
-          vertical-align: middle;
-          display: inline-block;
+          display: inline-flex; /* Use inline-flex for centering */
+          justify-content: center;
+          align-items: center;
           font:
-            14px / 34px PingFangSC-Regular,
+            14px / 1.2 PingFangSC-Regular, /* Normalized line-height */
             HelveticaNeue-Light,
             'Helvetica Neue Light',
             'Microsoft YaHei',
@@ -469,6 +480,8 @@ const setInfiniteLoading = (loading: boolean) => {
           border: 1px solid #ed4259;
           color: #ed4259;
         }
+        
+        /* Specific margin fix for the first item if needed, but handled by flex above */
       }
 
       .font-size,
@@ -476,23 +489,23 @@ const setInfiniteLoading = (loading: boolean) => {
       .letter-spacing,
       .line-spacing,
       .paragraph-spacing {
-        margin-top: 28px;
 
         .resize {
-          display: inline-block;
-          width: 274px;
+          display: flex; /* Flexbox for the resize controls */
+          align-items: center;
+          width: auto; /* Allow flexible width */
+          min-width: 200px; /* Min width to prevent collapse */
           height: 34px;
-          vertical-align: middle;
           border-radius: 2px;
 
           span {
-            width: 89px;
-            height: 34px;
-            line-height: 34px;
-            display: inline-block;
+            flex: 1; /* Distribute space */
+            height: 100%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
             cursor: pointer;
-            text-align: center;
-            vertical-align: middle;
+            padding: 0 10px;
 
             em {
               font-style: normal;
@@ -508,11 +521,14 @@ const setInfiniteLoading = (loading: boolean) => {
             color: #a6a6a6;
             font-weight: 400;
             font-family: FZZCYSK;
+            width: auto;
+            min-width: 60px; /* Ensure value is visible */
           }
 
           b {
             display: inline-block;
             height: 20px;
+            width: 1px; /* Explicit width for separator */
             vertical-align: middle;
           }
         }

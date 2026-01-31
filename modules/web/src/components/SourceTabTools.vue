@@ -25,10 +25,10 @@ const current_tab = computed({
 })
 
 const tabData = ref([
-  ['editTab', '编辑源'],
-  ['editDebug', '调试源'],
-  ['editList', '源列表'],
-  ['editHelp', '帮助信息'],
+  ['editTab', 'Sửa nguồn'],
+  ['editDebug', 'Debug'],
+  ['editList', 'Danh sách'],
+  ['editHelp', 'Trợ giúp'],
 ])
 </script>
 

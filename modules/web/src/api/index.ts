@@ -40,21 +40,21 @@ const responseCheckInterceptor = (resp: AxiosResponse) => {
     isLeagdoApiResponse = false
   }
   if (isLeagdoApiResponse === false) {
-    notification.warning({ message: '后端返回内容格式错误', grouping: true })
+    notification.warning({ message: 'Lỗi định dạng phản hồi từ backend', grouping: true })
     throw new Error()
   }
   connectionStore.setConnectType('primary')
-  connectionStore.setConnectStatus('已连接 ' + legado_http_entry_point)
+  connectionStore.setConnectStatus('Đã kết nối ' + legado_http_entry_point)
   return resp
 }
 
 const axiosErrorInterceptor = (err: unknown) => {
   notification.error({
-    message: '后端连接失败，请检查阅读WEB服务或者设置其它可用链接',
+    message: 'Kết nối backend thất bại, vui lòng kiểm tra WEB server hoặc cài đặt link khác',
     grouping: true,
   })
   connectionStore.setConnectType('danger')
-  connectionStore.setConnectStatus('连接异常')
+  connectionStore.setConnectStatus('Lỗi kết nối')
   throw err
 }
 // http全局
@@ -63,7 +63,7 @@ ajax.interceptors.response.use(responseCheckInterceptor, axiosErrorInterceptor)
 setWebsocketOnError(axiosErrorInterceptor)
 setWebsocketOnMessage(() => {
   connectionStore.setConnectType('primary')
-  connectionStore.setConnectStatus('已连接 ' + legado_http_entry_point)
+  connectionStore.setConnectStatus('Đã kết nối ' + legado_http_entry_point)
 })
 /**
  * 按照阅读的默认规则 解析阅读HTTP WebSocket API入口地址

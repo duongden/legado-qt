@@ -3,7 +3,7 @@
     v-if="isBookSource"
     id="debug-key"
     v-model="searchKey"
-    placeholder="搜索书名、作者"
+    placeholder="Tìm kiếm tên sách, tác giả"
     :prefix-icon="Search"
     style="padding-bottom: 4px"
     @keydown.enter="startDebug"
@@ -14,7 +14,7 @@
     type="textarea"
     readonly
     :rows="29"
-    placeholder="这里用于输出调试信息"
+    placeholder="Nơi hiển thị thông tin debug"
   />
 </template>
 

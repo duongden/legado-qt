@@ -33,7 +33,7 @@
             </div>
             <div class="update-info" v-if="!isSearch">
               <div class="dot">•</div>
-              <div class="size">共{{ (book as Book).totalChapterNum }}章</div>
+              <div class="size">Tổng {{ (book as Book).totalChapterNum }} chương</div>
               <div class="dot">•</div>
               <div class="date">
                 {{ dateFormat((book as Book).lastCheckTime) }}
@@ -43,9 +43,9 @@
           <div class="intro" v-if="isSearch">{{ book.intro }}</div>
 
           <div class="dur-chapter" v-if="!isSearch">
-            已读：{{ (book as Book).durChapterTitle }}
+            Đã đọc: {{ (book as Book).durChapterTitle }}
           </div>
-          <div class="last-chapter">最新：{{ book.latestChapterTitle }}</div>
+          <div class="last-chapter">Mới nhất: {{ book.latestChapterTitle }}</div>
         </div>
       </div>
     </div>

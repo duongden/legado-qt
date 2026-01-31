@@ -119,7 +119,7 @@ const push = () => {
           store.setPushReturnSources(okData)
         }
         ElMessage({
-          message: `Đẩy hàng loạt nguồn lên "Legado 3.0 APP"\nTlổng cộng: ${
+          message: `Đẩy hàng loạt nguồn lên "Legado 3.0 APP"\nTổng cộng: ${
             sources.length
           } \nThành công: ${okData.length} \nThất bại: ${
             sources.length - okData.length
