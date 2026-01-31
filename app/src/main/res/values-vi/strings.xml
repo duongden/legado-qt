@@ -789,6 +789,10 @@
     <string name="select_theme">Chuyển đổi chủ đề mặc định</string>
     <string name="sort_by_lastUpdateTime">Sắp xếp theo thời gian cập nhật</string>
     <string name="sort_by_respondTime">Sắp xếp theo thời gian phản hồi</string>
+    <string name="group_audio">Audio</string>
+    <string name="group_net_none">Mạng chưa phân nhóm</string>
+    <string name="group_local_none">Cục bộ chưa phân nhóm</string>
+    <string name="group_update_error">Cập nhật lỗi</string>
     <string name="search_content">Tìm kiếm nội dung</string>
     <string name="rss_source_empty">Hiện tại trống!</string>
     <string name="explore_empty">Hiện tại trống!</string>

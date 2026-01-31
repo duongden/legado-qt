@@ -163,8 +163,9 @@ watch(
 // 监听翻译模式变化
 watch(
   () => store.isTranslateMode,
-  () => {
-    // 重新加载当前章节内容
+  async () => {
+    // 重新加载目录和当前章节内容
+    await store.loadWebCatalog(store.readingBook)
     getContent(chapterIndex.value, true, chapterPos.value)
   },
 )

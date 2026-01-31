@@ -797,6 +797,10 @@
     <string name="select_theme">Switch default theme</string>
     <string name="sort_by_lastUpdateTime">Sort by update time</string>
     <string name="sort_by_respondTime">Sort by respond time</string>
+    <string name="group_audio">Audio</string>
+    <string name="group_net_none">Network not grouped</string>
+    <string name="group_local_none">Local not grouped</string>
+    <string name="group_update_error">Update failed</string>
     <string name="search_content">Search content</string>
     <string name="rss_source_empty">Empty now!</string>
     <string name="explore_empty">Empty now!</string>
