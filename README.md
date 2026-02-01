@@ -44,3 +44,13 @@ Nếu bạn gặp vấn đề hoặc muốn đóng góp, hãy tham gia thảo lu
         <img src="https://img.shields.io/badge/-V%E1%BB%81-%C4%91%E1%BA%A7u-orange.svg" alt="Back to Top">
     </a>
 </div>
+
+## Demo
+
+![Demo Image 1](https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200318.jpg)
+![Demo Image 2](https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200331.jpg)
+![Demo Image 3](https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200346.jpg)
+![Demo Image 4](https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200424.jpg)
+![Demo Image 5](https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200635.jpg)
+![Demo Image 6](https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200702.jpg)
+![Demo Image 7](https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200722.jpg)
