@@ -58,14 +58,65 @@ object DictManager {
             // Basic validation: Check if file is text (optional, but good practice)
             // For now, simply copy.
             
-            destFile.outputStream().use { outputStream ->
-                inputStream.copyTo(outputStream)
-            }
+            val result = filterAndCopyFile(inputStream, destFile)
             inputStream.close()
-            true
+            result
         } catch (e: Exception) {
             e.printStackTrace()
             false
+        }
+    }
+
+    /**
+     * Filter and copy dictionary file.
+     * Rules:
+     * 1. Keep only the first meaning after splitting by "/"
+     * 2. Remove lines that contain numbers AND chapter keywords (Quyển, Chương, Tiết, Hồi...)
+     */
+    private fun filterAndCopyFile(inputStream: java.io.InputStream, outputFile: File): Boolean {
+        try {
+            val reader = java.io.BufferedReader(java.io.InputStreamReader(inputStream))
+            val writer = java.io.BufferedWriter(java.io.FileWriter(outputFile))
+
+            val noiseRegex = Regex(".*\\d.*")
+            val chapterKeywords = Regex(".*(Quyển|Chương|Tiết|Hồi|卷|回|章|幕|集|节).*")
+
+            var line: String? = reader.readLine()
+            while (line != null) {
+                if (line.isNotBlank()) {
+                    // Rule 2: Remove noise
+                    if (line.matches(noiseRegex) && line.matches(chapterKeywords)) {
+                        line = reader.readLine()
+                        continue
+                    }
+
+                    // Rule 1: Filter meanings
+                    val processedLine = if (line.contains("=")) {
+                        val parts = line.split("=", limit = 2)
+                        if (parts.size == 2) {
+                            val key = parts[0]
+                            val valParts = parts[1].split("/")
+                            "$key=${valParts[0]}"
+                        } else {
+                            line
+                        }
+                    } else {
+                        line
+                    }
+
+                    writer.write(processedLine)
+                    writer.newLine()
+                }
+                line = reader.readLine()
+            }
+
+            writer.flush()
+            writer.close()
+            reader.close()
+            return true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
         }
     }
 
