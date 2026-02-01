@@ -47,10 +47,20 @@ Nếu bạn gặp vấn đề hoặc muốn đóng góp, hãy tham gia thảo lu
 
 ## Demo
 
-![Demo Image 1](https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200318.jpg)
-![Demo Image 2](https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200331.jpg)
-![Demo Image 3](https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200346.jpg)
-![Demo Image 4](https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200424.jpg)
-![Demo Image 5](https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200635.jpg)
-![Demo Image 6](https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200702.jpg)
-![Demo Image 7](https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200722.jpg)
+<table>
+<tr>
+<td><img src="https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200318.jpg" width="300"/></td>
+<td><img src="https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200331.jpg" width="300"/></td>
+<td><img src="https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200346.jpg" width="300"/></td>
+</tr>
+<tr>
+<td><img src="https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200424.jpg" width="300"/></td>
+<td><img src="https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200635.jpg" width="300"/></td>
+<td><img src="https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200702.jpg" width="300"/></td>
+</tr>
+<tr>
+<td><img src="https://raw.githubusercontent.com/dat-bi/legado-qt/main/demo/IMG_20260201_200722.jpg" width="300"/></td>
+<td></td>
+<td></td>
+</tr>
+</table>
