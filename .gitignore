@@ -16,5 +16,4 @@ package-lock.json
 .idea/
 # Kotlin 2.0
 .kotlin/
-*.jks
 key_base64.txt
