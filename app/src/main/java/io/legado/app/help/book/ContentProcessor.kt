@@ -185,7 +185,7 @@ class ContentProcessor private constructor(
                 useReplace = useReplace && book.getUseReplaceRule()
             )
             if (translate) {
-                displayTitle = kotlinx.coroutines.runBlocking { io.legado.app.utils.TranslateUtils.translateMeta(displayTitle) }
+                displayTitle = kotlinx.coroutines.runBlocking { io.legado.app.utils.TranslateUtils.translateChapterTitle(displayTitle) }
                 mContent = kotlinx.coroutines.runBlocking { io.legado.app.utils.TranslateUtils.translateContent(mContent) }
                 mContent = displayTitle + "\n" + mContent
             } else {

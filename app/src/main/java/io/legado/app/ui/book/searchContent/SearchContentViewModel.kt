@@ -48,6 +48,9 @@ class SearchContentViewModel(application: Application) : BaseViewModel(applicati
             2 -> ChineseUtils.s2t(chapter.title)
             else -> chapter.title
         }
+        if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+             chapter.title = io.legado.app.utils.TranslateUtils.translateChapterTitle(chapter.title)
+        }
         coroutineContext.ensureActive()
         val mContent = contentProcessor!!.getContent(
             book, chapter, chapterContent, useReplace = replaceEnabled

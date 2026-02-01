@@ -707,7 +707,7 @@ object ReadBook : CoroutineScope by MainScope() {
                 book.getUseReplaceRule()
             )
             if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
-                displayTitle = io.legado.app.utils.TranslateUtils.translateMeta(displayTitle)
+                displayTitle = io.legado.app.utils.TranslateUtils.translateChapterTitle(displayTitle)
             }
             val contents = contentProcessor
                 .getContent(book, chapter, content, includeTitle = false)
@@ -798,7 +798,7 @@ object ReadBook : CoroutineScope by MainScope() {
                 book.getUseReplaceRule()
             )
             if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
-                displayTitle = io.legado.app.utils.TranslateUtils.translateMeta(displayTitle)
+                displayTitle = io.legado.app.utils.TranslateUtils.translateChapterTitle(displayTitle)
             }
             val contents = contentProcessor
                 .getContent(book, chapter, content, includeTitle = false)

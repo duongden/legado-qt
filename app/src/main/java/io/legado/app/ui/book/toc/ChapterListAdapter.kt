@@ -77,13 +77,17 @@ class ChapterListAdapter(context: Context, val callback: Callback) :
             val book = callback.book ?: return@async
             val replaceRules = ContentProcessor.get(book.name, book.origin).getTitleReplaceRules()
             val useReplace = AppConfig.tocUiUseReplace && book.getUseReplaceRule()
+            val translate = io.legado.app.utils.TranslateUtils.isTranslateEnabled()
             val items = getItems()
             launch {
                 for (i in startIndex until items.size) {
                     val item = items[i]
                     if (displayTitleMap[item.title] == null) {
                         ensureActive()
-                        val displayTitle = item.getDisplayTitle(replaceRules, useReplace)
+                        var displayTitle = item.getDisplayTitle(replaceRules, useReplace)
+                        if (translate) {
+                            displayTitle = io.legado.app.utils.TranslateUtils.translateChapterTitle(displayTitle)
+                        }
                         ensureActive()
                         displayTitleMap[item.title] = displayTitle
                         handler.post {
@@ -97,7 +101,10 @@ class ChapterListAdapter(context: Context, val callback: Callback) :
                     val item = items[i]
                     if (displayTitleMap[item.title] == null) {
                         ensureActive()
-                        val displayTitle = item.getDisplayTitle(replaceRules, useReplace)
+                        var displayTitle = item.getDisplayTitle(replaceRules, useReplace)
+                        if (translate) {
+                            displayTitle = io.legado.app.utils.TranslateUtils.translateChapterTitle(displayTitle)
+                        }
                         ensureActive()
                         displayTitleMap[item.title] = displayTitle
                         handler.post {

@@ -154,7 +154,7 @@ object BookController {
                 val translate = parameters["translate"]?.firstOrNull()?.toBoolean() ?: TranslateUtils.isTranslateEnabled()
                 if (translate) {
                     runBlocking {
-                        toc.forEach { it.title = TranslateUtils.translateMeta(it.title) }
+                        toc.forEach { it.title = TranslateUtils.translateChapterTitle(it.title) }
                     }
                 }
                 return returnData.setData(toc)
@@ -173,7 +173,7 @@ object BookController {
                 val translate = parameters["translate"]?.firstOrNull()?.toBoolean() ?: TranslateUtils.isTranslateEnabled()
                 if (translate) {
                     runBlocking {
-                        toc.forEach { it.title = TranslateUtils.translateMeta(it.title) }
+                        toc.forEach { it.title = TranslateUtils.translateChapterTitle(it.title) }
                     }
                 }
                 return returnData.setData(toc)
@@ -199,7 +199,7 @@ object BookController {
         val translate = parameters["translate"]?.firstOrNull()?.toBoolean() ?: false
         if (translate) {
             runBlocking {
-                chapterList.forEach { it.title = TranslateUtils.translateMeta(it.title) }
+                chapterList.forEach { it.title = TranslateUtils.translateChapterTitle(it.title) }
             }
         }
         return returnData.setData(chapterList)

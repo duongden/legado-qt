@@ -25,17 +25,37 @@ object TranslateUtils {
     private val translationScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     // Regex patterns for processText
-    private val trimSpacesBefore = Pattern.compile(" +([,.?!\\]>”’):])")
-    private val trimSpacesAfter = Pattern.compile("([<\\[“‘(]) +")
-    private val capitalizeRegex = Pattern.compile("(^\\s*|[.!?“‘”’\\[-]\\s*)(\\p{Ll})", Pattern.MULTILINE) // \p{Ll} is lowercase letter
+    private val trimSpacesBefore = Pattern.compile(" +([,.?!\\]>”’):】])")
+    private val trimSpacesAfter = Pattern.compile("([<\\[“‘(【]) +")
+    private val capitalizeRegex = Pattern.compile("(^\\s*|[.!?“‘”’\\[【-]\\s*)(\\p{Ll})", Pattern.MULTILINE) // \p{Ll} is lowercase letter
 
     // Punctuation mapping
     private val punctuationMapping = mapOf(
-        '。' to ". ", '，' to ", ", '、' to ", ", '；' to ";", '！' to "!", '？' to "?",
-        '：' to ": ", '（' to "(", '）' to ")", '〔' to "[", '〕' to "]", '【' to "[",
-        '】' to "]", '《' to "<", '》' to ">", '｛' to "{", '｝' to "}", '『' to "[",
-        '』' to "]", '〈' to "<", '〉' to ">", '～' to "~", '—' to "-", '…' to "...",
-        '〖' to "[", '〗' to "]", '〘' to "[", '〙' to "]", '〚' to "[", '〛' to "]", '　' to " "
+        '。' to ". ", '．' to ". ", '，' to ", ", '、' to ", ", '；' to ";", '：' to ": ", '！' to "!", '？' to "?", '…' to "...",
+        '（' to "【", '）' to "】",
+        '〔' to "【", '〕' to "】",
+        '【' to "【", '】' to "】",
+        '〖' to "【", '〗' to "】",
+        '〘' to "【", '〙' to "】",
+        '〚' to "【", '〛' to "】",
+        '『' to "【", '』' to "】",
+        '《' to "【", '》' to "】",
+        '〈' to "【", '〉' to "】",
+        '｛' to "【", '｝' to "】",
+        '「' to "【", '」' to "】",
+        '(' to "【", ')' to "】",
+        '{' to "【", '}' to "】",
+        '～' to "~", '—' to "-", '　' to " "
+    )
+
+    private val chapterUnitMap = mapOf(
+        "卷" to "Quyển",
+        "回" to "Hồi",
+        "章" to "Chương",
+        "幕" to "Màn",
+        "折" to "Chiết",
+        "节" to "Tiết",
+        "集" to "Tập"
     )
 
     /**
@@ -43,6 +63,102 @@ object TranslateUtils {
      */
     fun isTranslateEnabled(): Boolean {
         return appCtx.getPrefBoolean(PreferKey.translateEnable, false)
+    }
+
+    /**
+     * Translate chapter title (e.g. 第12章 -> Chương 12)
+     * Also translates surrounding text using translateMeta
+     */
+    suspend fun translateChapterTitle(raw: String): String {
+        val text = raw.trim()
+        if (text.isEmpty()) return ""
+
+        // Regex: 第 [numbers] [unit]
+        // Supports: 第十二章, 第3回, 第一卷
+        val regex = Regex("""第\s*([0-9一二三四五六七八九十百千零〇两]+)\s*([卷回章节幕折集])""")
+        
+        // Find match
+        val match = regex.find(text)
+
+        if (match == null) {
+            return translateMeta(text)
+        }
+
+        // Extract parts
+        val numberCn = match.groupValues[1]
+        val unitCn = match.groupValues[2]
+
+        // Convert number and unit
+        val number = chineseNumberToInt(numberCn)
+        val unitVi = chapterUnitMap[unitCn] ?: "Chương"
+        
+        val chapterPart = "$unitVi $number"
+
+        // Translate text before and after the match
+        val preMatch = text.substring(0, match.range.first)
+        val postMatch = text.substring(match.range.last + 1)
+        
+        val translatedPre = if (preMatch.isNotBlank()) translateMeta(preMatch) + " " else ""
+        val translatedPostRaw = if (postMatch.isNotBlank()) translateMeta(postMatch).trim() else ""
+
+        val separator = if (translatedPostRaw.isNotEmpty()) {
+            if (translatedPostRaw.startsWith(":") || translatedPostRaw.startsWith("：")) "" else ": "
+        } else ""
+
+        val translatedPost = if (translatedPostRaw.isNotEmpty()) separator + translatedPostRaw else ""
+
+        return "$translatedPre$chapterPart$translatedPost".trim()
+    }
+
+    private fun chineseNumberToInt(chineseNumber: String): Int {
+        var result = 0
+        var temp = 0
+        var bill = 0L // Billion
+        
+        // Simple mapping
+        val map = mapOf(
+            '零' to 0, '〇' to 0,
+            '一' to 1, '二' to 2, '两' to 2, '三' to 3, '四' to 4,
+            '五' to 5, '六' to 6, '七' to 7, '八' to 8, '九' to 9
+        )
+        
+        if (chineseNumber.all { it.isDigit() }) {
+             return chineseNumber.toIntOrNull() ?: 0
+        }
+
+        for (char in chineseNumber) {
+            when (char) {
+                in map.keys -> {
+                    temp = map[char]!!
+                }
+                '十' -> {
+                    if (temp == 0) temp = 1
+                    result += temp * 10
+                    temp = 0
+                }
+                '百' -> {
+                    result += temp * 100
+                    temp = 0
+                }
+                '千' -> {
+                    result += temp * 1000
+                    temp = 0
+                }
+                '万' -> {
+                    result += temp
+                    result *= 10000
+                    temp = 0
+                }
+                else -> {
+                    // Ignore unknown chars or just digit conversion locally if mixed
+                    if (char.isDigit()) {
+                        temp = char.toString().toInt()
+                    }
+                }
+            }
+        }
+        result += temp
+        return result
     }
     
     /**
@@ -172,8 +288,8 @@ object TranslateUtils {
      * Perform actual translation using VietPhrase dictionaries logic
      * Ported from Dictionary.js: translate(text)
      */
-    private suspend fun performTranslation(text: String): String {
-        val data = TranslationLoader.loadTranslationData() ?: return text
+    private suspend fun performTranslation(text: String): String = withContext(Dispatchers.Default) {
+        val data = TranslationLoader.loadTranslationData() ?: return@withContext text
         
         // Step 1: Convert Punctuation
         val convertedText = convertPunctuation(text)
@@ -212,7 +328,7 @@ object TranslateUtils {
         }
         
         // Step 4: Process Text
-        return processText(translatedWords.joinToString(" "))
+        processText(translatedWords.joinToString(" "))
     }
 
     private fun searchInDictionaries(key: String, data: io.legado.app.model.TranslationData): String? {
