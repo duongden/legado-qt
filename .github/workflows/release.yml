@@ -12,6 +12,8 @@ jobs:
   prepare:
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
     outputs:
       version: ${{ steps.set-ver.outputs.version }}
       play: ${{ steps.check.outputs.play }}
@@ -33,6 +35,8 @@ jobs:
     needs: prepare
     if: ${{ needs.prepare.outputs.sign }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       product: app
       VERSION: ${{ needs.prepare.outputs.version }}
