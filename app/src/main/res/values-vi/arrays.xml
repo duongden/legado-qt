@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="book_type">
+        <item>Văn bản</item>
+        <item>Âm thanh</item>
+        <item>Hình ảnh</item>
+        <item>Tập tin</item>
+    </string-array>
+	<string-array name="screen_direction_title">
+		<item>@string/screen_unspecified</item>
+		<item>@string/screen_portrait</item>
+		<item>@string/screen_landscape</item>
+		<item>@string/screen_sensor</item>
+		<item>@string/screen_portrait_reversed</item>
+	</string-array>
+    <string-array name="group_style">
+        <item>Thẻ</item>
+        <item>Thư mục</item>
+    </string-array>
+
+    <string-array name="theme_mode">
+        <item>Theo hệ thống</item>
+        <item>Chế độ sáng</item>
+        <item>Chế độ tối</item>
+        <item>Chế độ E-Ink</item>
+    </string-array>
+
+    <string-array name="NavBarColors">
+        <item>Tự động</item>
+        <item>Đen</item>
+        <item>Trắng</item>
+        <item>Theo nền</item>
+    </string-array>
+
+    <string-array name="screen_time_out">
+        <item>Mặc định</item>
+        <item>1 phút</item>
+        <item>5 phút</item>
+        <item>10 phút</item>
+        <item>Luôn sáng</item>
+    </string-array>
+
+    <string-array name="chinese_mode">
+        <item>Tắt</item>
+        <item>Phồn thể sang Giản thể</item>
+        <item>Giản thể sang Phồn thể</item>
+    </string-array>
+	<string-array name="double_page_title">
+		<item>Toàn cục một trang</item>
+		<item>Toàn cục hai trang</item>
+		<item>Hai trang khi xoay ngang</item>
+		<item>Máy tính bảng/Xoay ngang hai trang</item>
+	</string-array>
+    <string-array name="progress_bar_behavior_title">
+		<item>@string/adjust_chapter_page</item>
+		<item>@string/adjust_chapter_index</item>
+	</string-array>
+    <string-array name="system_typefaces">
+        <item>Phông chữ mặc định hệ thống</item>
+        <item>Phông chữ Serif hệ thống</item>
+        <item>Phông chữ Monospace hệ thống</item>
+    </string-array>
+
+    <string-array name="read_tip">
+        <item>Trống</item>
+        <item>Tên sách</item>
+        <item>Tiêu đề</item>
+        <item>Thời gian</item>
+        <item>Pin</item>
+        <item>Pin %</item>
+        <item>Số trang</item>
+        <item>Tiến độ (%)</item>
+        <item>Tiến độ (xx/yyy)</item>
+        <item>Số trang và Tiến độ</item>
+        <item>Thời gian và Pin</item>
+        <item>Thời gian và Pin %</item>
+    </string-array>
+
+    <string-array name="text_font_weight">
+        <item>Thường</item>
+        <item>Đậm</item>
+        <item>Nhạt</item>
+    </string-array>
+
+    <string-array name="language">
+        <item>Theo hệ thống</item>
+        <item>Tiếng Trung (Giản thể)</item>
+        <item>Tiếng Trung (Phồn thể)</item>
+        <item>Tiếng Anh</item>
+    </string-array>
+
+    <string-array name="rule_type">
+        <item>Nguồn sách</item>
+        <item>Nguồn RSS</item>
+        <item>Quy tắc thay thế</item>
+    </string-array>
+
+
+    <string-array name="book_sort">
+        <item>@string/text_default</item>
+        <item>@string/bookshelf_px_0</item>
+        <item>@string/bookshelf_px_1</item>
+        <item>@string/bookshelf_px_2</item>
+        <item>@string/bookshelf_px_3</item>
+        <item>@string/bookshelf_px_4</item>
+        <item>@string/bookshelf_px_5</item>
+    </string-array>
+    <string-array name="convert_s">
+        <item>@string/jf_convert_o</item>
+        <item>@string/jf_convert_j</item>
+        <item>@string/jf_convert_f</item>
+    </string-array>
+    <string-array name="default_app_variant">
+        <item>@string/default_version</item>
+        <item>@string/official_version</item>
+        <item>@string/beta_release_version</item>
+        <item>@string/beta_releaseA_version</item>
+    </string-array>
+    <string-array name="default_app_variant_value">
+        <item>default_version</item>
+        <item>official_version</item>
+        <item>beta_release_version</item>
+        <item>beta_releaseA_version</item>
+    </string-array>
+    <string-array name="default_home_page">
+        <item>@string/bookshelf</item>
+        <item>@string/discovery</item>
+        <item>@string/rss</item>
+        <item>@string/my</item>
+    </string-array>
+    <string-array name="default_home_page_value">
+        <item>bookshelf</item>
+        <item>explore</item>
+        <item>rss</item>
+        <item>my</item>
+    </string-array>
+    <string-array name="icon_names">
+        <item>iconMain</item>
+        <item>icon1</item>
+        <item>icon2</item>
+        <item>icon3</item>
+        <item>icon4</item>
+        <item>icon5</item>
+        <item>icon6</item>
+    </string-array>
+    <string-array name="indent">
+        <item>@string/indent_0</item>
+        <item>@string/indent_1</item>
+        <item>@string/indent_2</item>
+        <item>@string/indent_3</item>
+        <item>@string/indent_4</item>
+    </string-array>
+    <string-array name="server_type">
+        <item>WEBDAV</item>
+    </string-array>
+    <string-array name="text_suffix">
+        <item>.txt</item>
+        <item>.json</item>
+        <item>.xml</item>
+    </string-array>
+    <string-array name="tip_color">
+        <item>Cùng màu với nội dung</item>
+        <item>Tùy chỉnh</item>
+    </string-array>
+    <string-array name="tip_divider_color">
+        <item>Mặc định</item>
+        <item>Cùng màu với nội dung</item>
+        <item>Tùy chỉnh</item>
+    </string-array>
+</resources>
+

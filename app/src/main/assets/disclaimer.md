@@ -1,0 +1,16 @@
+# Tuyên bố miễn trừ trách nhiệm (Disclaimer)
+
+* Legado là một công cụ phân tích các quy tắc được chỉ định và lấy nội dung, cung cấp trải nghiệm đọc thử thuận tiện, nhanh chóng và thoải mái cho những người yêu thích văn học mạng.
+* Khi bạn tìm kiếm một cuốn sách, Legado sẽ sử dụng quy tắc bạn đang dùng để gửi tên sách dưới dạng từ khóa đến các trang web văn học mạng bên thứ ba.
+Các trang web bên thứ ba trả về nội dung không liên quan đến Legado, Legado không chịu trách nhiệm về nội dung đó và cũng không chịu bất kỳ trách nhiệm pháp lý nào.
+Bất kỳ trang web bên thứ ba nào được liên kết thông qua việc sử dụng Legado đều do người khác tạo ra hoặc cung cấp, bạn có thể nhận được các dịch vụ khác từ các trang web bên thứ ba, Legado không chịu trách nhiệm về tính hợp pháp của chúng và cũng không chịu bất kỳ trách nhiệm pháp lý nào.
+Kết quả của công cụ tìm kiếm bên thứ ba được tự động tìm kiếm và cung cấp bản đọc thử dựa trên tên sách bạn gửi, không đại diện cho sự tán thành của Legado đối với nội dung hoặc lập trường trên các trang web bên thứ ba được liên kết.
+Bạn phải tự chịu rủi ro khi sử dụng kết quả của công cụ tìm kiếm.
+* Legado không đưa ra bất kỳ hình thức bảo đảm nào: không đảm bảo rằng kết quả tìm kiếm của công cụ tìm kiếm bên thứ ba đáp ứng yêu cầu của bạn, không đảm bảo rằng dịch vụ tìm kiếm sẽ không bị gián đoạn, không đảm bảo tính bảo mật, chính xác, kịp thời và hợp pháp của kết quả tìm kiếm.
+Legado không chịu bất kỳ trách nhiệm pháp lý nào nếu bạn không thể sử dụng Legado bình thường do tình trạng mạng, đường truyền hoặc trang web bên thứ ba.
+Legado tôn trọng và bảo vệ quyền riêng tư cá nhân của tất cả người dùng, tên người dùng, địa chỉ email và các thông tin cá nhân khác mà bạn đăng ký sẽ không được Legado chủ động tiết lộ cho bên thứ ba trừ khi được bạn cho phép hoặc theo quy định bắt buộc của pháp luật và quy định liên quan.
+* Legado cam kết giảm thiểu lãng phí thời gian vô nghĩa của người đọc văn học mạng trong quá trình tự tìm kiếm, thông qua tìm kiếm chuyên nghiệp để hiển thị các chương mới nhất của văn học mạng từ các trang web khác nhau.
+Trong khi cung cấp trải nghiệm đọc thử thuận tiện, nhanh chóng và thoải mái cho những người yêu thích tiểu thuyết, Legado cũng giúp văn học mạng xuất sắc được lan truyền nhanh chóng và rộng rãi hơn, từ đó đạt được mục đích thúc đẩy sự phát triển thịnh vượng của văn học mạng ở một mức độ nhất định.
+Legado khuyến khích những người yêu thích tiểu thuyết khám phá các tiểu thuyết mạng xuất sắc và nhà cung cấp của chúng thông qua việc đọc, và đề nghị đọc sách bản quyền.
+Bất kỳ đơn vị hoặc cá nhân nào cho rằng nội dung trang web bên thứ ba được liên kết thông qua tìm kiếm của Legado có thể bị nghi ngờ vi phạm quyền truyền bá thông tin trên mạng của họ, vui lòng thông báo bằng văn bản cho Legado kịp thời, đồng thời cung cấp bằng chứng nhận dạng, bằng chứng quyền sở hữu và bằng chứng chi tiết về tình trạng vi phạm.
+Sau khi nhận được các văn bản pháp lý nêu trên, Legado sẽ ngắt kết nối nội dung liên kết liên quan theo quy định của pháp luật trong thời gian sớm nhất.

@@ -1,0 +1,2 @@
+* Do hạn chế truy cập bộ nhớ của Android, ứng dụng cần thiết lập **thư mục con trong thư mục công cộng** để thực hiện sao chép và tải sách, ví dụ: Documents/Books, Download/Books
+* Nếu không thiết lập, bạn sẽ không thể sử dụng bình thường các tính năng liên quan đến sách cục bộ và sách WebDav
