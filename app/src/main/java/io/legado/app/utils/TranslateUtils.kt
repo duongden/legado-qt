@@ -289,13 +289,17 @@ object TranslateUtils {
      * Ported from Dictionary.js: translate(text)
      */
     private suspend fun performTranslation(text: String): String = withContext(Dispatchers.Default) {
+        val t0 = System.currentTimeMillis()
         val data = TranslationLoader.loadTranslationData() ?: return@withContext text
+        // android.util.Log.d("TranslateUtils", "Loaded data in ${System.currentTimeMillis() - t0}ms")
         
         // Step 1: Convert Punctuation
         val convertedText = convertPunctuation(text)
 
         // Step 2: Tokenize and Filter
+        val t1 = System.currentTimeMillis()
         val tokens = tokenize(convertedText, data)
+        // android.util.Log.d("TranslateUtils", "Tokenized ${text.length} chars in ${System.currentTimeMillis() - t1}ms")
         
         // Step 3: Translate and PhienAm
         val translatedWords = ArrayList<String>()
@@ -328,7 +332,9 @@ object TranslateUtils {
         }
         
         // Step 4: Process Text
-        processText(translatedWords.joinToString(" "))
+        val res = processText(translatedWords.joinToString(" "))
+        // android.util.Log.d("TranslateUtils", "Total translation time: ${System.currentTimeMillis() - t0}ms")
+        res
     }
 
     private fun searchInDictionaries(key: String, data: io.legado.app.model.TranslationData): String? {
