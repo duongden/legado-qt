@@ -140,3 +140,11 @@ cn.hutool.core.util.**{*;}
 # Throwable
 -keepnames class * extends java.lang.Throwable
 -keepclassmembernames,allowobfuscation class * extends java.lang.Throwable{*;}
+
+# ONNX Runtime
+-keep class ai.onnxruntime.** { *; }
+-dontwarn ai.onnxruntime.**
+
+# AI Translation Service
+-keep class io.legado.app.service.AITranslationService { *; }
+-keep class io.legado.app.service.SentencePieceTokenizer { *; }

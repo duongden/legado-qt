@@ -100,6 +100,11 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
         initOtherView()
         initData()
         receiptIntent(intent)
+        
+        // Start AI service if enabled
+        if (getPrefBoolean(PreferKey.aiModelEnabled, false)) {
+            AITranslationService.start(this)
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -171,11 +176,17 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
             }
 
             R.id.menu_ai_translation -> {
-                putPrefBoolean(
-                    PreferKey.aiModelEnabled,
-                    !getPrefBoolean(PreferKey.aiModelEnabled)
-                )
-                aiTranslationMenuItem?.isChecked = getPrefBoolean(PreferKey.aiModelEnabled)
+                val newState = !getPrefBoolean(PreferKey.aiModelEnabled)
+                putPrefBoolean(PreferKey.aiModelEnabled, newState)
+                aiTranslationMenuItem?.isChecked = newState
+                
+                // Start or stop AI service based on toggle
+                if (newState) {
+                    AITranslationService.start(this)
+                } else {
+                    AITranslationService.stop(this)
+                }
+                
                 searchView.query?.toString()?.trim()?.let {
                     searchView.setQuery(it, true)
                 }
