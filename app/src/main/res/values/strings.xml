@@ -615,6 +615,7 @@
     <string name="screen_find">Search Discovery sources</string>
     <string name="dur_pos">Current location：</string>
     <string name="precision_search">Precise search</string>
+    <string name="ai_translation">AI Translation (Vietnamese to Chinese)</string>
     <string name="service_starting">Starting service</string>
     <string name="empty">Empty</string>
     <string name="file_chooser">File selection</string>

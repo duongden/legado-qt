@@ -50,6 +50,7 @@ import io.legado.app.utils.startActivity
 import io.legado.app.utils.transaction
 import io.legado.app.utils.viewbindingdelegate.viewBinding
 import io.legado.app.utils.visible
+import io.legado.app.service.AITranslationService
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
@@ -89,6 +90,7 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     private var historyFlowJob: Job? = null
     private var booksFlowJob: Job? = null
     private var precisionSearchMenuItem: MenuItem? = null
+    private var aiTranslationMenuItem: MenuItem? = null
     private var isManualStopSearch = false
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -110,6 +112,8 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
         this.menu = menu
         precisionSearchMenuItem = menu.findItem(R.id.menu_precision_search)
         precisionSearchMenuItem?.isChecked = getPrefBoolean(PreferKey.precisionSearch)
+        aiTranslationMenuItem = menu.findItem(R.id.menu_ai_translation)
+        aiTranslationMenuItem?.isChecked = getPrefBoolean(PreferKey.aiModelEnabled)
         return super.onCompatCreateOptionsMenu(menu)
     }
 
@@ -166,6 +170,17 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
                 }
             }
 
+            R.id.menu_ai_translation -> {
+                putPrefBoolean(
+                    PreferKey.aiModelEnabled,
+                    !getPrefBoolean(PreferKey.aiModelEnabled)
+                )
+                aiTranslationMenuItem?.isChecked = getPrefBoolean(PreferKey.aiModelEnabled)
+                searchView.query?.toString()?.trim()?.let {
+                    searchView.setQuery(it, true)
+                }
+            }
+
             R.id.menu_search_scope -> alertSearchScope()
             R.id.menu_source_manage -> startActivity<BookSourceActivity>()
             R.id.menu_log -> showDialogFragment(AppLogDialog())
@@ -192,7 +207,29 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
                     isManualStopSearch = false
                     viewModel.saveSearchKey(searchKey)
                     viewModel.searchKey = ""
-                    viewModel.search(searchKey)
+                    
+                    // Check if AI translation is enabled
+                    if (getPrefBoolean(PreferKey.aiModelEnabled, false)) {
+                        // Use AI translation
+                        lifecycleScope.launch {
+                            try {
+                                val aiService = AITranslationService.getInstance()
+                                if (aiService?.isModelReady() == true) {
+                                    val translatedQuery = aiService.translateVietnameseToChinese(searchKey)
+                                    viewModel.search(translatedQuery)
+                                } else {
+                                    // Fallback to original query if AI model is not ready
+                                    viewModel.search(searchKey)
+                                }
+                            } catch (e: Exception) {
+                                // Fallback to original query on error
+                                viewModel.search(searchKey)
+                            }
+                        }
+                    } else {
+                        // Use original query
+                        viewModel.search(searchKey)
+                    }
                 }
                 visibleInputHelp(false)
                 return true

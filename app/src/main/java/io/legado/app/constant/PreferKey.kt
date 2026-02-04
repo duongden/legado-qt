@@ -170,6 +170,7 @@ object PreferKey {
     const val paddingDisplayCutouts = "paddingDisplayCutouts"
     const val autoCheckNewBackup = "autoCheckNewBackup"
     const val translateEnable = "translateEnable"
+    const val aiModelEnabled = "aiModelEnabled"
 
 
     const val cPrimary = "colorPrimary"
