@@ -125,6 +125,10 @@ object DictManager {
      */
     fun deleteCustomDict(type: DictType): Boolean {
         val file = getCustomDictFile(type)
+        // Also delete cache
+        val cacheFile = File(appCtx.filesDir, "dict_cache/user_${type.fileName}.bin")
+        if (cacheFile.exists()) cacheFile.delete()
+        
         return if (file.exists()) {
             file.delete()
         } else {
