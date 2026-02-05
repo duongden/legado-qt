@@ -9,6 +9,7 @@ import android.content.pm.ActivityInfo
 import android.content.pm.ApplicationInfo
 import android.content.res.Configuration
 import android.os.Build
+import io.legado.app.BuildConfig
 import com.github.liuyueyi.quick.transfer.constants.TransType
 import com.jeremyliao.liveeventbus.LiveEventBus
 import com.jeremyliao.liveeventbus.logger.DefaultLogger
@@ -51,6 +52,7 @@ import io.legado.app.help.rhino.NativeBaseSource
 import io.legado.app.help.source.SourceHelp
 import io.legado.app.help.storage.Backup
 import io.legado.app.model.BookCover
+import io.legado.app.model.TranslationLoader
 import io.legado.app.utils.ChineseUtils
 import io.legado.app.utils.LogUtils
 import io.legado.app.utils.defaultSharedPreferences
@@ -109,6 +111,15 @@ class App : Application() {
             Backup.clearCache()
             ReadBookConfig.clearBgAndCache()
             ThemeConfig.clearBg()
+
+            // Prebuild translation dictionaries (persistent binary) regardless of translate toggle
+            launch {
+                try {
+                    TranslationLoader.prebuildAll()
+                } catch (e: Exception) {
+                    LogUtils.e("App", "Failed to prebuild translation dictionaries")
+                }
+            }
             // Initialize traditional/simplified conversion engine
             when (AppConfig.chineseConverterType) {
                 1 -> {

@@ -58,7 +58,6 @@ class CoverRuleConfigDialog : BaseDialogFragment(R.layout.dialog_cover_rule_conf
             val rule = withContext(IO) {
                 BookCover.getCoverRule()
             }
-            Log.e("coverRule", GSON.toJson(rule))
             binding.cbEnable.isChecked = rule.enable
             binding.editSearchUrl.setText(rule.searchUrl)
             binding.editCoverUrlRule.setText(rule.coverRule)

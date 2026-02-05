@@ -5,9 +5,9 @@ import androidx.collection.LruCache
 import io.legado.app.R
 import io.legado.app.constant.PreferKey
 import io.legado.app.model.TranslationLoader
+import kotlinx.coroutines.*
 import splitties.init.appCtx
 import java.util.regex.Pattern
-import kotlinx.coroutines.*
 
 /**
  * Translation utility for VietPhrase Chinese-Vietnamese translation
@@ -62,7 +62,8 @@ object TranslateUtils {
      * Check if translation is enabled
      */
     fun isTranslateEnabled(): Boolean {
-        return appCtx.getPrefBoolean(PreferKey.translateEnable, false)
+        val enabled = appCtx.getPrefBoolean(PreferKey.translateEnable, false)
+        return enabled
     }
 
     /**
@@ -272,10 +273,13 @@ object TranslateUtils {
                     if (textView.getTag(R.id.tag_translate_key) == cacheKey) {
                         val finalText = transform?.invoke(translated) ?: translated
                         (setter ?: { textView.text = it }).invoke(finalText)
+                    } else {
                     }
                 }
+            } catch (e: CancellationException) {
+                // Expected cancellation, no need to print stack trace
             } catch (e: Exception) {
-                e.printStackTrace()
+                android.util.Log.e("TranslateUtils", "Translation error for: ${text.take(30)}...", e)
             } finally {
                 pendingJobs.remove(cacheKey)
             }
@@ -289,17 +293,17 @@ object TranslateUtils {
      * Ported from Dictionary.js: translate(text)
      */
     private suspend fun performTranslation(text: String): String = withContext(Dispatchers.Default) {
-        val t0 = System.currentTimeMillis()
-        val data = TranslationLoader.loadTranslationData() ?: return@withContext text
-        // android.util.Log.d("TranslateUtils", "Loaded data in ${System.currentTimeMillis() - t0}ms")
+        val data = TranslationLoader.loadTranslationData()
+        if (data == null) {
+            android.util.Log.e("TranslateUtils", "Translation data is null - cannot translate")
+            return@withContext text
+        }
         
         // Step 1: Convert Punctuation
         val convertedText = convertPunctuation(text)
 
         // Step 2: Tokenize and Filter
-        val t1 = System.currentTimeMillis()
         val tokens = tokenize(convertedText, data)
-        // android.util.Log.d("TranslateUtils", "Tokenized ${text.length} chars in ${System.currentTimeMillis() - t1}ms")
         
         // Step 3: Translate and PhienAm
         val translatedWords = ArrayList<String>()
@@ -332,9 +336,8 @@ object TranslateUtils {
         }
         
         // Step 4: Process Text
-        val res = processText(translatedWords.joinToString(" "))
-        // android.util.Log.d("TranslateUtils", "Total translation time: ${System.currentTimeMillis() - t0}ms")
-        res
+        val result = processText(translatedWords.joinToString(" "))
+        result
     }
 
     private fun searchInDictionaries(key: String, data: io.legado.app.model.TranslationData): String? {

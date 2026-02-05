@@ -17,4 +17,3 @@ package-lock.json
 # Kotlin 2.0
 .kotlin/
 key_base64.txt
-/.agent

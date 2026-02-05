@@ -250,8 +250,8 @@ dependencies {
 
     //Svg
     implementation(libs.androidsvg)
-    //Glide svg plugin
-    implementation(libs.glide.svg)
+    //Glide svg plugin - temporarily commented due to KSP issue
+    //implementation(libs.glide.svg)
 
     //webServer
     implementation(libs.nanohttpd.nanohttpd)
@@ -287,6 +287,9 @@ dependencies {
     implementation platform(libs.firebase.bom)
     implementation libs.firebase.analytics
     implementation libs.firebase.perf
+
+    //ONNX Runtime for AI model inference (1.17.0+ supports 16KB page alignment)
+    implementation 'com.microsoft.onnxruntime:onnxruntime-android:1.19.2'
 
     implementation libs.glide.recyclerview
 

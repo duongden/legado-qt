@@ -3,9 +3,12 @@ package io.legado.app.utils
 import android.content.Context
 import android.net.Uri
 import io.legado.app.help.storage.ImportOldData
+import io.legado.app.model.TranslationLoader
 import splitties.init.appCtx
+import java.io.BufferedReader
 import java.io.File
 import java.io.FileOutputStream
+import java.io.InputStreamReader
 
 object DictManager {
 
@@ -55,11 +58,24 @@ object DictManager {
             val inputStream = context.contentResolver.openInputStream(uri) ?: return false
             val destFile = getCustomDictFile(type)
             
-            // Basic validation: Check if file is text (optional, but good practice)
-            // For now, simply copy.
-            
+            // Copy and filter the text file
             val result = filterAndCopyFile(inputStream, destFile)
             inputStream.close()
+
+            if (result) {
+                // Delete any existing binary cache for this custom dict.
+                // The UI layer can trigger rebuilding via TranslationLoader.prebuildType(type)
+                // so we don't block the main thread here.
+                try {
+                    val datFile = File(destFile.parent, "${destFile.nameWithoutExtension}.dat")
+                    val binFile = File(destFile.parent, "${destFile.nameWithoutExtension}.bin")
+                    if (datFile.exists()) datFile.delete()
+                    if (binFile.exists()) binFile.delete()
+                } catch (_: Exception) {
+                }
+                TranslationLoader.clearCache()
+            }
+            
             result
         } catch (e: Exception) {
             e.printStackTrace()
@@ -125,12 +141,17 @@ object DictManager {
      */
     fun deleteCustomDict(type: DictType): Boolean {
         val file = getCustomDictFile(type)
-        // Also delete cache
-        val cacheFile = File(appCtx.filesDir, "dict_cache/user_${type.fileName}.bin")
-        if (cacheFile.exists()) cacheFile.delete()
-        
         return if (file.exists()) {
-            file.delete()
+            val ok = file.delete()
+            try {
+                val datFile = File(file.parent, "${file.nameWithoutExtension}.dat")
+                val binFile = File(file.parent, "${file.nameWithoutExtension}.bin")
+                if (datFile.exists()) datFile.delete()
+                if (binFile.exists()) binFile.delete()
+            } catch (_: Exception) {
+            }
+            if (ok) TranslationLoader.clearCache()
+            ok
         } else {
             false
         }

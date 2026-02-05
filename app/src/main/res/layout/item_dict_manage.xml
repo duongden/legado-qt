@@ -56,6 +56,15 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
+            <ProgressBar
+                android:id="@+id/progress_import"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center_vertical"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
             <ImageButton
                 android:id="@+id/btn_reset"
                 android:layout_width="40dp"
