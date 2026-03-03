@@ -319,7 +319,8 @@ class ExportBookService : BaseService() {
                 includeTitle = !AppConfig.exportNoChapterName,
                 useReplace = useReplace,
                 chineseConvert = false,
-                reSegment = false
+                reSegment = false,
+                translate = false
             ).toString()
         if (AppConfig.exportPictureFile) {
             //txt export image file
@@ -551,7 +552,8 @@ class ExportBookService : BaseService() {
                     includeTitle = false,
                     useReplace = useReplace,
                     chineseConvert = false,
-                    reSegment = false
+                    reSegment = false,
+                    translate = false
                 ).toString()
             val title = chapter.run {
                 // Do not export vip flag
@@ -745,7 +747,8 @@ class ExportBookService : BaseService() {
                             includeTitle = false,
                             useReplace = useReplace,
                             chineseConvert = false,
-                            reSegment = false
+                            reSegment = false,
+                            translate = false
                         ).toString()
                     val title = chapter.run {
                         // Do not export vip flag

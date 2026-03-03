@@ -56,6 +56,7 @@ import kotlinx.coroutines.runBlocking
 import okio.use
 import org.jsoup.Connection
 import org.jsoup.Jsoup
+import kotlinx.coroutines.*
 import splitties.init.appCtx
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -938,7 +939,17 @@ interface JsExtensions : JsEncodeUtils {
      */
     fun toast(msg: Any?) {
         rhinoContext.ensureActive()
-        appCtx.toastOnUi("${getSource()?.getTag()}: ${msg.toString()}")
+        val text = "${getSource()?.getTag()}: ${msg.toString()}"
+        if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+            kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                val translated = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    io.legado.app.utils.TranslateUtils.translateContent(text)
+                }
+                appCtx.toastOnUi(translated)
+            }
+        } else {
+            appCtx.toastOnUi(text)
+        }
     }
 
     /**
@@ -946,7 +957,17 @@ interface JsExtensions : JsEncodeUtils {
      */
     fun longToast(msg: Any?) {
         rhinoContext.ensureActive()
-        appCtx.longToastOnUi("${getSource()?.getTag()}: ${msg.toString()}")
+        val text = "${getSource()?.getTag()}: ${msg.toString()}"
+        if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+            kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                val translated = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    io.legado.app.utils.TranslateUtils.translateContent(text)
+                }
+                appCtx.longToastOnUi(translated)
+            }
+        } else {
+            appCtx.longToastOnUi(text)
+        }
     }
 
     /**

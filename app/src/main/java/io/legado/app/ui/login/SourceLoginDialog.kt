@@ -66,7 +66,7 @@ class SourceLoginDialog : BaseDialogFragment(R.layout.dialog_login, true) {
                     ).let {
                         binding.flexbox.addView(it.root)
                         it.root.id = index + 1000
-                        it.textInputLayout.hint = rowUi.name
+                        io.legado.app.utils.TranslateUtils.translateView(it.editText, rowUi.name, null) { translated -> it.textInputLayout.hint = translated }
                         it.editText.setText(loginInfo?.get(rowUi.name))
                     }
 
@@ -77,7 +77,7 @@ class SourceLoginDialog : BaseDialogFragment(R.layout.dialog_login, true) {
                     ).let {
                         binding.flexbox.addView(it.root)
                         it.root.id = index + 1000
-                        it.textInputLayout.hint = rowUi.name
+                        io.legado.app.utils.TranslateUtils.translateView(it.editText, rowUi.name, null) { translated -> it.textInputLayout.hint = translated }
                         it.editText.inputType =
                             InputType.TYPE_TEXT_VARIATION_PASSWORD or InputType.TYPE_CLASS_TEXT
                         it.editText.setText(loginInfo?.get(rowUi.name))
@@ -91,7 +91,7 @@ class SourceLoginDialog : BaseDialogFragment(R.layout.dialog_login, true) {
                         binding.flexbox.addView(it.root)
                         rowUi.style().apply(it.root)
                         it.root.id = index + 1000
-                        it.textView.text = rowUi.name
+                        io.legado.app.utils.TranslateUtils.translateView(it.textView, rowUi.name)
                         it.textView.setPadding(16.dpToPx())
                         it.root.onClick {
                             handleButtonClick(source, rowUi, loginUi)

@@ -280,6 +280,43 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
                 if (updatedSources.isNotEmpty()) {
                     appDb.bookSourceDao.update(*updatedSources.toTypedArray())
                 }
+
+                val rssSources = appDb.rssSourceDao.all
+                val updatedRssSources = arrayListOf<io.legado.app.data.entities.RssSource>()
+                rssSources.forEach { source ->
+                    var changed = false
+                    val newName = TranslateUtils.translateMeta(source.sourceName)
+                    if (newName != source.sourceName) {
+                        source.sourceName = newName
+                        changed = true
+                    }
+                    val newGroup = TranslateUtils.translateMeta(source.sourceGroup)
+                    if (newGroup != source.sourceGroup) {
+                        source.sourceGroup = newGroup
+                        changed = true
+                    }
+                    val newComment = TranslateUtils.translateMeta(source.sourceComment)
+                    if (newComment != source.sourceComment) {
+                        source.sourceComment = newComment
+                        changed = true
+                    }
+                    val newSortUrl = TranslateUtils.translateCode(source.sortUrl)
+                    if (newSortUrl != source.sortUrl) {
+                        source.sortUrl = newSortUrl
+                        changed = true
+                    }
+                    val newRuleContent = TranslateUtils.translateCode(source.ruleContent)
+                    if (newRuleContent != source.ruleContent) {
+                        source.ruleContent = newRuleContent
+                        changed = true
+                    }
+                    if (changed) {
+                        updatedRssSources.add(source)
+                    }
+                }
+                if (updatedRssSources.isNotEmpty()) {
+                    appDb.rssSourceDao.update(*updatedRssSources.toTypedArray())
+                }
             }
         }
     }

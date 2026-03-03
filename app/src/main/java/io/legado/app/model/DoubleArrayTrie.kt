@@ -6,6 +6,8 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.util.*
 
 /**
@@ -146,18 +148,15 @@ class DoubleArrayTrie {
                 dos.writeInt(code)
             }
             
-            // Write arrays
-            val startWrite = System.currentTimeMillis()
+            // Write arrays (bulk)
             val n = base.size
-            val step = maxOf(500_000, n / 10)
-            for (i in 0 until n) {
-                dos.writeInt(base[i])
-            }
+            val baseBytes = ByteArray(n * 4)
+            ByteBuffer.wrap(baseBytes).order(ByteOrder.BIG_ENDIAN).asIntBuffer().put(base)
+            dos.write(baseBytes)
 
-            val startCheck = System.currentTimeMillis()
-            for (i in 0 until n) {
-                dos.writeInt(check[i])
-            }
+            val checkBytes = ByteArray(n * 4)
+            ByteBuffer.wrap(checkBytes).order(ByteOrder.BIG_ENDIAN).asIntBuffer().put(check)
+            dos.write(checkBytes)
 
             var valueCount = 0
             for (i in valueIndex.indices) {
@@ -214,23 +213,20 @@ class DoubleArrayTrie {
                 charMap[Char(charCode)] = mappedCode
             }
             
-            // Read arrays
+            // Read arrays (bulk)
             base = IntArray(baseSize)
             check = IntArray(baseSize)
             valueIndex = IntArray(baseSize) { -1 }
             used = BooleanArray(baseSize)
             nextCheckPos = 0
 
-            val step = maxOf(500_000, baseSize / 10)
-            val startBase = System.currentTimeMillis()
-            for (i in 0 until baseSize) {
-                base[i] = dis.readInt()
-            }
+            val baseBytes = ByteArray(baseSize * 4)
+            dis.readFully(baseBytes)
+            ByteBuffer.wrap(baseBytes).order(ByteOrder.BIG_ENDIAN).asIntBuffer().get(base)
 
-            val startCheck = System.currentTimeMillis()
-            for (i in 0 until baseSize) {
-                check[i] = dis.readInt()
-            }
+            val checkBytes = ByteArray(baseSize * 4)
+            dis.readFully(checkBytes)
+            ByteBuffer.wrap(checkBytes).order(ByteOrder.BIG_ENDIAN).asIntBuffer().get(check)
 
             if (version == 1) {
                 val tmpPairs = ArrayList<Pair<Int, String>>()

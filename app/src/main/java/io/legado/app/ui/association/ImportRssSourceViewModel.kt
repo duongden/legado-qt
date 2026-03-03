@@ -131,6 +131,7 @@ class ImportRssSourceViewModel(app: Application) : BaseViewModel(app) {
                     if (source.sourceUrl.isEmpty()) {
                         throw NoStackTraceException(context.getString(R.string.sc_not_rss_source))
                     }
+                    it.forEach { source -> translateSource(source) }
                     allSources.addAll(it)
                 }
             }
@@ -141,6 +142,7 @@ class ImportRssSourceViewModel(app: Application) : BaseViewModel(app) {
                     if (source.sourceUrl.isEmpty()) {
                         throw NoStackTraceException(context.getString(R.string.sc_not_rss_source))
                     }
+                    it.forEach { source -> translateSource(source) }
                     allSources.addAll(it)
                 }
             }
@@ -173,6 +175,7 @@ class ImportRssSourceViewModel(app: Application) : BaseViewModel(app) {
                 }
                 val jsonItem = jsonPath.parse(item)
                 GSON.fromJsonObject<RssSource>(jsonItem.jsonString()).getOrThrow().let { source ->
+                    translateSource(source)
                     allSources.add(source)
                 }
             }
@@ -187,6 +190,24 @@ class ImportRssSourceViewModel(app: Application) : BaseViewModel(app) {
                 selectStatus.add(has == null || has.lastUpdateTime < it.lastUpdateTime)
             }
             successLiveData.postValue(allSources.size)
+        }
+    }
+
+    private suspend fun translateSource(source: RssSource) {
+        if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+            source.sourceName = io.legado.app.utils.TranslateUtils.translateMeta(source.sourceName)
+            if (!source.sourceGroup.isNullOrEmpty()) {
+                source.sourceGroup = io.legado.app.utils.TranslateUtils.translateMeta(source.sourceGroup)
+            }
+            if (!source.sourceComment.isNullOrEmpty()) {
+                source.sourceComment = io.legado.app.utils.TranslateUtils.translateMeta(source.sourceComment)
+            }
+            if (!source.sortUrl.isNullOrEmpty()) {
+                source.sortUrl = io.legado.app.utils.TranslateUtils.translateCode(source.sortUrl)
+            }
+            if (!source.ruleContent.isNullOrEmpty()) {
+                source.ruleContent = io.legado.app.utils.TranslateUtils.translateCode(source.ruleContent)
+            }
         }
     }
 

@@ -343,9 +343,14 @@ class RssSourceEditActivity :
     private fun setSourceVariable() {
         viewModel.save(getRssSource()) { source ->
             lifecycleScope.launch {
-                val comment =
+                var comment =
                     source.getDisplayVariableComment(getString(R.string.source_variable_help))
                 val variable = withContext(Dispatchers.IO) { source.getVariable() }
+                if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+                    comment = withContext(Dispatchers.IO) {
+                        io.legado.app.utils.TranslateUtils.translateContent(comment) ?: ""
+                    }
+                }
                 showDialogFragment(
                     VariableDialog(
                         getString(R.string.set_source_variable),

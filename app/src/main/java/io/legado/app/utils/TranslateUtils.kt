@@ -16,7 +16,11 @@ import java.util.regex.Pattern
 object TranslateUtils {
     
     // Cache for translated texts (max 10MB worth of strings)
-    private val translationCache = LruCache<String, String>(10 * 1024 * 1024)
+    private val translationCache = object : LruCache<String, String>(10 * 1024 * 1024) {
+        override fun sizeOf(key: String, value: String): Int {
+            return key.length * 2 + value.length * 2
+        }
+    }
     
     // Pending translation jobs
     private val pendingJobs = mutableMapOf<String, Job>()
@@ -174,6 +178,26 @@ object TranslateUtils {
      */
     suspend fun translateContent(text: String?): String {
         return translateText(text, false)
+    }
+
+    /**
+     * Translate text for code/templates (preserve exact syntax, brackets, casing)
+     */
+    suspend fun translateCode(text: String?): String {
+        if (text.isNullOrBlank()) return text ?: ""
+        if (!isTranslateEnabled()) return text
+        
+        val cacheKey = "translate|vietphrase|v2|code|" + MD5Utils.md5Encode16(text)
+        translationCache.get(cacheKey)?.let { return it }
+        
+        return try {
+            val translated = performCodeTranslation(text)
+            translationCache.put(cacheKey, translated)
+            translated
+        } catch (e: Exception) {
+            e.printStackTrace()
+            text
+        }
     }
 
     private suspend fun translateText(text: String?, isMeta: Boolean): String {
@@ -338,6 +362,59 @@ object TranslateUtils {
         // Step 4: Process Text
         val result = processText(translatedWords.joinToString(" "))
         result
+    }
+
+    /**
+     * Perform translation optimized for Code (removes formatting steps that break URL and Syntax)
+     */
+    private suspend fun performCodeTranslation(text: String): String = withContext(Dispatchers.Default) {
+        val data = TranslationLoader.loadTranslationData()
+        if (data == null) {
+            android.util.Log.e("TranslateUtils", "Translation data is null - cannot translate code")
+            return@withContext text
+        }
+        
+        // Tokenize Directly Without Punctuation Conversion
+        val tokens = tokenize(text, data)
+        val sb = java.lang.StringBuilder()
+        
+        for (token in tokens) {
+            if (token.isEmpty()) continue
+            
+            if (!isChineseCharacter(token[0])) {
+                sb.append(token)
+                continue
+            }
+            
+            if (token == "的" || token == "了" || token == "著") {
+                continue
+            }
+            
+            var translation = searchInDictionaries(token, data)
+            if (translation != null) {
+                if (translation.contains("/")) {
+                    translation = translation.split("/")[0]
+                }
+                val lastChar = if (sb.isNotEmpty()) sb.last() else ' '
+                if (lastChar.isLetterOrDigit()) {
+                    sb.append(" ")
+                }
+                sb.append(translation)
+            } else {
+                val phienAm = data.chinesePhienAm[token]
+                if (phienAm != null) {
+                    val lastChar = if (sb.isNotEmpty()) sb.last() else ' '
+                    if (lastChar.isLetterOrDigit()) {
+                        sb.append(" ")
+                    }
+                    sb.append(phienAm)
+                } else {
+                    sb.append(token)
+                }
+            }
+        }
+        
+        sb.toString()
     }
 
     private fun searchInDictionaries(key: String, data: io.legado.app.model.TranslationData): String? {

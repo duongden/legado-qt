@@ -75,7 +75,7 @@ class RssSourceAdapter(context: Context, val callBack: CallBack) :
         binding.run {
             if (payloads.isEmpty()) {
                 root.setBackgroundColor(ColorUtils.withAlpha(context.backgroundColor, 0.5f))
-                cbSource.text = item.getDisplayNameGroup()
+                io.legado.app.utils.TranslateUtils.translateView(cbSource, item.getDisplayNameGroup())
                 swtEnabled.isChecked = item.enabled
                 cbSource.isChecked = selected.contains(item)
             } else {
@@ -83,7 +83,7 @@ class RssSourceAdapter(context: Context, val callBack: CallBack) :
                     val bundle = payloads[i] as Bundle
                     bundle.keySet().forEach {
                         when (it) {
-                            "upName" -> cbSource.text = item.getDisplayNameGroup()
+                            "upName" -> io.legado.app.utils.TranslateUtils.translateView(cbSource, item.getDisplayNameGroup())
                             "enabled" -> swtEnabled.isChecked = bundle.getBoolean("enabled")
                             "selected" -> cbSource.isChecked = selected.contains(item)
                         }

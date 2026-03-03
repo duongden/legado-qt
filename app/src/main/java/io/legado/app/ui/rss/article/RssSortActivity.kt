@@ -120,9 +120,14 @@ class RssSortActivity : VMBaseActivity<ActivityRssArtivlesBinding, RssSortViewMo
                 toastOnUi(R.string.rss_source_not_exist)
                 return@launch
             }
-            val comment =
+            var comment =
                 source.getDisplayVariableComment(getString(R.string.source_variable_help))
             val variable = withContext(Dispatchers.IO) { source.getVariable() }
+            if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+                comment = withContext(Dispatchers.IO) {
+                    io.legado.app.utils.TranslateUtils.translateContent(comment) ?: ""
+                }
+            }
             showDialogFragment(
                 VariableDialog(
                     getString(R.string.set_source_variable),
