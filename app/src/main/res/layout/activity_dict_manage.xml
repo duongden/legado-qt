@@ -43,6 +43,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"/>
 
+            <!-- Item: AI Model Download -->
+            <include
+                android:id="@+id/item_ai_model"
+                layout="@layout/item_ai_model_download"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"/>
+
         </LinearLayout>
     </ScrollView>
 
