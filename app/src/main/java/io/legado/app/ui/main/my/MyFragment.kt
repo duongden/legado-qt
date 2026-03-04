@@ -140,6 +140,14 @@ class MyFragment() : BaseFragment(R.layout.fragment_my_config), MainFragmentInte
                 }
 
                 "recordLog" -> LogUtils.upLevel()
+
+                PreferKey.translateEnable -> {
+                    if (sharedPreferences?.getBoolean(key, false) == true) {
+                        if (!io.legado.app.utils.AiModelManager.isModelReady(requireContext())) {
+                            requireContext().toastOnUi("Chưa tải model AI, cần tải trong Quản lý từ điển để sử dụng AI Search")
+                        }
+                    }
+                }
             }
         }
 

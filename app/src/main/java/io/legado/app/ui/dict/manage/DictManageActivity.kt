@@ -206,7 +206,7 @@ class DictManageActivity : BaseActivity<ActivityDictManageBinding>() {
             aiBinding.btnAiDownload.setImageResource(R.drawable.ic_baseline_close)
             aiBinding.btnAiDownload.contentDescription = getString(R.string.close)
         } else {
-            aiBinding.btnAiDownload.setImageResource(R.drawable.ic_download)
+            aiBinding.btnAiDownload.setImageResource(R.drawable.ic_download_line)
             aiBinding.btnAiDownload.contentDescription = getString(R.string.download)
             // Hide spinner and progress when not downloading
             aiBinding.progressAiSpinner.visibility = View.GONE
