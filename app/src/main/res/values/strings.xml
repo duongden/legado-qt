@@ -995,6 +995,8 @@
     <string name="open_in_browser">open in browser</string>
     <string name="copy_url">copy url</string>
     <string name="full_screen">full screen</string>
+    <string name="translate_page">Translate page</string>
+    <string name="restore_original">Restore original</string>
     <string name="open_fun">open function</string>
     <string name="use_browser_open">Is it opened in an external browser?</string>
     <string name="see">see</string>
@@ -1174,7 +1176,7 @@
     <string name="crash_detected_message">Detected that the app crashed. Open crash logs to report the issue?</string>
     <string name="copy_address">Copy Address</string>
     <string name="update_toc_error">Update TOC error\n%s</string>
-    <string name="update_toc_failed">%s Update TOC failed\n%s</string>
+    <string name="update_toc_failed">%1$s Update TOC failed\n%2$s</string>
 
     <string name="chapter_skip_confirm">Chapter Skip Confirmation</string>
     <string name="chapter_skip_message">Are you sure you want to skip to this chapter?</string>

@@ -1362,7 +1362,7 @@
     <string name="crash_detected_message">Phát hiện ứng dụng bị lỗi. Mở nhật ký lỗi để báo cáo vấn đề?</string>
     <string name="copy_address">Sao chép địa chỉ</string>
     <string name="update_toc_error">Lỗi cập nhật mục lục\n%s</string>
-    <string name="update_toc_failed">%s Cập nhật mục lục thất bại\n%s</string>
+    <string name="update_toc_failed">%1$s Cập nhật mục lục thất bại\n%2$s</string>
     <string name="chapter_skip_confirm">Xác nhận chuyển chương</string>
     <string name="chapter_skip_message">Bạn có chắc chắn muốn chuyển đến chương này không?</string>
     <string name="no_removable_title">Không tìm thấy tiêu đề trùng lặp có thể xóa</string>
