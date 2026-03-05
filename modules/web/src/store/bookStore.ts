@@ -78,7 +78,7 @@ export const useBookStore = defineStore('book', {
             this.shelf.length > 0 &&
             data.length > 0
           ) {
-            ElMessage.info(`书架数据已更新`)
+            ElMessage.info(`Kệ sách đã cập nhật`)
           }
           this.shelf = data.sort((a, b) => {
             const x = a['durChapterTime'] || 0
@@ -87,7 +87,7 @@ export const useBookStore = defineStore('book', {
           })
         } else {
           if (errorMsg.includes('还没有添加小说') && this.shelf.length > 0) {
-            ElMessage.info('当前书架上的书籍已经被删除')
+            ElMessage.info('Sách hiện tại đã bị xóa khỏi kệ')
             return (this.shelf = [])
           }
           ElMessage.error(errorMsg ?? '后端返回格式错误！')

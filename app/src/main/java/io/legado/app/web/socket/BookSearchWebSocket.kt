@@ -10,12 +10,14 @@ import io.legado.app.ui.book.search.SearchScope
 import io.legado.app.utils.GSON
 import io.legado.app.utils.fromJsonObject
 import io.legado.app.utils.isJson
+import io.legado.app.utils.TranslateUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import splitties.init.appCtx
 import java.io.IOException
 
@@ -28,6 +30,7 @@ class BookSearchWebSocket(handshakeRequest: NanoHTTPD.IHTTPSession) :
     private val searchModel = SearchModel(this, this)
 
     private val SEARCH_FINISH = "Search finish"
+    private var shouldTranslate = false
 
     override fun onOpen() {
         launch(IO) {
@@ -61,6 +64,7 @@ class BookSearchWebSocket(handshakeRequest: NanoHTTPD.IHTTPSession) :
                     GSON.fromJsonObject<Map<String, String>>(message.textPayload).getOrNull()
                 if (searchMap != null) {
                     val key = searchMap["key"]
+                    shouldTranslate = searchMap["translate"]?.toBoolean() ?: false
                     if (key.isNullOrBlank()) {
                         send(appCtx.getString(R.string.cannot_empty))
                         close(normalClosure, SEARCH_FINISH, false)
@@ -87,6 +91,17 @@ class BookSearchWebSocket(handshakeRequest: NanoHTTPD.IHTTPSession) :
     }
 
     override fun onSearchSuccess(searchBooks: List<SearchBook>) {
+        if (shouldTranslate) {
+            runBlocking {
+                searchBooks.forEach {
+                    it.name = TranslateUtils.translateMeta(it.name)
+                    it.author = TranslateUtils.translateMeta(it.author)
+                    it.intro = TranslateUtils.translateMeta(it.intro)
+                    it.latestChapterTitle = TranslateUtils.translateMeta(it.latestChapterTitle)
+                    it.kind = TranslateUtils.translateMeta(it.kind)
+                }
+            }
+        }
         send(GSON.toJson(searchBooks))
     }
 
@@ -95,3 +110,4 @@ class BookSearchWebSocket(handshakeRequest: NanoHTTPD.IHTTPSession) :
     override fun onSearchCancel(exception: Throwable?) = close(normalClosure, exception?.toString() ?: SEARCH_FINISH, false)
 
 }
+

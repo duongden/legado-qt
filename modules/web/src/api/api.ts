@@ -94,6 +94,7 @@ const search = (
   searchKey: string,
   onReceive: (data: SeachBook[]) => void,
   onFinish: () => void,
+  isTranslate?: boolean,
 ) => {
   const socket = new WebSocket(
     new URL('searchBook', legado_webSocket_entry_point),
@@ -101,7 +102,7 @@ const search = (
   socket.onerror = wsOnError
 
   socket.onopen = () => {
-    socket.send(`{"key":"${searchKey}"}`)
+    socket.send(JSON.stringify({ key: searchKey, translate: isTranslate ? 'true' : 'false' }))
   }
   socket.onmessage = event => {
     try {

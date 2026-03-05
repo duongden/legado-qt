@@ -5,10 +5,7 @@
     :class="{ active: isTranslateMode }"
     :title="isTranslateMode ? 'Đang dịch → Bấm để tắt' : 'Đang gốc → Bấm để dịch'"
   >
-    <div class="toggle-content">
-      <span class="lang-icon">{{ isTranslateMode ? '🇻🇳' : '🇨🇳' }}</span>
-      <span class="lang-text">{{ isTranslateMode ? 'VI' : 'CN' }}</span>
-    </div>
+    <span class="lang-label">{{ isTranslateMode ? 'VN' : 'CN' }}</span>
   </div>
 </template>
 
@@ -25,59 +22,43 @@ const toggleTranslate = () => {
 
 <style scoped>
 .translate-toggle {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(8px);
+  color: #5c4a1e;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  z-index: 9999;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.25s ease;
   user-select: none;
-  font-family: system-ui, -apple-system, sans-serif;
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .translate-toggle.active {
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-  box-shadow: 0 4px 15px rgba(17, 153, 142, 0.4);
+  background: #11998e;
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2px 10px rgba(17, 153, 142, 0.3);
 }
 
 .translate-toggle:hover {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-}
-
-.translate-toggle.active:hover {
-  box-shadow: 0 6px 20px rgba(17, 153, 142, 0.5);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .translate-toggle:active {
-  transform: translateY(0) scale(0.98);
+  transform: scale(0.95);
 }
 
-.toggle-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.lang-icon {
-  font-size: 20px;
-  line-height: 1;
-}
-
-.lang-text {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+.lang-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 </style>
+

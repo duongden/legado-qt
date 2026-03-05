@@ -74,6 +74,7 @@ object BookController {
                         it.latestChapterTitle = TranslateUtils.translateMeta(it.latestChapterTitle)
                         it.durChapterTitle = TranslateUtils.translateMeta(it.durChapterTitle)
                         it.intro = TranslateUtils.translateMeta(it.intro)
+                        it.kind = TranslateUtils.translateMeta(it.kind)
                     }
                 }
             }
