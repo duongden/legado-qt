@@ -13,6 +13,11 @@
 * Nếu văn bản thiếu chữ, thiếu nội dung, bố cục lộn xộn, v.v., có thể do quy tắc làm sạch hoặc chuyển đổi giản/phồn có vấn đề.
 * Nguồn truyện tranh hiển thị sai mã, **Legado không dùng chung nguồn với các phần mềm khác**, vui lòng nhập nguồn truyện tranh mà Legado hỗ trợ!
 
+**23/03/2026**
+* Chuyển link kiểm tra cập nhật và tải app sang repository: dat-bi/legado-qt
+* Sửa lỗi kiểm tra cập nhật không đúng link dự án
+* Loại bỏ kiểm tra bản cập nhật beta (chỉ dùng bản release)
+
 **26/03/2025**
 * Hiện tại Legado bị đăng ký bản quyền phần mềm ác ý và đã lập nhiều tài khoản công khai
 * Tài khoản công khai chính thức chỉ có: Open Source Reading, Phần mềm đọc nguồn mở, các tài khoản khác không liên quan đến phần mềm này
@@ -35,6 +40,6 @@
 
 ----
 
-* [Nhật ký năm 2023](https://github.com/gedoor/legado/blob/record2023/app/src/main/assets/updateLog.md)
-* [Nhật ký năm 2022](https://github.com/gedoor/legado/blob/record2022/app/src/main/assets/updateLog.md)
-* [Nhật ký năm 2021](https://github.com/gedoor/legado/blob/record2021/app/src/main/assets/updateLog.md)
+* [Nhật ký năm 2023](https://github.com/dat-bi/legado-qt/blob/record2023/app/src/main/assets/updateLog.md)
+* [Nhật ký năm 2022](https://github.com/dat-bi/legado-qt/blob/record2022/app/src/main/assets/updateLog.md)
+* [Nhật ký năm 2021](https://github.com/dat-bi/legado-qt/blob/record2021/app/src/main/assets/updateLog.md)
