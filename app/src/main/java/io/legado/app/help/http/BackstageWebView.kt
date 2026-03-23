@@ -49,7 +49,7 @@ class BackstageWebView(
     private var callback: Callback? = null
     private var mWebView: WebView? = null
 
-    suspend fun getStrResponse(): StrResponse = withTimeout(60000L) {
+    suspend fun getStrResponse(): StrResponse = withTimeout(30000L) {
         suspendCancellableCoroutine { block ->
             block.invokeOnCancellation {
                 runOnUI {

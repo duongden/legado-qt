@@ -28,6 +28,15 @@ import io.legado.app.utils.fromJsonObject
 import io.legado.app.utils.printOnDebug
 import io.legado.app.utils.stackTraceStr
 import io.legado.app.utils.TranslateUtils
+import io.legado.app.ui.book.search.SearchScope
+import io.legado.app.model.webBook.SearchModel
+import io.legado.app.data.entities.SearchBook
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import splitties.init.appCtx
@@ -358,6 +367,81 @@ object BookController {
         val data = CacheManager.get("webReadConfig")
             ?: return returnData.setErrorMsg(appCtx.getString(R.string.no_config))
         return returnData.setData(data)
+    }
+
+    /**
+     * Search book
+     */
+    fun search(parameters: Map<String, List<String>>): ReturnData {
+        val returnData = ReturnData()
+        val key = parameters["key"]?.firstOrNull()
+        if (key.isNullOrBlank()) {
+            return returnData.setErrorMsg(appCtx.getString(R.string.cannot_empty))
+        }
+        val translate = parameters["translate"]?.firstOrNull()?.toBoolean() ?: false
+        val page = parameters["page"]?.firstOrNull()?.toInt() ?: 1
+        val deferred = CompletableDeferred<List<SearchBook>>()
+        // Get bookshelf results
+        val shelfResults = appDb.bookDao.search(key).map { it.toSearchBook() }
+        val results = mutableListOf<SearchBook>()
+        results.addAll(shelfResults)
+
+        // Use MainScope to align with how SearchViewModel and BookSearchWebSocket do it
+        val scope = MainScope()
+        
+        val searchModel = SearchModel(scope, object : SearchModel.CallBack {
+            override fun getSearchScope(): SearchScope = SearchScope(AppConfig.searchScope)
+            override fun onSearchStart() {}
+            override fun onSearchSuccess(searchBooks: List<SearchBook>) {
+                synchronized(results) {
+                    results.clear()
+                    results.addAll(shelfResults)
+                    results.addAll(searchBooks)
+                }
+            }
+            override fun onSearchFinish(isEmpty: Boolean, hasMore: Boolean) {
+                deferred.complete(results.toList())
+            }
+            override fun onSearchCancel(exception: Throwable?) {
+                if (exception != null) {
+                    deferred.completeExceptionally(exception)
+                } else {
+                    deferred.complete(results.toList())
+                }
+            }
+        })
+
+        runBlocking {
+            try {
+                // Execute search
+                searchModel.search(System.currentTimeMillis(), key)
+                
+                // Await completion with a realistic timeout (some sources take a while)
+                withTimeout(30000L) {
+                    val finalResults = deferred.await()
+                    if (translate) {
+                        finalResults.forEach {
+                            it.name = TranslateUtils.translateMeta(it.name)
+                            it.author = TranslateUtils.translateMeta(it.author)
+                            it.intro = TranslateUtils.translateMeta(it.intro)
+                            it.latestChapterTitle = TranslateUtils.translateMeta(it.latestChapterTitle)
+                            it.kind = TranslateUtils.translateMeta(it.kind)
+                        }
+                    }
+                    returnData.setData(finalResults)
+                }
+            } catch (e: Exception) {
+                // If timeout or error, return whatever we have so far
+                if (results.isEmpty() && shelfResults.isEmpty()) {
+                    returnData.setErrorMsg(e.localizedMessage ?: "Search failed")
+                } else {
+                    returnData.setData(results.toList())
+                }
+            } finally {
+                searchModel.close()
+            }
+        }
+        return returnData
     }
 
 }

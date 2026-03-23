@@ -1,3 +1,9 @@
+**2026-03-23**
+
+* Thêm API HTTP `GET /searchBook` hỗ trợ tìm kiếm đồng bộ từ cả nguồn web và kệ sách (hỗ trợ phân trang, dịch meta)
+* Tối ưu hóa Coroutine Scope cho việc thu thập kết quả tìm kiếm web qua kết nối HTTP
+* Đồng bộ API tìm kiếm để nhận đồng thời dữ liệu Local Bookshelf (`BookDao`) và Web Sources (`SearchModel`)
+
 **2026-03-04**
 
 * Chuyển các vùng chứa model ONNX AI sang thư mục `AI_MODEL/` (giảm dung lượng APK ~250MB)
