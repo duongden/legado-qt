@@ -50,7 +50,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 /**
- * Reading interface
+ * 阅读界面
  */
 abstract class BaseReadBookActivity :
     VMBaseActivity<ActivityBookReadBinding, ReadBookViewModel>(imageBg = false) {
@@ -142,7 +142,7 @@ abstract class BaseReadBookActivity :
     }
 
     /**
-     * Screen orientation
+     * 屏幕方向
      */
     @SuppressLint("SourceLockedOrientationActivity")
     fun setOrientation() {
@@ -152,11 +152,12 @@ abstract class BaseReadBookActivity :
             "2" -> requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
             "3" -> requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
             "4" -> requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT
+            "5" -> requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
         }
     }
 
     /**
-     * Update status bar, nav bar
+     * 更新状态栏,导航栏
      */
     fun upSystemUiVisibility(
         isInMultiWindow: Boolean,
@@ -234,7 +235,7 @@ abstract class BaseReadBookActivity :
     }
 
     /**
-     * Keep screen on
+     * 保持亮屏
      */
     fun keepScreenOn(on: Boolean) {
         val isScreenOn =
@@ -295,17 +296,17 @@ abstract class BaseReadBookActivity :
             editStart.setText(book.getStartChapter().toString())
             editNum.setText(book.getDailyChapters().toString())
             startDate.setText(book.getStartDate()?.format(dateFormatter))
-            startDate.isFocusable = false // Set false, disallow focus
-            startDate.isCursorVisible = false // Do not show cursor
+            startDate.isFocusable = false // 设置为false，不允许获得焦点
+            startDate.isCursorVisible = false // 不显示光标
             startDate.setOnClickListener {
-                // Get current date
+                // 获取当前日期
                 val localStartDate = LocalDate.parse(startDate.text)
-                // Create DatePickerDialog
+                // 创建 DatePickerDialog
                 val datePickerDialog = DatePickerDialog(
                     root.context,
                     { _, yy, mm, dayOfMonth ->
-                        // Use Java 8 Date and Time API to format date
-                        val date = LocalDate.of(yy, mm + 1, dayOfMonth) // Java 8 LocalDate, month starts from 1
+                        // 使用Java 8的日期和时间API来格式化日期
+                        val date = LocalDate.of(yy, mm + 1, dayOfMonth) // Java 8的LocalDate，月份从1开始
                         val formattedDate = date.format(dateFormatter)
                         startDate.setText(formattedDate)
                     }, localStartDate.year,

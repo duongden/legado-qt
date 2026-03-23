@@ -13,11 +13,6 @@ import io.legado.app.databinding.ItemSearchBinding
 import io.legado.app.help.config.AppConfig
 import io.legado.app.utils.gone
 import io.legado.app.utils.visible
-import io.legado.app.utils.setTranslatedText
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.CoroutineScope
 
 
 class SearchAdapter(context: Context, val callBack: CallBack) :
@@ -86,19 +81,16 @@ class SearchAdapter(context: Context, val callBack: CallBack) :
 
     private fun bind(binding: ItemSearchBinding, searchBook: SearchBook) {
         binding.run {
-            tvName.setTranslatedText(searchBook.name)
-            tvAuthor.setTranslatedText(searchBook.author) { context.getString(R.string.author_show, it) }
+            tvName.text = searchBook.name
+            tvAuthor.text = context.getString(R.string.author_show, searchBook.author)
             ivInBookshelf.isVisible = callBack.isInBookshelf(searchBook)
             bvOriginCount.setBadgeCount(searchBook.origins.size)
             upLasted(binding, searchBook.latestChapterTitle)
-            tvIntroduce.setTranslatedText(searchBook.trimIntro(context))
+            tvIntroduce.text = searchBook.trimIntro(context)
             upKind(binding, searchBook.getKindList())
             ivCover.load(
-                searchBook.coverUrl,
-                searchBook.name,
-                searchBook.author,
-                AppConfig.loadCoverOnlyWifi,
-                searchBook.origin
+                searchBook,
+                AppConfig.loadCoverOnlyWifi
             )
         }
     }
@@ -109,15 +101,12 @@ class SearchAdapter(context: Context, val callBack: CallBack) :
                 when (it) {
                     "origins" -> bvOriginCount.setBadgeCount(searchBook.origins.size)
                     "last" -> upLasted(binding, searchBook.latestChapterTitle)
-                    "intro" -> tvIntroduce.setTranslatedText(searchBook.trimIntro(context))
+                    "intro" -> tvIntroduce.text = searchBook.trimIntro(context)
                     "kind" -> upKind(binding, searchBook.getKindList())
                     "isInBookshelf" -> ivInBookshelf.isVisible = callBack.isInBookshelf(searchBook)
                     "cover" -> ivCover.load(
-                        searchBook.coverUrl,
-                        searchBook.name,
-                        searchBook.author,
-                        false,
-                        searchBook.origin
+                        searchBook,
+                        false
                     )
                 }
             }
@@ -129,9 +118,8 @@ class SearchAdapter(context: Context, val callBack: CallBack) :
             if (latestChapterTitle.isNullOrEmpty()) {
                 tvLasted.gone()
             } else {
-                tvLasted.setTranslatedText(latestChapterTitle) {
-                    context.getString(R.string.lasted_show, it)
-                }
+                tvLasted.text =
+                    context.getString(R.string.lasted_show, latestChapterTitle)
                 tvLasted.visible()
             }
         }
@@ -142,30 +130,19 @@ class SearchAdapter(context: Context, val callBack: CallBack) :
             llKind.gone()
         } else {
             llKind.visible()
-            if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
-                 CoroutineScope(Dispatchers.Main).launch {
-                    val translatedKinds = kinds.map {
-                        withContext(Dispatchers.IO) {
-                           io.legado.app.utils.TranslateUtils.translateMeta(it)
-                        }
-                    }
-                    llKind.setLabels(translatedKinds)
-                }
-            } else {
-                llKind.setLabels(kinds)
-            }
+            llKind.setLabels(kinds)
         }
     }
 
     interface CallBack {
 
         /**
-         * Whether already added to bookshelf
+         * 是否已经加入书架
          */
         fun isInBookshelf(book: SearchBook): Boolean
 
         /**
-         * Show book details
+         * 显示书籍详情
          */
         fun showBookInfo(name: String, author: String, bookUrl: String)
     }

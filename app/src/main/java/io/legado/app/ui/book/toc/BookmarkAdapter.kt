@@ -7,7 +7,6 @@ import io.legado.app.base.adapter.RecyclerAdapter
 import io.legado.app.data.entities.Bookmark
 import io.legado.app.databinding.ItemBookmarkBinding
 import io.legado.app.utils.gone
-import io.legado.app.utils.setTranslatedText
 import splitties.views.onLongClick
 
 class BookmarkAdapter(context: Context, val callback: Callback) :
@@ -23,11 +22,11 @@ class BookmarkAdapter(context: Context, val callback: Callback) :
         item: Bookmark,
         payloads: MutableList<Any>
     ) {
-        binding.tvChapterName.setTranslatedText(item.chapterName)
+        binding.tvChapterName.text = item.chapterName
         binding.tvBookText.gone(item.bookText.isEmpty())
-        binding.tvBookText.setTranslatedText(item.bookText)
+        binding.tvBookText.text = item.bookText
         binding.tvContent.gone(item.content.isEmpty())
-        binding.tvContent.setTranslatedText(item.content)
+        binding.tvContent.text = item.content
     }
 
     override fun registerListener(holder: ItemViewHolder, binding: ItemBookmarkBinding) {

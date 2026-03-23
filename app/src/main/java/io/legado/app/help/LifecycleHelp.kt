@@ -24,7 +24,7 @@ object LifecycleHelp : Application.ActivityLifecycleCallbacks {
     }
 
     /**
-     * Check if Activity exists
+     * 判断指定Activity是否存在
      */
     fun isExistActivity(activityClass: Class<*>): Boolean {
         activities.forEach { item ->
@@ -36,7 +36,7 @@ object LifecycleHelp : Application.ActivityLifecycleCallbacks {
     }
 
     /**
-     * Close specified activity(class)
+     * 关闭指定 activity(class)
      */
     fun finishActivity(vararg activityClasses: Class<*>) {
         val waitFinish = ArrayList<WeakReference<Activity>>()
@@ -74,7 +74,7 @@ object LifecycleHelp : Application.ActivityLifecycleCallbacks {
         for (temp in activities) {
             if (temp.get() != null && temp.get() === activity) {
                 activities.remove(temp)
-                if (services.size == 0 && activities.size == 0) {
+                if (services.isEmpty() && activities.isEmpty()) {
                     onAppFinished()
                 }
                 break
@@ -107,7 +107,7 @@ object LifecycleHelp : Application.ActivityLifecycleCallbacks {
         for (temp in services) {
             if (temp.get() != null && temp.get() === service) {
                 services.remove(temp)
-                if (services.size == 0 && activities.size == 0) {
+                if (services.isEmpty() && activities.isEmpty()) {
                     onAppFinished()
                 }
                 break

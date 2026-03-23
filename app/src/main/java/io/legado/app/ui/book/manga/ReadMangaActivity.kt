@@ -127,10 +127,10 @@ class ReadMangaActivity : VMBaseActivity<ActivityMangaBinding, ReadMangaViewMode
         }
     }
 
-    //Open catalog return selected chapter result
+    //打开目录返回选择章节返回结果
     private val tocActivity = registerForActivityResult(TocActivityResult()) {
         it?.let {
-            viewModel.openChapter(it.first, it.second)
+            viewModel.openChapter(it[0] as Int, it[1] as Int)
         }
     }
     private val bookInfoActivity =
@@ -347,8 +347,8 @@ class ReadMangaActivity : VMBaseActivity<ActivityMangaBinding, ReadMangaViewMode
         super.onResume()
         networkChangedListener.register()
         networkChangedListener.onNetworkChanged = {
-            // Sync progress when network available and no init needed (Sync logic exists in init)
-            if (AppConfig.syncBookProgressPlus && NetworkUtils.isAvailable() && !justInitData) {
+            // 当网络是可用状态且无需初始化时同步进度（初始化中已有同步进度逻辑）
+            if (AppConfig.syncBookProgressPlus && NetworkUtils.isAvailable() && !justInitData && ReadManga.inBookshelf) {
                 ReadManga.syncProgress({ progress -> sureNewProgress(progress) })
             }
         }
@@ -370,8 +370,10 @@ class ReadMangaActivity : VMBaseActivity<ActivityMangaBinding, ReadMangaViewMode
                 } else {
                     ReadManga.uploadProgress()
                 }
-                Backup.autoBack(this)
             }
+        }
+        if (!BuildConfig.DEBUG) {
+            Backup.autoBack(this)
         }
         ReadManga.cancelPreDownloadTask()
         networkChangedListener.unRegister()
@@ -462,7 +464,7 @@ class ReadMangaActivity : VMBaseActivity<ActivityMangaBinding, ReadMangaViewMode
     }
 
     /**
-     * Menu
+     * 菜单
      */
     @SuppressLint("StringFormatMatches", "NotifyDataSetChanged")
     override fun onCompatOptionsItemSelected(item: MenuItem): Boolean {
@@ -804,7 +806,7 @@ class ReadMangaActivity : VMBaseActivity<ActivityMangaBinding, ReadMangaViewMode
         val normalizedBrightness = brightness.toFloat() / 255.0f
         layoutParams.screenBrightness = normalizedBrightness.coerceIn(0f, 1f)
         window.attributes = layoutParams
-        // Force refresh screen
+        // 强制刷新屏幕
         window.decorView.postInvalidate()
     }
 

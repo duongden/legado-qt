@@ -27,7 +27,7 @@ fun Menu.applyTint(context: Context, theme: Theme = Theme.Auto): Menu = this.let
     val tintColor = MenuExtensions.getMenuColor(context, theme)
     menu.forEach { item ->
         (item as MenuItemImpl).let { impl ->
-            //overflow: expanded item
+            //overflow：展开的item
             impl.icon?.setTintMutate(
                 if (impl.requiresOverflow()) defaultTextColor else tintColor
             )
@@ -37,21 +37,23 @@ fun Menu.applyTint(context: Context, theme: Theme = Theme.Auto): Menu = this.let
 }
 
 @SuppressLint("RestrictedApi")
-fun Menu.applyOpenTint(context: Context) {
-    //Expand menu to show icons
+fun Menu.applyOpenTint(context: Context, showIcon: Boolean = true) {
+    //展开菜单显示图标
     if (this.javaClass.simpleName.equals("MenuBuilder", ignoreCase = true)) {
         val defaultTextColor = context.getCompatColor(R.color.primaryText)
         kotlin.runCatching {
             var method: Method =
                 this.javaClass.getDeclaredMethod("setOptionalIconsVisible", java.lang.Boolean.TYPE)
             method.isAccessible = true
-            method.invoke(this, true)
-            method = this.javaClass.getDeclaredMethod("getNonActionItems")
-            val menuItems = method.invoke(this)
-            if (menuItems is ArrayList<*>) {
-                for (menuItem in menuItems) {
-                    if (menuItem is MenuItem) {
-                        menuItem.icon?.setTintMutate(defaultTextColor)
+            method.invoke(this, showIcon)
+            if (showIcon) {
+                method = this.javaClass.getDeclaredMethod("getNonActionItems")
+                val menuItems = method.invoke(this)
+                if (menuItems is ArrayList<*>) {
+                    for (menuItem in menuItems) {
+                        if (menuItem is MenuItem) {
+                            menuItem.icon?.setTintMutate(defaultTextColor)
+                        }
                     }
                 }
             }

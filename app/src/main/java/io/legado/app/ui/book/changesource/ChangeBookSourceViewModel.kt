@@ -178,7 +178,7 @@ open class ChangeBookSourceViewModel(application: Application) : BaseViewModel(a
     }
 
     /**
-     * Search book
+     * 搜索书籍
      */
     fun startSearch() {
         execute {
@@ -236,7 +236,7 @@ open class ChangeBookSourceViewModel(application: Application) : BaseViewModel(a
                 searchStateData.postValue(true)
             }.mapParallel(threadCount) {
                 try {
-                    withTimeout(30000L) {
+                    withTimeout(60000L) {
                         search(it)
                     }
                 } catch (_: Throwable) {
@@ -264,7 +264,7 @@ open class ChangeBookSourceViewModel(application: Application) : BaseViewModel(a
         val loadWordCount = AppConfig.changeSourceLoadWordCount
         val resultBooks = WebBook.searchBookAwait(
             source, name,
-            filter = { fName, fAuthor ->
+            filter = { fName, fAuthor, _ ->
                 fName == name && (!checkAuthor || fAuthor.contains(author))
             })
         resultBooks.forEach { searchBook ->
@@ -287,7 +287,7 @@ open class ChangeBookSourceViewModel(application: Application) : BaseViewModel(a
         if (AppConfig.changeSourceLoadToc || AppConfig.changeSourceLoadWordCount) {
             loadBookToc(source, book)
         } else {
-            //Get latest chapter from detail page
+            //从详情页里获取最新章节
             val searchBook = book.toSearchBook()
             searchCallback?.searchSuccess(searchBook)
         }
@@ -354,7 +354,7 @@ open class ChangeBookSourceViewModel(application: Application) : BaseViewModel(a
     }
 
     /**
-     * Refresh list
+     * 刷新列表
      */
     fun startRefreshList(onlyRefreshNoWordCountBook: Boolean = false) {
         execute {
@@ -385,7 +385,7 @@ open class ChangeBookSourceViewModel(application: Application) : BaseViewModel(a
                 searchStateData.postValue(true)
             }.mapParallelSafe(threadCount) {
                 val source = appDb.bookSourceDao.getBookSource(it.origin)!!
-                withTimeout(30000L) {
+                withTimeout(60000L) {
                     loadBookInfo(source, it.toBook())
                 }
             }.onCompletion {
@@ -421,7 +421,7 @@ open class ChangeBookSourceViewModel(application: Application) : BaseViewModel(a
     }
 
     /**
-     * Filter
+     * 筛选
      */
     fun screen(key: String?) {
         screenKey = key?.trim() ?: ""

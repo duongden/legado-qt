@@ -57,6 +57,7 @@ class BookshelfFragment1() : BaseBookshelfFragment(R.layout.fragment_bookshelf1)
             return fragment?.getBooks() ?: emptyList()
         }
 
+    override var onlyUpdateRead = false
     override fun onFragmentCreated(view: View, savedInstanceState: Bundle?) {
         setSupportToolbar(binding.titleBar.toolbar)
         initView()
@@ -143,8 +144,8 @@ class BookshelfFragment1() : BaseBookshelfFragment(R.layout.fragment_bookshelf1)
         }
 
         /**
-         * Called when determining if view position changed
-         * @return POSITION_NONE Changed, refresh view. POSITION_UNCHANGED Unchanged, no refresh
+         * 确定视图位置是否更改时调用
+         * @return POSITION_NONE 已更改,刷新视图. POSITION_UNCHANGED 未更改,不刷新视图
          */
         override fun getItemPosition(any: Any): Int {
             val fragment = any as BooksFragment
@@ -163,6 +164,7 @@ class BookshelfFragment1() : BaseBookshelfFragment(R.layout.fragment_bookshelf1)
 
         override fun getItem(position: Int): Fragment {
             val group = bookGroups[position]
+            onlyUpdateRead = group.onlyUpdateRead
             return BooksFragment(position, group)
         }
 
@@ -174,7 +176,7 @@ class BookshelfFragment1() : BaseBookshelfFragment(R.layout.fragment_bookshelf1)
             var fragment = super.instantiateItem(container, position) as BooksFragment
             val group = bookGroups[position]
             /**
-             * Activity recreate will reuse previous Fragment, incorrect ones need to be recreated
+             * Activity recreate 会复用之前的 Fragment，不正确的需要重新创建
              */
             if (fragment.isCreated && getItemPosition(fragment) == POSITION_NONE) {
                 destroyItem(container, position, fragment)

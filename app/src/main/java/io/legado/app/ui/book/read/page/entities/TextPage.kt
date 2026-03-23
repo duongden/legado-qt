@@ -13,6 +13,7 @@ import io.legado.app.help.config.AppConfig
 import io.legado.app.help.config.ReadBookConfig
 import io.legado.app.ui.book.read.page.ContentTextView
 import io.legado.app.ui.book.read.page.entities.TextChapter.Companion.emptyTextChapter
+import io.legado.app.ui.book.read.page.entities.column.TextBaseColumn
 import io.legado.app.ui.book.read.page.entities.column.TextColumn
 import io.legado.app.ui.book.read.page.provider.ChapterProvider
 import io.legado.app.utils.canvasrecorder.CanvasRecorderFactory
@@ -25,7 +26,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
- * Page info
+ * 页面信息
  */
 @Keep
 @Suppress("unused", "MemberVisibilityCanBePrivate")
@@ -50,7 +51,7 @@ data class TextPage(
     val lineSize: Int get() = textLines.size
     val charSize: Int get() = text.length.coerceAtLeast(1)
     val chapterPosition: Int get() = textLines.first().chapterPosition
-    val searchResult = hashSetOf<TextColumn>()
+    val searchResult = hashSetOf<TextBaseColumn>()
     var isMsgPage: Boolean = false
     var canvasRecorder = CanvasRecorderFactory.create(true)
     var doublePage = false
@@ -92,7 +93,7 @@ data class TextPage(
     }
 
     /**
-     * Align bottom update row position
+     * 底部对齐更新行位置
      */
     fun upLinesPosition() {
         if (!ReadBookConfig.textBottomJustify) return
@@ -188,7 +189,7 @@ data class TextPage(
     }
 
     /**
-     * Remove read aloud flag
+     * 移除朗读标志
      */
     fun removePageAloudSpan(): TextPage {
         if (!hasReadAloudSpan) {
@@ -202,8 +203,8 @@ data class TextPage(
     }
 
     /**
-     * Update read aloud flag
-     * @param aloudSpanStart Read text start pos
+     * 更新朗读标志
+     * @param aloudSpanStart 朗读文字开始位置
      */
     fun upPageAloudSpan(aloudSpanStart: Int) {
         removePageAloudSpan()
@@ -253,10 +254,10 @@ data class TextPage(
         }
 
     /**
-     * Get char pos in page by row/col
-     * @param lineIndex Row index
-     * @param columnIndex Col index
-     * @return Char pos in page
+     * 根据行和列返回字符在本页的位置
+     * @param lineIndex 字符在第几行
+     * @param columnIndex 字符在第几列
+     * @return 字符在本页位置
      */
     fun getPosByLineColumn(lineIndex: Int, columnIndex: Int): Int {
         var length = 0
@@ -270,7 +271,7 @@ data class TextPage(
         val columns = textLines[maxIndex].columns
         for (index in 0 until columnIndex) {
             val column = columns[index]
-            if (column is TextColumn) {
+            if (column is TextBaseColumn) {
                 length += column.charData.length
             }
         }
@@ -278,16 +279,16 @@ data class TextPage(
     }
 
     /**
-     * @return Chapter where page is located
+     * @return 页面所在章节
      */
     fun getTextChapter(): TextChapter {
         return textChapter
     }
 
     /**
-     * Check if chapter character pos is in this page
+     * 判断章节字符位置是否在这一页中
      *
-     * @param chapterPos Chapter char pos
+     * @param chapterPos 章节字符位置
      * @return
      */
     fun containPos(chapterPos: Int): Boolean {
@@ -336,7 +337,7 @@ data class TextPage(
 
     fun render(view: ContentTextView): Boolean {
         if (!isCompleted) return false
-        return canvasRecorder.recordIfNeeded(view.width, renderHeight) {
+        return canvasRecorder.recordIfNeeded(view.width, renderHeight + 10.dpToPx()) { //高度留余，避免图片过高时被截断 下划线最远10dp
             drawPage(view, this)
         }
     }

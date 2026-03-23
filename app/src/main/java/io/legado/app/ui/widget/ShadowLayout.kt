@@ -6,7 +6,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
-import android.view.View
 import android.widget.RelativeLayout
 import io.legado.app.R
 import io.legado.app.utils.getCompatColor
@@ -57,8 +56,8 @@ class ShadowLayout @JvmOverloads constructor(
 
 
     init {
-        setLayerType(View.LAYER_TYPE_SOFTWARE, null) // Disable hardware acceleration
-        setWillNotDraw(false) // onDraw(Canvas) called only after this method
+        setLayerType(LAYER_TYPE_SOFTWARE, null) // 关闭硬件加速
+        setWillNotDraw(false) // 调用此方法后，才会执行 onDraw(Canvas) 方法
         val typedArray =
             context.obtainStyledAttributes(attrs, R.styleable.ShadowLayout)
         mShadowColor = typedArray.getColor(
@@ -124,7 +123,7 @@ class ShadowLayout @JvmOverloads constructor(
     }
 
     /**
-     * Real shadow draw method
+     * 真正绘制阴影的方法
      */
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -161,10 +160,10 @@ class ShadowLayout @JvmOverloads constructor(
     }
 
     /**
-     * dip2px dp to px
+     * dip2px dp 值转 px 值
      *
-     * @param dpValue dp value
-     * @return px value
+     * @param dpValue dp 值
+     * @return px 值
      */
     private fun dip2px(dpValue: Float): Float {
         val dm = context.resources.displayMetrics

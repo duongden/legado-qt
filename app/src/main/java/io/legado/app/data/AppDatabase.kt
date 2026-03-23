@@ -53,7 +53,6 @@ import io.legado.app.data.entities.SearchKeyword
 import io.legado.app.data.entities.Server
 import io.legado.app.data.entities.TxtTocRule
 import io.legado.app.help.DefaultData
-import io.legado.app.R
 import org.intellij.lang.annotations.Language
 import splitties.init.appCtx
 import java.util.Locale
@@ -68,7 +67,7 @@ val appDb by lazy {
 }
 
 @Database(
-    version = 75,
+    version = 89,
     exportSchema = true,
     entities = [Book::class, BookGroup::class, BookSource::class, BookChapter::class,
         ReplaceRule::class, SearchBook::class, SearchKeyword::class, Cookie::class,
@@ -109,6 +108,20 @@ val appDb by lazy {
         AutoMigration(from = 72, to = 73),
         AutoMigration(from = 73, to = 74),
         AutoMigration(from = 74, to = 75),
+        AutoMigration(from = 75, to = 76),
+        AutoMigration(from = 76, to = 77),
+        AutoMigration(from = 77, to = 78),
+        AutoMigration(from = 78, to = 79),
+        AutoMigration(from = 79, to = 80),
+        AutoMigration(from = 80, to = 81, spec = DatabaseMigrations.Migration_80_81::class),
+        AutoMigration(from = 81, to = 82),
+        AutoMigration(from = 82, to = 83),
+        AutoMigration(from = 83, to = 84, spec = DatabaseMigrations.Migration_83_84::class),
+        AutoMigration(from = 84, to = 85, spec = DatabaseMigrations.Migration_84_85::class),
+        AutoMigration(from = 85, to = 86),
+        AutoMigration(from = 86, to = 87),
+        AutoMigration(from = 87, to = 88),
+        AutoMigration(from = 88, to = 89)
     ]
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -146,12 +159,12 @@ abstract class AppDatabase : RoomDatabase() {
         val dbCallback = object : Callback() {
 
             override fun onCreate(db: SupportSQLiteDatabase) {
-                // Only try setting locale on API 23 (Marshmallow) +
+                // 只在 API 级别 23 (Marshmallow) 及以上版本尝试设置区域设置
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     try {
                         Log.d("AppDatabaseCallback", "准备 设置 locale for API ${Build.VERSION.SDK_INT}...")
                         db.setLocale(Locale.CHINESE)
-                        // Error on 21, but cannot intercept
+                        // 在 21 上报错，但无法拦截
                         Log.d("AppDatabaseCallback", "成功 设置 locale for API ${Build.VERSION.SDK_INT}.")
                     } catch (e: Exception) {
                         Log.e("AppDatabaseCallback", "错误 设置 locale in onCreate for API ${Build.VERSION.SDK_INT}", e)
@@ -165,42 +178,49 @@ abstract class AppDatabase : RoomDatabase() {
                 @Language("sql")
                 val insertBookGroupAllSql = """
                     insert into book_groups(groupId, groupName, 'order', show) 
-                    select ${BookGroup.IdAll}, '${appCtx.getString(R.string.all)}', -10, 1
+                    select ${BookGroup.IdAll}, '全部', -10, 1
                     where not exists (select * from book_groups where groupId = ${BookGroup.IdAll})
                 """.trimIndent()
                 db.execSQL(insertBookGroupAllSql)
                 @Language("sql")
                 val insertBookGroupLocalSql = """
                     insert into book_groups(groupId, groupName, 'order', enableRefresh, show) 
-                    select ${BookGroup.IdLocal}, '${appCtx.getString(R.string.local)}', -9, 0, 1
+                    select ${BookGroup.IdLocal}, '本地', -9, 0, 1
                     where not exists (select * from book_groups where groupId = ${BookGroup.IdLocal})
                 """.trimIndent()
                 db.execSQL(insertBookGroupLocalSql)
                 @Language("sql")
                 val insertBookGroupMusicSql = """
                     insert into book_groups(groupId, groupName, 'order', show) 
-                    select ${BookGroup.IdAudio}, '${appCtx.getString(R.string.group_audio)}', -8, 1
+                    select ${BookGroup.IdAudio}, '音频', -8, 1
                     where not exists (select * from book_groups where groupId = ${BookGroup.IdAudio})
                 """.trimIndent()
                 db.execSQL(insertBookGroupMusicSql)
                 @Language("sql")
                 val insertBookGroupNetNoneGroupSql = """
                     insert into book_groups(groupId, groupName, 'order', show) 
-                    select ${BookGroup.IdNetNone}, '${appCtx.getString(R.string.group_net_none)}', -7, 1
+                    select ${BookGroup.IdNetNone}, '网络未分组', -7, 1
                     where not exists (select * from book_groups where groupId = ${BookGroup.IdNetNone})
                 """.trimIndent()
                 db.execSQL(insertBookGroupNetNoneGroupSql)
                 @Language("sql")
                 val insertBookGroupLocalNoneGroupSql = """
                     insert into book_groups(groupId, groupName, 'order', show) 
-                    select ${BookGroup.IdLocalNone}, '${appCtx.getString(R.string.group_local_none)}', -6, 0
+                    select ${BookGroup.IdLocalNone}, '本地未分组', -6, 0
                     where not exists (select * from book_groups where groupId = ${BookGroup.IdLocalNone})
                 """.trimIndent()
                 db.execSQL(insertBookGroupLocalNoneGroupSql)
                 @Language("sql")
+                val insertBookGroupVideoSql = """
+                    insert into book_groups(groupId, groupName, 'order', show) 
+                    select ${BookGroup.IdVideo}, '视频', -5, 1
+                    where not exists (select * from book_groups where groupId = ${BookGroup.IdVideo})
+                    """.trimIndent()
+                db.execSQL(insertBookGroupVideoSql)
+                @Language("sql")
                 val insertBookGroupErrorSql = """
                     insert into book_groups(groupId, groupName, 'order', show) 
-                    select ${BookGroup.IdError}, '${appCtx.getString(R.string.group_update_error)}', -1, 1
+                    select ${BookGroup.IdError}, '更新失败', -1, 1
                     where not exists (select * from book_groups where groupId = ${BookGroup.IdError})
                 """.trimIndent()
                 db.execSQL(insertBookGroupErrorSql)

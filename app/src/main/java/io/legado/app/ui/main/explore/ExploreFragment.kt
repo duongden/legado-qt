@@ -25,7 +25,6 @@ import io.legado.app.lib.theme.primaryColor
 import io.legado.app.lib.theme.primaryTextColor
 import io.legado.app.ui.book.explore.ExploreShowActivity
 import io.legado.app.ui.book.search.SearchActivity
-import io.legado.app.ui.book.search.SearchScope
 import io.legado.app.ui.book.source.edit.BookSourceEditActivity
 import io.legado.app.ui.main.MainFragmentInterface
 import io.legado.app.utils.applyTint
@@ -84,11 +83,6 @@ class ExploreFragment() : VMBaseFragment<ExploreViewModel>(R.layout.fragment_exp
         menuInflater.inflate(R.menu.main_explore, menu)
         groupsMenu = menu.findItem(R.id.menu_group)?.subMenu
         upGroupsMenu()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        searchView.clearFocus()
     }
 
     private fun initSearchView() {
@@ -171,6 +165,18 @@ class ExploreFragment() : VMBaseFragment<ExploreViewModel>(R.layout.fragment_exp
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        adapter.upResumed(true)
+    }
+
+    override fun onPause() {
+        adapter.upResumed(false)
+        searchView.clearFocus()
+        adapter.onPause()
+        super.onPause()
+    }
+
     private fun upGroupsMenu() = groupsMenu?.transaction { subMenu ->
         subMenu.removeGroup(R.id.menu_group_text)
         groups.forEach {
@@ -222,9 +228,7 @@ class ExploreFragment() : VMBaseFragment<ExploreViewModel>(R.layout.fragment_exp
     }
 
     override fun searchBook(bookSource: BookSourcePart) {
-        startActivity<SearchActivity> {
-            putExtra("searchScope", SearchScope(bookSource).toString())
-        }
+        SearchActivity.start(requireContext(), bookSource)
     }
 
     fun compressExplore() {

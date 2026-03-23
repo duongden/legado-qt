@@ -3,27 +3,26 @@
     <source-tab-form class="left" :config="config" />
     <tool-bar />
     <source-tab-tools class="right" />
-    <TranslateToggle />
   </div>
 </template>
 <script setup lang="ts">
 import bookSourceConfig from '@/config/bookSourceEditConfig'
 import rssSourceConfig from '@/config/rssSourceEditConfig'
 import '@/assets/sourceeditor.css'
-import TranslateToggle from '@/components/TranslateToggle.vue'
 import { useDark } from '@vueuse/core'
 import type { SourceConfig } from '@/config/sourceConfig'
 
 useDark()
 
 let config: SourceConfig
-
-if (/bookSource/i.test(location.href)) {
+const isBookSource = ref<boolean>(/bookSource/i.test(location.href))
+provide('isBookSource', isBookSource)
+if (isBookSource.value) {
   config = bookSourceConfig as SourceConfig
-  document.title = 'Quản lý Nguồn Sách'
+  document.title = '书源管理'
 } else {
   config = rssSourceConfig as SourceConfig
-  document.title = 'Quản lý Nguồn RSS'
+  document.title = '订阅源管理'
 }
 </script>
 <style lang="scss" scoped>

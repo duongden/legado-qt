@@ -20,7 +20,6 @@ import io.legado.app.utils.getCompatColor
 import io.legado.app.utils.gone
 import io.legado.app.utils.longToastOnUi
 import io.legado.app.utils.visible
-import io.legado.app.utils.setTranslatedText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
@@ -76,18 +75,15 @@ class ChapterListAdapter(context: Context, val callback: Callback) :
         upDisplayTileJob = Coroutine.async(callback.scope) {
             val book = callback.book ?: return@async
             val replaceRules = ContentProcessor.get(book.name, book.origin).getTitleReplaceRules()
+            val replaceBook = book.toReplaceBook()
             val useReplace = AppConfig.tocUiUseReplace && book.getUseReplaceRule()
-            val translate = io.legado.app.utils.TranslateUtils.isTranslateEnabled()
             val items = getItems()
             launch {
                 for (i in startIndex until items.size) {
                     val item = items[i]
                     if (displayTitleMap[item.title] == null) {
                         ensureActive()
-                        var displayTitle = item.getDisplayTitle(replaceRules, useReplace)
-                        if (translate) {
-                            displayTitle = io.legado.app.utils.TranslateUtils.translateChapterTitle(displayTitle)
-                        }
+                        val displayTitle = item.getDisplayTitle(replaceRules, useReplace, replaceBook = replaceBook)
                         ensureActive()
                         displayTitleMap[item.title] = displayTitle
                         handler.post {
@@ -101,10 +97,7 @@ class ChapterListAdapter(context: Context, val callback: Callback) :
                     val item = items[i]
                     if (displayTitleMap[item.title] == null) {
                         ensureActive()
-                        var displayTitle = item.getDisplayTitle(replaceRules, useReplace)
-                        if (translate) {
-                            displayTitle = io.legado.app.utils.TranslateUtils.translateChapterTitle(displayTitle)
-                        }
+                        val displayTitle = item.getDisplayTitle(replaceRules, useReplace, replaceBook = replaceBook)
                         ensureActive()
                         displayTitleMap[item.title] = displayTitle
                         handler.post {
@@ -141,26 +134,26 @@ class ChapterListAdapter(context: Context, val callback: Callback) :
                 } else {
                     tvChapterName.setTextColor(context.getCompatColor(R.color.primaryText))
                 }
-                tvChapterName.setTranslatedText(getDisplayTitle(item))
+                tvChapterName.text = getDisplayTitle(item)
                 if (item.isVolume) {
-                    //Volume name, e.g. Volume 1 Highlight
+                    //卷名，如第一卷 突出显示
                     tvChapterItem.setBackgroundColor(context.getCompatColor(R.color.btn_bg_press))
                 } else {
-                    //Normal chapter keep unchanged
+                    //普通章节 保持不变
                     tvChapterItem.background =
                         ThemeUtils.resolveDrawable(context, android.R.attr.selectableItemBackground)
                 }
 
-                //Volume name not shown
-                if (!item.tag.isNullOrEmpty() && !item.isVolume) {
-                    //Update time rule
+                //卷名不显示 去掉了 !item.isVolume，让卷名也显示
+                if (!item.tag.isNullOrEmpty()) {
+                    //更新时间规则
                     tvTag.text = item.tag
                     tvTag.visible()
                 } else {
                     tvTag.gone()
                 }
                 if (AppConfig.tocCountWords && !item.wordCount.isNullOrEmpty() && !item.isVolume) {
-                    //Chapter word count
+                    //章节字数
                     tvWordCount.text = item.wordCount
                     tvWordCount.visible()
                 } else {
@@ -175,7 +168,7 @@ class ChapterListAdapter(context: Context, val callback: Callback) :
 
                 upHasCache(binding, isDur, cached)
             } else {
-                tvChapterName.setTranslatedText(getDisplayTitle(item))
+                tvChapterName.text = getDisplayTitle(item)
                 upHasCache(binding, isDur, cached)
             }
         }

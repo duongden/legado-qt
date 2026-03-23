@@ -67,7 +67,7 @@ class OpenUrlConfirmDialog() : BaseDialogFragment(R.layout.dialog_open_url_confi
     }
 
     private fun initView() {
-        binding.message.text = getString(R.string.sc_request_jump_url, viewModel.sourceName)
+        binding.message.text = "正在请求跳转链接/应用，是否跳转？"
         binding.btnNegative.setOnClickListener { dismiss() }
         binding.btnPositive.setOnClickListener {
             openUrl()
@@ -79,9 +79,9 @@ class OpenUrlConfirmDialog() : BaseDialogFragment(R.layout.dialog_open_url_confi
         try {
             val uri = viewModel.uri.toUri()
             val mimeType = viewModel.mimeType
-            // Create target Intent and set type
+            // 创建目标 Intent 并设置类型
             val targetIntent = Intent(Intent.ACTION_VIEW).apply {
-                // Set Data and Type simultaneously
+                // 同时设置 Data 和 Type
                 if (!mimeType.isNullOrBlank()) {
                     setDataAndType(uri, mimeType)
                 } else {
@@ -90,14 +90,14 @@ class OpenUrlConfirmDialog() : BaseDialogFragment(R.layout.dialog_open_url_confi
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
 
-            // Verify if app can handle
+            // 验证是否有应用可以处理
             if (targetIntent.resolveActivity(appCtx.packageManager) != null) {
                 startActivity(targetIntent)
             } else {
                 toastOnUi(R.string.can_not_open)
             }
         } catch (e: Exception) {
-            AppLog.put(getString(R.string.sc_open_link_failed), e, true)
+            AppLog.put("打开链接失败", e, true)
         }
     }
 

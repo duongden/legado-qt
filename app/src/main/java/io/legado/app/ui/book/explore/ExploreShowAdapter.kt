@@ -12,11 +12,6 @@ import io.legado.app.databinding.ItemSearchBinding
 import io.legado.app.help.config.AppConfig
 import io.legado.app.utils.gone
 import io.legado.app.utils.visible
-import io.legado.app.utils.setTranslatedText
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.CoroutineScope
 
 
 class ExploreShowAdapter(context: Context, val callBack: CallBack) :
@@ -45,40 +40,26 @@ class ExploreShowAdapter(context: Context, val callBack: CallBack) :
 
     private fun bind(binding: ItemSearchBinding, item: SearchBook) {
         binding.run {
-            tvName.setTranslatedText(item.name)
-            tvAuthor.setTranslatedText(item.author) { context.getString(R.string.author_show, it) }
+            tvName.text = item.name
+            tvAuthor.text = context.getString(R.string.author_show, item.author)
             ivInBookshelf.isVisible = callBack.isInBookshelf(item)
             if (item.latestChapterTitle.isNullOrEmpty()) {
                 tvLasted.gone()
             } else {
-                tvLasted.setTranslatedText(item.latestChapterTitle) { context.getString(R.string.lasted_show, it) }
+                tvLasted.text = context.getString(R.string.lasted_show, item.latestChapterTitle)
                 tvLasted.visible()
             }
-            tvIntroduce.setTranslatedText(item.trimIntro(context))
+            tvIntroduce.text = item.trimIntro(context)
             val kinds = item.getKindList()
             if (kinds.isEmpty()) {
                 llKind.gone()
             } else {
                 llKind.visible()
-                if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        val translatedKinds = kinds.map {
-                            withContext(Dispatchers.IO) {
-                                io.legado.app.utils.TranslateUtils.translateMeta(it)
-                            }
-                        }
-                        llKind.setLabels(translatedKinds)
-                    }
-                } else {
-                    llKind.setLabels(kinds)
-                }
+                llKind.setLabels(kinds)
             }
             ivCover.load(
-                item.coverUrl,
-                item.name,
-                item.author,
-                AppConfig.loadCoverOnlyWifi,
-                item.origin
+                item,
+                AppConfig.loadCoverOnlyWifi
             )
         }
     }
@@ -96,7 +77,7 @@ class ExploreShowAdapter(context: Context, val callBack: CallBack) :
 
     override fun registerListener(holder: ItemViewHolder, binding: ItemSearchBinding) {
         holder.itemView.setOnClickListener {
-            getItem(holder.layoutPosition)?.let {
+            getItem(holder.bindingAdapterPosition - getHeaderCount())?.let {
                 callBack.showBookInfo(it)
             }
         }
@@ -104,7 +85,7 @@ class ExploreShowAdapter(context: Context, val callBack: CallBack) :
 
     interface CallBack {
         /**
-         * Whether already added to bookshelf
+         * 是否已经加入书架
          */
         fun isInBookshelf(book: SearchBook): Boolean
 

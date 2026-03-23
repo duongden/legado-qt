@@ -15,11 +15,13 @@ import android.os.PowerManager
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import androidx.annotation.OptIn
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.media.AudioFocusRequestCompat
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import io.legado.app.R
 import io.legado.app.base.BaseService
@@ -29,6 +31,7 @@ import io.legado.app.constant.EventBus
 import io.legado.app.constant.IntentAction
 import io.legado.app.constant.NotificationId
 import io.legado.app.constant.Status
+import io.legado.app.exception.NoStackTraceException
 import io.legado.app.help.MediaHelp
 import io.legado.app.help.config.AppConfig
 import io.legado.app.help.coroutine.Coroutine
@@ -41,6 +44,7 @@ import io.legado.app.receiver.MediaButtonReceiver
 import io.legado.app.ui.book.audio.AudioPlayActivity
 import io.legado.app.utils.activityPendingIntent
 import io.legado.app.utils.broadcastPendingIntent
+import io.legado.app.utils.isJsonArray
 import io.legado.app.utils.postEvent
 import io.legado.app.utils.printOnDebug
 import io.legado.app.utils.servicePendingIntent
@@ -57,7 +61,7 @@ import splitties.systemservices.powerManager
 import splitties.systemservices.wifiManager
 
 /**
- * Audio playback service
+ * 音频播放服务
  */
 class AudioPlayService : BaseService(),
     AudioManager.OnAudioFocusChangeListener,
@@ -75,13 +79,18 @@ class AudioPlayService : BaseService(),
         @JvmStatic
         var timeMinute: Int = 0
 
+        @JvmStatic
+        var playSpeed: Float = 1f
+
         var url: String = ""
             private set
 
         private const val MEDIA_SESSION_ACTIONS = (PlaybackStateCompat.ACTION_PLAY
                 or PlaybackStateCompat.ACTION_PAUSE
                 or PlaybackStateCompat.ACTION_PLAY_PAUSE
-                or PlaybackStateCompat.ACTION_SEEK_TO)
+                or PlaybackStateCompat.ACTION_SEEK_TO
+                or PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+                or PlaybackStateCompat.ACTION_SKIP_TO_NEXT)
 
         private const val APP_ACTION_STOP = "Stop"
         private const val APP_ACTION_TIMER = "Timer"
@@ -106,14 +115,15 @@ class AudioPlayService : BaseService(),
     private val exoPlayer: ExoPlayer by lazy {
         ExoPlayerHelper.createHttpExoPlayer(this)
     }
-    private var mediaSessionCompat: MediaSessionCompat? = null
+    private val mediaSessionCompat by lazy {
+        MediaSessionCompat(this, "readAloud")
+    }
     private var broadcastReceiver: BroadcastReceiver? = null
     private var needResumeOnAudioFocusGain = false
     private var position = AudioPlay.book?.durChapterPos ?: 0
     private var dsJob: Job? = null
     private var upNotificationJob: Coroutine<*>? = null
     private var upPlayProgressJob: Job? = null
-    private var playSpeed: Float = 1f
     private var cover: Bitmap =
         BitmapFactory.decodeResource(appCtx.resources, R.drawable.icon_read_book)
 
@@ -143,21 +153,19 @@ class AudioPlayService : BaseService(),
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.action?.let { action ->
             when (action) {
-                IntentAction.play -> {
+                IntentAction.play, IntentAction.playNew -> {
                     exoPlayer.stop()
                     upPlayProgressJob?.cancel()
                     pause = false
-                    position = AudioPlay.book?.durChapterPos ?: 0
+                    position = when (action) {
+                        IntentAction.playNew -> 0
+                        else -> AudioPlay.book?.durChapterPos ?: 0
+                    }
                     url = AudioPlay.durPlayUrl
-                    play()
-                }
-
-                IntentAction.playNew -> {
-                    exoPlayer.stop()
-                    upPlayProgressJob?.cancel()
-                    pause = false
-                    position = 0
-                    url = AudioPlay.durPlayUrl
+                    if (playSpeed != 1f) {
+                        upSpeed(playSpeed)
+                    }
+                    upMediaSessionPlaybackState(PlaybackStateCompat.STATE_BUFFERING)
                     play()
                 }
 
@@ -165,14 +173,17 @@ class AudioPlayService : BaseService(),
                     exoPlayer.stop()
                     upPlayProgressJob?.cancel()
                     AudioPlay.status = Status.STOP
+                    upMediaSessionPlaybackState(PlaybackStateCompat.STATE_STOPPED)
                     postEvent(EventBus.AUDIO_STATE, Status.STOP)
+                    pause = true
+                    upAudioPlayNotification()
                 }
 
                 IntentAction.pause -> pause()
                 IntentAction.resume -> resume()
                 IntentAction.prev -> AudioPlay.prev()
                 IntentAction.next -> AudioPlay.next()
-                IntentAction.adjustSpeed -> upSpeed(intent.getFloatExtra("adjust", 1f))
+                IntentAction.setSpeed -> upSpeed(intent.getFloatExtra("speed", 1f))
                 IntentAction.addTimer -> addTimer()
                 IntentAction.setTimer -> setTimer(intent.getIntExtra("minute", 0))
                 IntentAction.adjustProgress -> {
@@ -194,7 +205,7 @@ class AudioPlayService : BaseService(),
         isRun = false
         abandonFocus()
         exoPlayer.release()
-        mediaSessionCompat?.release()
+        mediaSessionCompat.release()
         unregisterReceiver(broadcastReceiver)
         upMediaSessionPlaybackState(PlaybackStateCompat.STATE_STOPPED)
         AudioPlay.status = Status.STOP
@@ -206,8 +217,9 @@ class AudioPlayService : BaseService(),
     }
 
     /**
-     * Play audio
+     * 播放音频
      */
+    @OptIn(UnstableApi::class)
     @SuppressLint("WakelockTimeout")
     private fun play() {
         if (useWakeLock) {
@@ -218,30 +230,44 @@ class AudioPlayService : BaseService(),
         if (!requestFocus()) {
             return
         }
+        val book = AudioPlay.book
         execute(context = Main) {
             AudioPlay.status = Status.STOP
             postEvent(EventBus.AUDIO_STATE, Status.STOP)
             upPlayProgressJob?.cancel()
-            val analyzeUrl = AnalyzeUrl(
-                url,
-                source = AudioPlay.bookSource,
-                ruleData = AudioPlay.book,
-                chapter = AudioPlay.durChapter,
-                coroutineContext = coroutineContext
-            )
-            exoPlayer.setMediaItem(analyzeUrl.getMediaItem())
+            if (url.isJsonArray()) {
+                val mediaSource = ExoPlayerHelper.getMediaSource(this@AudioPlayService, url)
+                if (mediaSource ==  null) {
+                    NoStackTraceException("url格式错误")
+                    return@execute
+                }
+                exoPlayer.setMediaSource(mediaSource)
+                position = 0
+            } else {
+                val analyzeUrl = AnalyzeUrl(
+                    url,
+                    source = AudioPlay.bookSource,
+                    ruleData = book,
+                    chapter = AudioPlay.durChapter,
+                    coroutineContext = coroutineContext
+                )
+                exoPlayer.setMediaItem(analyzeUrl.getMediaItem())
+            }
             exoPlayer.playWhenReady = true
-            exoPlayer.seekTo(position.toLong())
+            //获取片头设定
+            val skipStartMs = (book?.getOpenCredits() ?: 0) * 1000L
+            val playtime = if (position == 0) skipStartMs else position.toLong()
+            exoPlayer.seekTo(playtime)
             exoPlayer.prepare()
         }.onError {
-            AppLog.put(getString(R.string.sc_play_error, it.localizedMessage), it)
+            AppLog.put("播放出错\n${it.localizedMessage}", it)
             toastOnUi("$url ${it.localizedMessage}")
             stopSelf()
         }
     }
 
     /**
-     * Pause playback
+     * 暂停播放
      */
     private fun pause(abandonFocus: Boolean = true) {
         if (useWakeLock) {
@@ -266,7 +292,7 @@ class AudioPlayService : BaseService(),
     }
 
     /**
-     * Resume playback
+     * 恢复播放
      */
     @SuppressLint("WakelockTimeout")
     private fun resume() {
@@ -280,11 +306,16 @@ class AudioPlayService : BaseService(),
                 AudioPlay.loadOrUpPlayUrl()
                 return
             }
+            if (exoPlayer.playbackState == Player.STATE_IDLE) {
+                // 如果播放器处于空闲状态，重新开始播放
+                position = 0
+                play()
+                return
+            }
             if (!exoPlayer.isPlaying) {
                 exoPlayer.play()
             }
             upPlayProgress()
-            upMediaSessionPlaybackState(PlaybackStateCompat.STATE_PLAYING)
             AudioPlay.status = Status.PLAY
             postEvent(EventBus.AUDIO_STATE, Status.PLAY)
             upAudioPlayNotification()
@@ -306,11 +337,10 @@ class AudioPlayService : BaseService(),
      * 调节速度
      */
     @SuppressLint(value = ["ObsoleteSdkInt"])
-    private fun upSpeed(adjust: Float) {
+    private fun upSpeed(speed: Float) {
         kotlin.runCatching {
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                playSpeed += adjust
+                playSpeed = speed
                 exoPlayer.setPlaybackSpeed(playSpeed)
                 postEvent(EventBus.AUDIO_SPEED, playSpeed)
             }
@@ -318,21 +348,21 @@ class AudioPlayService : BaseService(),
     }
 
     /**
-     * Playback status monitor
+     * 播放状态监控
      */
     override fun onPlaybackStateChanged(playbackState: Int) {
         super.onPlaybackStateChanged(playbackState)
         when (playbackState) {
             Player.STATE_IDLE -> {
-                // Idle
+                // 空闲
             }
 
             Player.STATE_BUFFERING -> {
-                // Buffering
+                // 缓冲中
             }
 
             Player.STATE_READY -> {
-                // Ready
+                // 准备好
                 AudioPlay.upLoading(false)
                 if (exoPlayer.playWhenReady) {
                     AudioPlay.status = Status.PLAY
@@ -348,7 +378,7 @@ class AudioPlayService : BaseService(),
             }
 
             Player.STATE_ENDED -> {
-                // End
+                // 结束
                 upPlayProgressJob?.cancel()
                 AudioPlay.playPositionChanged(exoPlayer.duration.toInt())
                 AudioPlay.next()
@@ -365,18 +395,18 @@ class AudioPlayService : BaseService(),
             .putText(MediaMetadataCompat.METADATA_KEY_ALBUM, AudioPlay.book?.author ?: "null")
             .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, exoPlayer.duration)
             .build()
-        mediaSessionCompat?.setMetadata(metadata)
+        mediaSessionCompat.setMetadata(metadata)
     }
 
     /**
-     * Playback error event
+     * 播放错误事件
      */
     override fun onPlayerError(error: PlaybackException) {
         super.onPlayerError(error)
         AudioPlay.status = Status.STOP
         postEvent(EventBus.AUDIO_STATE, Status.STOP)
         AudioPlay.upLoading(false)
-        val errorMsg = getString(R.string.audio_play_error, error.errorCodeName, error.errorCode)
+        val errorMsg = "音频播放出错\n${error.errorCodeName} ${error.errorCode}"
         AppLog.put(errorMsg, error)
         toastOnUi(errorMsg)
     }
@@ -397,7 +427,7 @@ class AudioPlayService : BaseService(),
     }
 
     /**
-     * Timer
+     * 定时
      */
     private fun doDs() {
         postEvent(EventBus.AUDIO_DS, timeMinute)
@@ -423,28 +453,46 @@ class AudioPlayService : BaseService(),
     }
 
     /**
-     * Send playback progress every 1s
+     * 每隔0.5秒发送播放进度
      */
     private fun upPlayProgress() {
         upPlayProgressJob?.cancel()
         upPlayProgressJob = lifecycleScope.launch {
+            val skipEnds = AudioPlay.book?.getCloseCredits() ?: 0
             while (isActive) {
-                //Update buffer position
-                AudioPlay.playPositionChanged(exoPlayer.currentPosition.toInt())
+                val durP = exoPlayer.currentPosition
+                //更新buffer位置
+                AudioPlay.playPositionChanged(durP.toInt())
                 postEvent(EventBus.AUDIO_BUFFER_PROGRESS, exoPlayer.bufferedPosition.toInt())
                 postEvent(EventBus.AUDIO_PROGRESS, AudioPlay.durChapterPos)
                 postEvent(EventBus.AUDIO_SIZE, exoPlayer.duration.toInt())
                 upMediaSessionPlaybackState(PlaybackStateCompat.STATE_PLAYING)
-                delay(1000)
+                //更新歌词
+                AudioPlay.callback?.upLyricP(durP.toInt())
+                // === 添加片尾跳过检查 ===
+                if (skipEnds > 0) {
+                    val duration = exoPlayer.duration
+                    if (duration > 0) {
+                        val skipThreshold = duration - (skipEnds * 1000L)
+                        if (durP >= skipThreshold) {
+                            //同Player.STATE_ENDED
+                            upPlayProgressJob?.cancel()
+                            AudioPlay.playPositionChanged(exoPlayer.duration.toInt())
+                            pause = true
+                            AudioPlay.next()
+                        }
+                    }
+                }
+                delay(500)
             }
         }
     }
 
     /**
-     * Update media status
+     * 更新媒体状态
      */
     private fun upMediaSessionPlaybackState(state: Int) {
-        mediaSessionCompat?.setPlaybackState(
+        mediaSessionCompat.setPlaybackState(
             PlaybackStateCompat.Builder()
                 .setActions(MEDIA_SESSION_ACTIONS)
                 .setState(state, exoPlayer.currentPosition, 1f)
@@ -464,12 +512,15 @@ class AudioPlayService : BaseService(),
     }
 
     /**
-     * Init MediaSession, register media buttons
+     * 初始化MediaSession, 注册多媒体按钮
      */
     @SuppressLint("UnspecifiedImmutableFlag")
     private fun initMediaSession() {
-        mediaSessionCompat = MediaSessionCompat(this, "readAloud")
-        mediaSessionCompat?.setCallback(object : MediaSessionCompat.Callback() {
+        mediaSessionCompat.setFlags(
+            MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
+                    MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
+        )
+        mediaSessionCompat.setCallback(object : MediaSessionCompat.Callback() {
             override fun onSeekTo(pos: Long) {
                 position = pos.toInt()
                 exoPlayer.seekTo(pos)
@@ -491,15 +542,26 @@ class AudioPlayService : BaseService(),
                     APP_ACTION_TIMER -> addTimer()
                 }
             }
+
+            override fun onSkipToPrevious() {
+                super.onSkipToPrevious()
+                AudioPlay.prev()
+            }
+
+            override fun onSkipToNext() {
+                super.onSkipToNext()
+                AudioPlay.next()
+            }
+
         })
-        mediaSessionCompat?.setMediaButtonReceiver(
+        mediaSessionCompat.setMediaButtonReceiver(
             broadcastPendingIntent<MediaButtonReceiver>(Intent.ACTION_MEDIA_BUTTON)
         )
-        mediaSessionCompat?.isActive = true
+        mediaSessionCompat.isActive = true
     }
 
     /**
-     * Disconnect headset listener
+     * 断开耳机监听
      */
     private fun initBroadcastReceiver() {
         broadcastReceiver = object : BroadcastReceiver() {
@@ -518,26 +580,26 @@ class AudioPlayService : BaseService(),
      */
     override fun onAudioFocusChange(focusChange: Int) {
         if (AppConfig.ignoreAudioFocus) {
-            AppLog.put(getString(R.string.ignore_audio_focus_audio))
+            AppLog.put("忽略音频焦点处理(有声)")
             return
         }
         when (focusChange) {
             AudioManager.AUDIOFOCUS_GAIN -> {
                 if (needResumeOnAudioFocusGain) {
-                    AppLog.put(getString(R.string.audio_focus_gain_resume))
+                    AppLog.put("音频焦点获得,继续播放")
                     resume()
                 } else {
-                    AppLog.put(getString(R.string.audio_focus_gain))
+                    AppLog.put("音频焦点获得")
                 }
             }
 
             AudioManager.AUDIOFOCUS_LOSS -> {
-                AppLog.put(getString(R.string.audio_focus_loss_pause))
+                AppLog.put("音频焦点丢失,暂停播放")
                 pause()
             }
 
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-                AppLog.put(getString(R.string.audio_focus_loss_transient_pause))
+                AppLog.put("音频焦点暂时丢失并会很快再次获得,暂停播放")
                 if (!pause) {
                     needResumeOnAudioFocusGain = true
                     pause(false)
@@ -545,8 +607,8 @@ class AudioPlayService : BaseService(),
             }
 
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-                // Transient focus loss, other app requested transient focus, hoping to duck/mute other audio (e.g. SMS notification),
-                AppLog.put(getString(R.string.audio_focus_loss_transient_can_duck))
+                // 短暂丢失焦点，这种情况是被其他应用申请了短暂的焦点希望其他声音能压低音量（或者关闭声音）凸显这个声音（比如短信提示音），
+                AppLog.put("音频焦点短暂丢失,不做处理")
             }
         }
     }
@@ -578,6 +640,11 @@ class AudioPlayService : BaseService(),
                 activityPendingIntent<AudioPlayActivity>("activity")
             )
         builder.setLargeIcon(cover)
+        builder.addAction(
+            R.drawable.ic_skip_previous,
+            getString(R.string.previous),
+            servicePendingIntent<AudioPlayService>(IntentAction.prev)
+        )
         if (pause) {
             builder.addAction(
                 R.drawable.ic_play_24dp,
@@ -592,6 +659,11 @@ class AudioPlayService : BaseService(),
             )
         }
         builder.addAction(
+            R.drawable.ic_skip_next,
+            getString(R.string.next),
+            servicePendingIntent<AudioPlayService>(IntentAction.next)
+        )
+        builder.addAction(
             R.drawable.ic_stop_black_24dp,
             getString(R.string.stop),
             servicePendingIntent<AudioPlayService>(IntentAction.stop)
@@ -604,7 +676,7 @@ class AudioPlayService : BaseService(),
         builder.setStyle(
             androidx.media.app.NotificationCompat.MediaStyle()
                 .setShowActionsInCompactView(0, 1, 2)
-                .setMediaSession(mediaSessionCompat?.sessionToken)
+                .setMediaSession(mediaSessionCompat.sessionToken)
         )
         builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
         return builder
@@ -616,13 +688,13 @@ class AudioPlayService : BaseService(),
                 val notification = createNotification()
                 notificationManager.notify(NotificationId.AudioPlayService, notification.build())
             } catch (e: Exception) {
-                AppLog.put(getString(R.string.create_audio_notification_error, e.localizedMessage), e, true)
+                AppLog.put("创建音频播放通知出错,${e.localizedMessage}", e, true)
             }
         }
     }
 
     /**
-     * Update notification
+     * 更新通知
      */
     override fun startForegroundNotification() {
         execute {
@@ -630,8 +702,8 @@ class AudioPlayService : BaseService(),
                 val notification = createNotification()
                 startForeground(NotificationId.AudioPlayService, notification.build())
             } catch (e: Exception) {
-                AppLog.put(getString(R.string.create_audio_notification_error, e.localizedMessage), e, true)
-                //Create notification error, not ending service crashes, service must bind notification
+                AppLog.put("创建音频播放通知出错,${e.localizedMessage}", e, true)
+                //创建通知出错不结束服务就会崩溃,服务必须绑定通知
                 stopSelf()
             }
         }
@@ -649,7 +721,7 @@ class AudioPlayService : BaseService(),
     }
 
     /**
-     * Abandon audio focus
+     * 放弃音频焦点
      */
     private fun abandonFocus() {
         @Suppress("DEPRECATION")

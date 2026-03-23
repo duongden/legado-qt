@@ -2,6 +2,7 @@ package io.legado.app.data.entities
 
 import android.os.Parcelable
 import android.text.TextUtils
+import android.webkit.JavascriptInterface
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
@@ -15,89 +16,111 @@ import kotlinx.parcelize.Parcelize
 data class RssSource(
     @PrimaryKey
     var sourceUrl: String = "",
-    // Name
+    // 名称
     var sourceName: String = "",
-    // Icon
+    // 图标
     var sourceIcon: String = "",
-    // Group
+    // 分组
     var sourceGroup: String? = null,
-    // Comment
+    // 注释
     var sourceComment: String? = null,
-    // Is Enabled
+    // 是否启用
     var enabled: Boolean = true,
-    // Custom variable description
+    // 自定义变量说明
     var variableComment: String? = null,
-    // js library
+    // js库
     override var jsLib: String? = null,
-    // Enable okhttp CookieJar auto save cookie for every request
+    // 启用okhttp CookieJAr 自动保存每次请求的cookie
     @ColumnInfo(defaultValue = "0")
     override var enabledCookieJar: Boolean? = true,
-    /**Concurrency rate**/
+    /**并发率**/
     override var concurrentRate: String? = null,
-    /**Request header**/
+    /**请求头**/
     override var header: String? = null,
-    /**Login Url**/
+    /**登录地址**/
     override var loginUrl: String? = null,
-    /**Login Ui**/
+    /**登录Ui**/
     override var loginUi: String? = null,
-    /**Login check js**/
+    /**登录检测js**/
     var loginCheckJs: String? = null,
-    /**Cover decryption js**/
+    /**封面解密js**/
     var coverDecodeJs: String? = null,
-    /**Category Url**/
+    /**分类Url**/
     var sortUrl: String? = null,
-    /**Is single url source**/
+    /**是否单url源**/
     var singleUrl: Boolean = false,
-    /*List rule*/
-    /**List style,0,1,2**/
+    /*列表规则*/
+    /**列表样式,0,1,2,3,4**/
     @ColumnInfo(defaultValue = "0")
     var articleStyle: Int = 0,
-    /**List rule**/
+    /**列表规则**/
     var ruleArticles: String? = null,
-    /**Next page rule**/
+    /**下一页规则**/
     var ruleNextPage: String? = null,
-    /**Title rule**/
+    /**标题规则**/
     var ruleTitle: String? = null,
-    /**Publish date rule**/
+    /**发布日期规则**/
     var rulePubDate: String? = null,
-    /*webView rule*/
-    /**Description rule**/
+    /*webView规则*/
+    /**描述规则**/
     var ruleDescription: String? = null,
-    /**Image rule**/
+    /**图片规则**/
     var ruleImage: String? = null,
-    /**Link rule**/
+    /**链接规则**/
     var ruleLink: String? = null,
-    /**Content rule**/
+    /**正文规则**/
     var ruleContent: String? = null,
-    /**Content url whitelist**/
+    /**正文url白名单**/
     var contentWhitelist: String? = null,
-    /**Content url blacklist**/
+    /**正文url黑名单**/
     var contentBlacklist: String? = null,
     /**
      * 跳转url拦截,
      * js, 返回true拦截,js变量url,可以通过js打开url,比如调用阅读搜索,添加书架等,简化规则写法,不用webView js注入
      * **/
     var shouldOverrideUrlLoading: String? = null,
-    /**webView style**/
+    /**webView样式**/
     var style: String? = null,
     @ColumnInfo(defaultValue = "1")
     var enableJs: Boolean = true,
     @ColumnInfo(defaultValue = "1")
     var loadWithBaseUrl: Boolean = true,
-    /**Inject js**/
+    /**注入js**/
     var injectJs: String? = null,
-    /*Other rules*/
-    /**Last update time, for sorting**/
+    /**提前预注入js**/
+    var preloadJs: String? = null,
+    /**web形式起始页**/
+    var startHtml: String? = null,
+    var startStyle: String? = null,
+    var startJs: String? = null,
+    /**是否输出web网页日志**/
+    @ColumnInfo(defaultValue = "0")
+    var showWebLog: Boolean = false,
+    /*其它规则*/
+    /**最后更新时间，用于排序**/
     @ColumnInfo(defaultValue = "0")
     var lastUpdateTime: Long = 0,
     @ColumnInfo(defaultValue = "0")
-    var customOrder: Int = 0
+    var customOrder: Int = 0,
+    /**类型 0网页，1图片，2视频**/
+    @ColumnInfo(defaultValue = "0")
+    var type: Int = 0,
+    /**是否启用预加载**/
+    @ColumnInfo(defaultValue = "0")
+    var preload: Boolean = false,
+    /**是否优先加载缓存**/
+    @ColumnInfo(defaultValue = "0")
+    var cacheFirst: Boolean = false,
+    /**搜索url**/
+    var searchUrl: String? = null
 ) : Parcelable, BaseSource {
 
+    @JavascriptInterface
     override fun getTag(): String {
         return sourceName
     }
 
+    @JavascriptInterface
     override fun getKey(): String {
         return sourceUrl
     }
@@ -140,6 +163,15 @@ data class RssSource(
                 && equal(variableComment, source.variableComment)
                 && equal(style, source.style)
                 && equal(injectJs, source.injectJs)
+                && equal(preloadJs, source.preloadJs)
+                && equal(startHtml, source.startHtml)
+                && equal(startStyle, source.startStyle)
+                && equal(startJs, source.startJs)
+                && showWebLog == source.showWebLog
+                && type == source.type
+                && preload == source.preload
+                && cacheFirst == source.cacheFirst
+                && equal(searchUrl, source.searchUrl)
     }
 
     private fun equal(a: String?, b: String?): Boolean {

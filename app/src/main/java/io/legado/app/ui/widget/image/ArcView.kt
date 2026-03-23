@@ -16,17 +16,17 @@ class ArcView @JvmOverloads constructor(
     private var mWidth = 0
     private var mHeight = 0
 
-    //Arc height
+    //弧形高度
     private val mArcHeight: Int
 
-    //Background color
+    //背景颜色
     private var mBgColor: Int
     private val mPaint: Paint = Paint().apply {
         isAntiAlias = true
     }
     private val mDirectionTop: Boolean
-    val rect = Rect()
-    val path = Path()
+    private val rect = Rect()
+    private val path = Path()
 
     init {
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.ArcView)
@@ -37,12 +37,12 @@ class ArcView @JvmOverloads constructor(
         )
         mDirectionTop = typedArray.getBoolean(R.styleable.ArcView_arcDirectionTop, false)
         typedArray.recycle()
+        mPaint.style = Paint.Style.FILL
+        mPaint.color = mBgColor
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        mPaint.style = Paint.Style.FILL
-        mPaint.color = mBgColor
         if (mDirectionTop) {
             rect.set(0, mArcHeight, mWidth, mHeight)
             canvas.drawRect(rect, mPaint)
@@ -81,7 +81,10 @@ class ArcView @JvmOverloads constructor(
     }
 
     fun setBgColor(color: Int) {
-        mBgColor = color
-        invalidate()
+        if (mBgColor != color) {
+            mBgColor = color
+            mPaint.color = mBgColor
+            invalidate()
+        }
     }
 }

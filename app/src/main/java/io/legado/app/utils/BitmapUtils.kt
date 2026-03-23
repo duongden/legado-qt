@@ -7,6 +7,8 @@ import android.graphics.Bitmap
 import android.graphics.Bitmap.Config
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.NinePatchDrawable
 import com.google.android.renderscript.Toolkit
 import java.io.*
 import kotlin.math.*
@@ -16,12 +18,12 @@ import kotlin.math.*
 object BitmapUtils {
 
     /**
-     * Get image info from path, when converting image to Bitmap via BitmapFactory.decodeFile(String path),
-     * We often encounter OOM (Out Of Memory) issues with large images. So we use BitmapFactory.Options mentioned above.
+     * 从path中获取图片信息,在通过BitmapFactory.decodeFile(String path)方法将突破转成Bitmap时，
+     * 遇到大一些的图片，我们经常会遇到OOM(Out Of Memory)的问题。所以用到了我们上面提到的BitmapFactory.Options这个类。
      *
-     * @param path   File path
-     * @param width  Desired image width
-     * @param height Desired image height
+     * @param path   文件路径
+     * @param width  想要显示的图片的宽度
+     * @param height 想要显示的图片的高度
      * @return
      */
     @Throws(IOException::class)
@@ -29,7 +31,7 @@ object BitmapUtils {
         val fis = FileInputStream(path)
         return fis.use {
             val op = BitmapFactory.Options()
-            // If inJustDecodeBounds is set to true, only return actual width and height of image, assigned to opts.outWidth, opts.outHeight;
+            // inJustDecodeBounds如果设置为true,仅仅返回图片实际的宽和高,宽和高是赋值给opts.outWidth,opts.outHeight;
             op.inJustDecodeBounds = true
             BitmapFactory.decodeFileDescriptor(fis.fd, null, op)
             op.inSampleSize = calculateInSampleSize(op, width, height)
@@ -39,10 +41,21 @@ object BitmapUtils {
     }
 
     /**
-     * Calculate InSampleSize. Default return 1
+     * 解析点九图片
+     */
+    @Throws(IOException::class)
+    fun decodeNinePatchDrawable(path: String): Drawable? {
+        val fis = FileInputStream(path)
+        return fis.use {
+            NinePatchDrawable.createFromStream(fis, null)
+        }
+    }
+
+    /**
+     *计算 InSampleSize。缺省返回1
      * @param options BitmapFactory.Options,
-     * @param width  Desired image width
-     * @param height Desired image height
+     * @param width  想要显示的图片的宽度
+     * @param height 想要显示的图片的高度
      * @return
      */
     private fun calculateInSampleSize(
@@ -50,10 +63,10 @@ object BitmapUtils {
         width: Int? = null,
         height: Int? = null
     ): Int {
-        // Get ratio size
+        //获取比例大小
         val wRatio = width?.let { options.outWidth / it } ?: -1
         val hRatio = height?.let { options.outHeight / it } ?: -1
-        // If exceeds specified size, shrink by corresponding ratio
+        //如果超出指定大小，则缩小相应的比例
         return when {
             wRatio > 1 && hRatio > 1 -> max(wRatio, hRatio)
             wRatio > 1 -> wRatio
@@ -62,8 +75,8 @@ object BitmapUtils {
         }
     }
 
-    /** Get Bitmap image from path
-     * @param path Image path
+    /** 从path中获取Bitmap图片
+     * @param path 图片路径
      * @return
      */
     @Throws(IOException::class)
@@ -81,9 +94,9 @@ object BitmapUtils {
     }
 
     /**
-     * Read local resource image in most memory-efficient way
-     * @param context Device context
-     * @param resId Resource ID
+     * 以最省内存的方式读取本地资源的图片
+     * @param context 设备上下文
+     * @param resId 资源ID
      * @return
      */
     fun decodeBitmap(context: Context, resId: Int): Bitmap? {
@@ -93,27 +106,27 @@ object BitmapUtils {
     }
 
     /**
-     * @param context Device context
-     * @param resId Resource ID
+     * @param context 设备上下文
+     * @param resId 资源ID
      * @param width
      * @param height
      * @return
      */
     fun decodeBitmap(context: Context, resId: Int, width: Int, height: Int): Bitmap? {
         val op = BitmapFactory.Options()
-        // If inJustDecodeBounds is set to true, only return actual width and height of image, assigned to opts.outWidth, opts.outHeight;
+        // inJustDecodeBounds如果设置为true,仅仅返回图片实际的宽和高,宽和高是赋值给opts.outWidth,opts.outHeight;
         op.inJustDecodeBounds = true
-        BitmapFactory.decodeResource(context.resources, resId, op) // Get size info
+        BitmapFactory.decodeResource(context.resources, resId, op) //获取尺寸信息
         op.inSampleSize = calculateInSampleSize(op, width, height)
         op.inJustDecodeBounds = false
         return BitmapFactory.decodeResource(context.resources, resId, op)
     }
 
     /**
-     * @param context Device context
-     * @param fileNameInAssets File name in Assets
-     * @param width Image width
-     * @param height Image height
+     * @param context 设备上下文
+     * @param fileNameInAssets Assets里面文件的名称
+     * @param width 图片的宽度
+     * @param height 图片的高度
      * @return Bitmap
      * @throws IOException
      */
@@ -127,9 +140,9 @@ object BitmapUtils {
         var inputStream = context.assets.open(fileNameInAssets)
         return inputStream.use {
             val op = BitmapFactory.Options()
-            // If inJustDecodeBounds is set to true, only return actual width and height of image, assigned to opts.outWidth, opts.outHeight;
+            // inJustDecodeBounds如果设置为true,仅仅返回图片实际的宽和高,宽和高是赋值给opts.outWidth,opts.outHeight;
             op.inJustDecodeBounds = true
-            BitmapFactory.decodeStream(inputStream, null, op) // Get size info
+            BitmapFactory.decodeStream(inputStream, null, op) //获取尺寸信息
             op.inSampleSize = calculateInSampleSize(op, width, height)
             inputStream = context.assets.open(fileNameInAssets)
             op.inJustDecodeBounds = false
@@ -142,10 +155,10 @@ object BitmapUtils {
      * @param minSideLength
      * @param maxNumOfPixels
      * @return
-     * Setting appropriate inSampleSize is one key to solve this. BitmapFactory.Options provides another member inJustDecodeBounds.
-     * After setting inJustDecodeBounds to true, decodeFile does not allocate space, but can calculate original image length and width, i.e. opts.width and opts.height.
-     * With these two parameters, through a certain algorithm, an appropriate inSampleSize can be obtained.
-     * Checking Android source code, Android provides this dynamic calculation method below.
+     * 设置恰当的inSampleSize是解决该问题的关键之一。BitmapFactory.Options提供了另一个成员inJustDecodeBounds。
+     * 设置inJustDecodeBounds为true后，decodeFile并不分配空间，但可计算出原始图片的长度和宽度，即opts.width和opts.height。
+     * 有了这两个参数，再通过一定的算法，即可得到一个恰当的inSampleSize。
+     * 查看Android源码，Android提供了下面这种动态计算的方法。
      */
     fun computeSampleSize(
         options: BitmapFactory.Options,
@@ -207,7 +220,7 @@ object BitmapUtils {
     }
 
     /**
-     * Convert Bitmap to InputStream
+     * 将Bitmap转换成InputStream
      *
      * @param bitmap
      * @return
@@ -221,24 +234,24 @@ object BitmapUtils {
 }
 
 /**
- * Get image with specified width and height
+ * 获取指定宽高的图片
  */
 fun Bitmap.resizeAndRecycle(newWidth: Int, newHeight: Int): Bitmap {
-    // Get new bitmap
+    //获取新的bitmap
     val bitmap = Toolkit.resize(this, newWidth, newHeight)
     recycle()
     return bitmap
 }
 
 /**
- * Gaussian blur
+ * 高斯模糊
  */
 fun Bitmap.stackBlur(radius: Int = 8): Bitmap {
     return Toolkit.blur(this, radius)
 }
 
 /**
- * Get average color
+ * 取平均色
  */
 fun Bitmap.getMeanColor(): Int {
     val width: Int = this.width

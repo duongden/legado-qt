@@ -25,7 +25,7 @@ object BackupConfig {
     private const val coverConfigKey = "coverConfig"
     private const val localBookKey = "localBook"
 
-    //Config ignore key
+    //配置忽略key
     val ignoreKeys = arrayOf(
         readConfigKey,
         PreferKey.themeMode,
@@ -37,7 +37,7 @@ object BackupConfig {
         localBookKey
     )
 
-    //Config ignore title
+    //配置忽略标题
     val ignoreTitle = arrayOf(
         appCtx.getString(R.string.read_config),
         appCtx.getString(R.string.theme_mode),
@@ -49,7 +49,7 @@ object BackupConfig {
         appCtx.getString(R.string.local_book)
     )
 
-    //Auto ignore keys
+    //自动忽略keys
     private val ignorePrefKeys = arrayOf(
         PreferKey.defaultCover,
         PreferKey.defaultCoverDark,
@@ -63,7 +63,7 @@ object BackupConfig {
         PreferKey.audioPlayWakeLock
     )
 
-    //Reading config
+    //阅读配置
     private val readPrefKeys = arrayOf(
         PreferKey.readStyleSelect,
         PreferKey.comicStyleSelect,
@@ -89,12 +89,14 @@ object BackupConfig {
         PreferKey.cBBackground,
         PreferKey.bgImage,
         PreferKey.bgImageBlurring,
+        PreferKey.tNavBar,
         PreferKey.cNPrimary,
         PreferKey.cNAccent,
         PreferKey.cNBackground,
         PreferKey.cNBBackground,
         PreferKey.bgImageN,
-        PreferKey.bgImageNBlurring
+        PreferKey.bgImageNBlurring,
+        PreferKey.tNavBarN
     )
 
     private val coverPrefKeys = arrayOf(

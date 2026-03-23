@@ -47,6 +47,7 @@ import io.legado.app.utils.writeFile
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.flow.flow
@@ -68,7 +69,6 @@ import splitties.init.appCtx
 import splitties.systemservices.notificationManager
 import java.nio.charset.Charset
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.coroutines.coroutineContext
 import kotlin.math.min
 
 /**
@@ -170,7 +170,7 @@ class ExportBookService : BaseService() {
         exportJob = lifecycleScope.launch(IO) {
             while (isActive) {
                 val (bookUrl, exportConfig) = waitExportBooks.entries.firstOrNull() ?: let {
-                    notificationContentText = getString(R.string.sc_export_finished)
+                    notificationContentText = "导出完成"
                     upExportNotification(true)
                     stopSelf()
                     return@launch
@@ -179,7 +179,7 @@ class ExportBookService : BaseService() {
                 waitExportBooks.remove(bookUrl)
                 val book = appDb.bookDao.getBook(bookUrl)
                 try {
-                    book ?: throw NoStackTraceException(getString(R.string.sc_get_book_error, bookUrl))
+                    book ?: throw NoStackTraceException("获取${bookUrl}书籍出错")
                     refreshChapterList(book)
                     notificationContentText = getString(
                         R.string.export_book_notification_content,
@@ -202,8 +202,8 @@ class ExportBookService : BaseService() {
                     exportMsg[book.bookUrl] = getString(R.string.export_success)
                 } catch (e: Throwable) {
                     ensureActive()
-                    exportMsg[bookUrl] = getString(R.string.get_book_error, bookUrl) + (e.localizedMessage ?: "ERROR")
-                    AppLog.put(getString(R.string.export_book_error, book?.name ?: bookUrl), e)
+                    exportMsg[bookUrl] = e.localizedMessage ?: "ERROR"
+                    AppLog.put("导出书籍<${book?.name ?: bookUrl}>出错", e)
                 } finally {
                     exportProgress.remove(bookUrl)
                     postEvent(EventBus.EXPORT_BOOK, bookUrl)
@@ -264,7 +264,7 @@ class ExportBookService : BaseService() {
             }
         }
         if (AppConfig.exportToWebDav) {
-            // Export to webdav
+            // 导出到webdav
             AppWebDav.exportWebDav(bookDoc.uri, filename)
         }
     }
@@ -313,17 +313,16 @@ class ExportBookService : BaseService() {
         val content1 = contentProcessor
             .getContent(
                 book,
-                // Do not export vip flag
+                // 不导出vip标识
                 chapter.apply { isVip = false },
                 content ?: if (chapter.isVolume) "" else "null",
                 includeTitle = !AppConfig.exportNoChapterName,
                 useReplace = useReplace,
                 chineseConvert = false,
-                reSegment = false,
-                translate = false
+                reSegment = false
             ).toString()
         if (AppConfig.exportPictureFile) {
-            //txt export image file
+            //txt导出图片文件
             val srcList = arrayListOf<SrcData>()
             content?.split("\n")?.forEachIndexed { index, text ->
                 val matcher = AppPattern.imgPattern.matcher(text)
@@ -341,7 +340,7 @@ class ExportBookService : BaseService() {
     }
 
     /**
-     * Export Epub
+     * 导出Epub
      */
     private suspend fun exportEpub(path: String, book: Book) {
         exportMsg.remove(book.bookUrl)
@@ -363,7 +362,7 @@ class ExportBookService : BaseService() {
         //set css
         val contentModel = setAssets(fileDoc, book, epubBook)
 
-        //Set content body
+        //设置正文
         setEpubContent(contentModel, book, epubBook)
 
         val bookDoc = fileDoc.createFileIfNotExist(filename)
@@ -372,16 +371,16 @@ class ExportBookService : BaseService() {
         }
 
         if (AppConfig.exportToWebDav) {
-            // Export to webdav
+            // 导出到webdav
             AppWebDav.exportWebDav(bookDoc.uri, filename)
         }
     }
 
     private fun setAssets(doc: FileDoc, book: Book, epubBook: EpubBook): String {
         val customPath = doc.find("Asset")
-        val contentModel = if (customPath == null) {//Use built-in template
+        val contentModel = if (customPath == null) {//使用内置模板
             setAssets(book, epubBook)
-        } else {//External template
+        } else {//外部模板
             setAssetsExternal(customPath, book, epubBook)
         }
 
@@ -399,12 +398,12 @@ class ExportBookService : BaseService() {
                         return@loop
                     }
                     when {
-                        //Content template
+                        //正文模板
                         file.name.equals("chapter.html", true)
                                 || file.name.equals("chapter.xhtml", true) -> {
                             contentModel = file.readText()
                         }
-                        //Cover and other templates
+                        //封面等其他模板
                         file.name.endsWith("html", true) -> {
                             epubBook.addSection(
                                 FileUtils.getNameExcludeExtension(file.name),
@@ -419,7 +418,7 @@ class ExportBookService : BaseService() {
                                 )
                             )
                         }
-                        //Other format files treated as resource files
+                        //其他格式文件当做资源文件
                         else -> {
                             epubBook.resources.add(
                                 Resource(
@@ -431,7 +430,7 @@ class ExportBookService : BaseService() {
                     }
                 }
             } else if (folder.isDir) {
-                //Resource file
+                //资源文件
                 folder.list()!!.forEach loop2@{
                     if (it.isDir) {
                         return@loop2
@@ -443,7 +442,7 @@ class ExportBookService : BaseService() {
                         )
                     )
                 }
-            } else {//Asset resource files
+            } else {//Asset下面的资源文件
                 epubBook.resources.add(
                     Resource(
                         folder.readBytes(),
@@ -513,7 +512,7 @@ class ExportBookService : BaseService() {
             }
             epubBook.coverImage = LazyResource(provider, "Images/cover.jpg")
         }.onFailure {
-            AppLog.put(getString(R.string.get_cover_error, it.localizedMessage), it)
+            AppLog.put("获取书籍封面出错\n${it.localizedMessage}", it)
         }
     }
 
@@ -522,9 +521,10 @@ class ExportBookService : BaseService() {
         book: Book,
         epubBook: EpubBook
     ) = coroutineScope {
-        //Content body
+        //正文
         val useReplace = AppConfig.exportUseReplace && book.getUseReplaceRule()
         val contentProcessor = ContentProcessor.get(book.name, book.origin)
+        val replaceBook = book.toReplaceBook()
         val threads = if (AppConfig.parallelExportBook) {
             AppConst.MAX_THREAD
         } else {
@@ -542,7 +542,7 @@ class ExportBookService : BaseService() {
                 content ?: if (chapter.isVolume) "" else "null",
                 chapter
             )
-            // Do not export vip flag
+            // 不导出vip标识
             chapter.isVip = false
             val content1 = contentProcessor
                 .getContent(
@@ -552,15 +552,15 @@ class ExportBookService : BaseService() {
                     includeTitle = false,
                     useReplace = useReplace,
                     chineseConvert = false,
-                    reSegment = false,
-                    translate = false
+                    reSegment = false
                 ).toString()
             val title = chapter.run {
-                // Do not export vip flag
+                // 不导出vip标识
                 isVip = false
                 getDisplayTitle(
                     contentProcessor.getTitleReplaceRules(),
-                    useReplace = useReplace
+                    useReplace = useReplace,
+                    replaceBook = replaceBook
                 )
             }
             val chapterResource = ResourceUtil.createChapterResource(
@@ -625,13 +625,13 @@ class ExportBookService : BaseService() {
 
     private fun setEpubMetadata(book: Book, epubBook: EpubBook) {
         val metadata = Metadata()
-        metadata.titles.add(book.name)//Book Title
-        metadata.authors.add(Author(book.getRealAuthor()))//Book Author
-        metadata.language = "zh"//Data language
-        metadata.dates.add(Date())//Data creation date
-        metadata.publishers.add("Legado")//Data creator
-        metadata.descriptions.add(book.getDisplayIntro())//Book Intro
-        //metadata.subjects.add("")//Book subject, used in Moon+ Reader for categorization
+        metadata.titles.add(book.name)//书籍的名称
+        metadata.authors.add(Author(book.getRealAuthor()))//书籍的作者
+        metadata.language = "zh"//数据的语言
+        metadata.dates.add(Date())//数据的创建日期
+        metadata.publishers.add("Legado")//数据的创建者
+        metadata.descriptions.add(book.getDisplayIntro())//书籍的简介
+        //metadata.subjects.add("")//书籍的主题，在静读天下里面有使用这个分类书籍
         epubBook.metadata = metadata
     }
 
@@ -639,18 +639,18 @@ class ExportBookService : BaseService() {
 
     //////start of custom exporter
     /**
-     * Custom Exporter
-     * @param scope Export scope
-     * @param size Max chapters in epub
+     * 自定义Exporter
+     * @param scope 导出范围
+     * @param size epub 文件包含最大章节数
      */
     inner class CustomExporter(scopeStr: String, private val size: Int) {
 
         private var scope = parseScope(scopeStr)
 
         /**
-         * Export Epub
-         * @param path Export path
-         * @param book Book
+         * 导出Epub
+         * @param path 导出的路径
+         * @param book 书籍
          */
         suspend fun export(
             path: String,
@@ -669,20 +669,20 @@ class ExportBookService : BaseService() {
             var progressBar = 0.0
             epubList.forEachIndexed { index, ep ->
                 val (filename, epubBook) = ep
-                //Set content body
+                //设置正文
                 setEpubContent(
                     contentModel,
                     book,
                     epubBook,
                     index
                 ) { _, _ ->
-                    // Update progress bar when writing chapter to memory
+                    // 将章节写入内存时更新进度条
                     postEvent(EventBus.EXPORT_BOOK, book.bookUrl)
                     progressBar += book.totalChapterNum.toDouble() / scope.size / 2
                     exportProgress[book.bookUrl] = progressBar.toInt()
                 }
                 save2Drive(filename, epubBook, fileDoc) { total, _ ->
-                    //Update progress bar when writing to disk
+                    //写入硬盘时更新进度条
                     progressBar += book.totalChapterNum.toDouble() / epubList.size / total / 2
                     postEvent(EventBus.EXPORT_BOOK, book.bookUrl)
                     exportProgress[book.bookUrl] = progressBar.toInt()
@@ -690,17 +690,17 @@ class ExportBookService : BaseService() {
             }
 
             val elapsed = System.currentTimeMillis() - currentTimeMillis
-            AppLog.put(getString(R.string.split_export_time, book.name, elapsed))
+            AppLog.put("分割导出书籍 ${book.name} 一共耗时 $elapsed")
         }
 
 
         /**
-         * Set epub content
+         * 设置epub正文
          *
-         * @param contentModel Content template
-         * @param book Book
-         * @param epubBook Split epub
-         * @param epubBookIndex Split epub index
+         * @param contentModel 正文模板
+         * @param book 书籍
+         * @param epubBook 分割后的epub
+         * @param epubBookIndex 分割后的epub序号
          */
         private suspend fun setEpubContent(
             contentModel: String,
@@ -709,9 +709,10 @@ class ExportBookService : BaseService() {
             epubBookIndex: Int,
             updateProgress: (chapterList: MutableList<BookChapter>, index: Int) -> Unit
         ) {
-            //Content body
+            //正文
             val useReplace = AppConfig.exportUseReplace && book.getUseReplaceRule()
             val contentProcessor = ContentProcessor.get(book.name, book.origin)
+            val replaceBook = book.toReplaceBook()
             var chapterList: MutableList<BookChapter> = ArrayList()
             appDb.bookChapterDao.getChapterList(book.bookUrl).forEachIndexed { index, chapter ->
                 if (scope.contains(index)) {
@@ -723,14 +724,14 @@ class ExportBookService : BaseService() {
             }
             // val totalChapterNum = book.totalChapterNum / scope.size
             if (chapterList.isEmpty()) {
-                AppLog.put(getString(R.string.book_chapter_not_found, book.name, epubBookIndex + 1))
+                throw RuntimeException("书籍<${book.name}>(${epubBookIndex + 1})未找到章节信息")
             }
             chapterList = chapterList.subList(
                 epubBookIndex * size,
                 min(scope.size, (epubBookIndex + 1) * size)
             )
             chapterList.forEachIndexed { index, chapter ->
-                coroutineContext.ensureActive()
+                currentCoroutineContext().ensureActive()
                 updateProgress(chapterList, index)
                 BookHelp.getContent(book, chapter).let { content ->
                     val (contentFix, resources) = fixPic(
@@ -747,15 +748,15 @@ class ExportBookService : BaseService() {
                             includeTitle = false,
                             useReplace = useReplace,
                             chineseConvert = false,
-                            reSegment = false,
-                            translate = false
+                            reSegment = false
                         ).toString()
                     val title = chapter.run {
-                        // Do not export vip flag
+                        // 不导出vip标识
                         isVip = false
                         getDisplayTitle(
                             contentProcessor.getTitleReplaceRules(),
-                            useReplace = useReplace
+                            useReplace = useReplace,
+                            replaceBook = replaceBook
                         )
                     }
                     epubBook.addSection(
@@ -772,13 +773,13 @@ class ExportBookService : BaseService() {
         }
 
         /**
-         * Create multiple epub objects
+         * 创建多个epub 对象
          *
-         * When splitting epub, one book needs multiple epub objects
-         * @param book Book
-         * @param fileDoc Export folder document
+         * 分割epub时，一个书籍需要创建多个epub对象
+         * @param book 书籍
+         * @param fileDoc 导出文件夹文档
          *
-         * @return <Content Template String, <epub filename, epub object>>
+         * @return <内容模板字符串, <epub文件名, epub对象>>
          */
         private fun createEpubs(
             book: Book,
@@ -807,7 +808,7 @@ class ExportBookService : BaseService() {
         }
 
         /**
-         * Save file to device
+         * 保存文件到 设备
          */
         private suspend fun save2Drive(
             filename: String,
@@ -827,16 +828,16 @@ class ExportBookService : BaseService() {
             }
 
             if (AppConfig.exportToWebDav) {
-                // Export to webdav
+                // 导出到webdav
                 AppWebDav.exportWebDav(bookDoc.uri, filename)
             }
         }
 
         /**
-         * Parse count after splitting epub
+         * 解析 分割epub后的数量
          *
-         * @param total Total chapters
-         * @param size How many chapters per epub file
+         * @param total 章节总数
+         * @param size 每个epub文件包含多少章节
          */
         private fun paresNumOfEpub(total: Int, size: Int): Int {
             val i = total % size
@@ -848,10 +849,10 @@ class ExportBookService : BaseService() {
         }
 
         /**
-         * Parse scope string
+         * 解析范围字符串
          *
-         * @param scope Scope string
-         * @return Scope
+         * @param scope 范围字符串
+         * @return 范围
          *
          * @since 2023/5/22
          * @author Discut

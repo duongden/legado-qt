@@ -10,11 +10,11 @@ object HtmlFormatter {
     private val espRegex = "(&ensp;|&emsp;)".toRegex()
     private val noPrintRegex = "(&thinsp;|&zwnj;|&zwj;|\u2009|\u200C|\u200D)".toRegex()
     private val wrapHtmlRegex = "</?(?:div|p|br|hr|h\\d|article|dd|dl)[^>]*>".toRegex()
-    private val commentRegex = "<!--[^>]*-->".toRegex() // Comment
+    private val commentRegex = "<!--[^>]*-->".toRegex() //注释
     private val notImgHtmlRegex = "</?(?!img)[a-zA-Z]+(?=[ >])[^<>]*>".toRegex()
     private val otherHtmlRegex = "</?[a-zA-Z]+(?=[ >])[^<>]*>".toRegex()
     private val formatImagePattern = Pattern.compile(
-        "<img[^>]*\\ssrc\\s*=\\s*['\"]([^'\"{>]*\\{(?:[^{}]|\\{[^}>]+\\})+\\})['\"][^>]*>|<img[^>]*\\s(?:data-src|src)\\s*=\\s*['\"]([^'\">]+)['\"][^>]*>|<img[^>]*\\sdata-[^=>]*=\\s*['\"]([^'\">]*)['\"][^>]*>",
+        "<img[^>]*\\ssrc\\s*=\\s*['\"]([^'\"{>]*\\{(?:[^{}]|\\{[^}>]+\\})+\\})['\"][^>]*>|<img[^>]*\\sdata-(?:src|original|srcset)\\s*=\\s*['\"]([^'\">]+)['\"][^>]*>|<img[^>]*\\ssrc\\s*=\\s*\"([^\">]+)\"[^>]*>|<img[^>]*\\s(?:data-[^=>]*|src)=\\s*['\"]([^'\">]*)['\"][^>]*>",
         Pattern.CASE_INSENSITIVE
     )
     private val indent1Regex = "\\s*\\n+\\s*".toRegex()
@@ -38,7 +38,7 @@ object HtmlFormatter {
         html ?: return ""
         val keepImgHtml = format(html, notImgHtmlRegex)
 
-        // When regex "|" is at top level and not in brackets (), it has short-circuit effect like ||, so use this mechanism to simplify original code
+        //正则的“|”处于顶端而不处于（）中时，具有类似||的熔断效果，故以此机制简化原来的代码
         val matcher = formatImagePattern.matcher(keepImgHtml)
         var appendPos = 0
         val sb = StringBuilder()
@@ -54,7 +54,7 @@ object HtmlFormatter {
                                 param = ',' + it.substring(urlMatcher.end())
                                 it.substring(0, urlMatcher.start())
                             } else it
-                        } ?: matcher.group(2) ?: matcher.group(3)!!
+                        } ?: matcher.group(2) ?: matcher.group(3) ?: matcher.group(4)!!
                     ) + param
                 }\">"
             )

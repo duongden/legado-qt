@@ -1,8 +1,8 @@
 [versions]
 
-kotlin = "2.3.0"
+kotlin = "2.3.10"
 ksp = "2.3.4"
-agp = "9.0.0"
+agp = "8.13.2"
 appcompat = "1.7.1"
 colorpicker = "1.1.0"
 constraintlayout = "2.2.1"
@@ -12,6 +12,8 @@ fragment = "1.8.9"
 documentfile = "1.1.0"
 
 libarchive = "1.1.6"
+lyricViewx = "1.3.2"
+soraEditor = "0.24.4"
 glide = "5.0.5"
 gson = "2.13.2"
 jsonPath = "2.10.0"
@@ -21,10 +23,11 @@ liveeventbus = "1.8.14"
 markwon = "4.6.2"
 material = "1.13.0"
 media = "1.7.1"
+danmaku = "0.9.25"
 nanoHttpd = "2.3.1"
 okhttp = "5.3.2"
 preference = "1.2.1"
-quickChineseTransfer = "0.2.16"
+quickChineseTransfer = "0.2.17"
 
 splitties = "3.0.0"
 desugar = "2.1.5"
@@ -57,6 +60,8 @@ rhino = "1.8.1"
 
 #noinspection GradleDependency,NewerVersionAvailable
 media3 = "1.8.0"
+#noinspection GradleDependency
+gsyvideoplayer = "11.3.0"
 
 #noinspection GradleDependency
 webkit = "1.14.0"
@@ -67,7 +72,7 @@ lifecycle = "2.9.4"
 #noinspection GradleDependency
 room = "2.7.1"
 #noinspection GradleDependency
-recyclerview = "1.2.0"
+recyclerview = "1.4.0"
 #noinspection GradleDependency
 viewpager2 = "1.0.0"
 #noinspection GradleDependency
@@ -109,10 +114,19 @@ libarchive = { module = "me.zhanghai.android.libarchive:library", version.ref = 
 lifecycle-common-java8 = { module = "androidx.lifecycle:lifecycle-common-java8", version.ref = "lifecycle" }
 lifecycle-service = { module = "androidx.lifecycle:lifecycle-service", version.ref = "lifecycle" }
 
+lyricViewx = { module = "com.github.Moriafly:LyricViewX", version.ref = "lyricViewx" }
+
+
 media-media = { module = "androidx.media:media", version.ref = "media" }
 media3-datasource-okhttp = { module = "androidx.media3:media3-datasource-okhttp", version.ref = "media3" }
 media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3" }
+media3-exoplayer-hls = { module = "androidx.media3:media3-exoplayer-hls", version.ref = "media3" }
+media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3" }
 media3-session = { module = "androidx.media3:media3-session", version.ref = "media3" }
+
+gsyVideoPlayer-java = { module = "io.github.carguo:gsyvideoplayer-java", version.ref = "gsyvideoplayer" }
+gsyVideoPlayer-exo2 = { module = "io.github.carguo:gsyvideoplayer-exo2", version.ref = "gsyvideoplayer" }
+danmakuFlameMaster = { module = "com.github.CarGuo.DanmakuFlameMaster:DanmakuFlameMaster", version.ref = "danmaku" }
 
 markwon-core = { module = "io.noties.markwon:core", version.ref = "markwon" }
 markwon-image-glide = { module = "io.noties.markwon:image-glide", version.ref = "markwon" }
@@ -141,19 +155,22 @@ glide-glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide
 glide-okhttp = { module = "com.github.bumptech.glide:okhttp3-integration", version.ref = "glide" }
 glide-recyclerview = { module = "com.github.bumptech.glide:recyclerview-integration", version.ref = "glide" }
 glide-compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
-glide-compose = { module = "com.github.bumptech.glide:compose", version = "1.0.0-beta01" }
+glide-compose = { module = "com.github.bumptech.glide:compose", version = "1.0.0-beta08" }
 glide-ksp = { module = "com.github.bumptech.glide:ksp", version.ref = "glide" }
 glide-avif = { module = "com.github.bumptech.glide:avif-integration", version.ref = "glide" }
 avif = { module = "org.aomedia.avif.android:avif", version = "1.1.1.14d8e3c4" }
 glide-svg = { module = "com.github.qoqa:glide-svg", version = "4.0.2" }
 androidsvg = { module = "com.caverock:androidsvg-aar", version = "1.4" }
 
+soraEditor-bom = { module = "io.github.rosemoe:editor-bom", version.ref = "soraEditor" }
+soraEditor-core = { module = "io.github.rosemoe:editor" }
+soraEditor-language-textmate = { module = "io.github.rosemoe:language-textmate" }
 splitties-appctx = { module = "com.louiscad.splitties:splitties-appctx", version.ref = "splitties" }
 splitties-activities = { module = "com.louiscad.splitties:splitties-activities", version.ref = "splitties" }
 splitties-systemservices = { module = "com.louiscad.splitties:splitties-systemservices", version.ref = "splitties" }
 splitties-views = { module = "com.louiscad.splitties:splitties-views", version.ref = "splitties" }
 
-androidx-runner = { module = "androidx.test:runner", version = "1.6.2" }
+androidx-runner = { module = "androidx.test:runner", version = "1.7.0" }
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 androidx-viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref = "viewpager2" }

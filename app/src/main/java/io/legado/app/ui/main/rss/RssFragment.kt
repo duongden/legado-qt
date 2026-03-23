@@ -21,6 +21,7 @@ import io.legado.app.lib.dialogs.alert
 import io.legado.app.lib.theme.primaryColor
 import io.legado.app.lib.theme.primaryTextColor
 import io.legado.app.ui.main.MainFragmentInterface
+import io.legado.app.ui.rss.article.ReadRecordDialog
 import io.legado.app.ui.rss.article.RssSortActivity
 import io.legado.app.ui.rss.favorites.RssFavoritesActivity
 import io.legado.app.ui.rss.read.ReadRssActivity
@@ -31,6 +32,7 @@ import io.legado.app.utils.applyTint
 import io.legado.app.utils.flowWithLifecycleAndDatabaseChange
 import io.legado.app.utils.openUrl
 import io.legado.app.utils.setEdgeEffectColor
+import io.legado.app.utils.showDialogFragment
 import io.legado.app.utils.startActivity
 import io.legado.app.utils.transaction
 import io.legado.app.utils.viewbindingdelegate.viewBinding
@@ -40,13 +42,12 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-
+import io.legado.app.ui.login.SourceLoginActivity
 
 /**
  * 订阅界面
  */
-class RssFragment() : VMBaseFragment<RssViewModel>(R.layout.fragment_rss),
-    MainFragmentInterface,
+class RssFragment() : VMBaseFragment<RssViewModel>(R.layout.fragment_rss), MainFragmentInterface,
     RssAdapter.CallBack {
 
     constructor(position: Int) : this() {
@@ -87,6 +88,7 @@ class RssFragment() : VMBaseFragment<RssViewModel>(R.layout.fragment_rss),
     override fun onCompatOptionsItemSelected(item: MenuItem) {
         super.onCompatOptionsItemSelected(item)
         when (item.itemId) {
+            R.id.menu_read_record -> showDialogFragment<ReadRecordDialog>()
             R.id.menu_rss_config -> startActivity<RssSourceActivity>()
             R.id.menu_rss_star -> startActivity<RssFavoritesActivity>()
             else -> if (item.groupId == R.id.menu_group_text) {
@@ -181,23 +183,43 @@ class RssFragment() : VMBaseFragment<RssViewModel>(R.layout.fragment_rss),
         if (rssSource.singleUrl) {
             viewModel.getSingleUrl(rssSource) { url ->
                 if (url.startsWith("http", true)) {
-                    startActivity<ReadRssActivity> {
-                        putExtra("title", rssSource.sourceName)
-                        putExtra("origin", url)
-                    }
+                    ReadRssActivity.start(
+                        requireContext(),
+                        true,
+                        rssSource.sourceUrl,
+                        rssSource.sourceName,
+                        url
+                    )
                 } else {
                     context?.openUrl(url)
                 }
             }
         } else {
-            startActivity<RssSortActivity> {
-                putExtra("url", rssSource.sourceUrl)
+            viewModel.launchRssWithHtml(rssSource, {
+                startActivity<RssSortActivity> {
+                    putExtra("sourceUrl", rssSource.sourceUrl)
+                }
+            }) { html ->
+                ReadRssActivity.start(
+                    requireContext(),
+                    true,
+                    rssSource.sourceUrl,
+                    rssSource.sourceName,
+                    startHtml = html
+                )
             }
         }
     }
 
     override fun toTop(rssSource: RssSource) {
         viewModel.topSource(rssSource)
+    }
+
+    override fun login(rssSource: RssSource) {
+        startActivity<SourceLoginActivity> {
+            putExtra("type", "rssSource")
+            putExtra("key", rssSource.sourceUrl)
+        }
     }
 
     override fun edit(rssSource: RssSource) {

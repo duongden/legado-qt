@@ -19,6 +19,7 @@ import io.legado.app.lib.theme.primaryColor
 import io.legado.app.ui.widget.dialog.CodeDialog
 import io.legado.app.ui.widget.dialog.WaitDialog
 import io.legado.app.utils.GSON
+import io.legado.app.utils.gone
 import io.legado.app.utils.setLayout
 import io.legado.app.utils.showDialogFragment
 import io.legado.app.utils.viewbindingdelegate.viewBinding
@@ -140,22 +141,33 @@ class ImportTxtTocRuleDialog() : BaseDialogFragment(R.layout.dialog_recycler_vie
             binding.apply {
                 cbSourceName.isChecked = viewModel.selectStatus[holder.layoutPosition]
                 cbSourceName.text = item.name
+                item.example?.takeIf{ it.isNotBlank() }?.let {
+                    showComment.text = it
+                    showComment.visible()
+                    showComment.setOnClickListener {
+                            if (showComment.maxLines == 3) {
+                                showComment.maxLines = 39
+                            } else {
+                                showComment.maxLines = 3
+                            }
+                        }
+                } ?: run {
+                    showComment.gone()
+                }
                 val localSource = viewModel.checkSources[holder.layoutPosition]
                 tvSourceState.text = when {
-                    localSource == null -> getString(R.string.sc_new_added)
-                    item != localSource -> getString(R.string.sc_updated)
-                    else -> getString(R.string.sc_existing)
+                    localSource == null -> "新增"
+                    item != localSource -> "更新"
+                    else -> "已有"
                 }
             }
         }
 
         override fun registerListener(holder: ItemViewHolder, binding: ItemSourceImportBinding) {
             binding.apply {
-                cbSourceName.setOnCheckedChangeListener { buttonView, isChecked ->
-                    if (buttonView.isPressed) {
-                        viewModel.selectStatus[holder.layoutPosition] = isChecked
-                        upSelectText()
-                    }
+                cbSourceName.setOnUserCheckedChangeListener { isChecked ->
+                    viewModel.selectStatus[holder.layoutPosition] = isChecked
+                    upSelectText()
                 }
                 root.onClick {
                     cbSourceName.isChecked = !cbSourceName.isChecked

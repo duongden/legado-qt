@@ -10,33 +10,37 @@ import io.legado.app.utils.splitNotBlank
 @DatabaseView(
     """select bookSourceUrl, bookSourceName, bookSourceGroup, customOrder, enabled, enabledExplore, 
     (loginUrl is not null and trim(loginUrl) <> '') hasLoginUrl, lastUpdateTime, respondTime, weight, 
-    (exploreUrl is not null and trim(exploreUrl) <> '') hasExploreUrl 
+    (exploreUrl is not null and trim(exploreUrl) <> '') hasExploreUrl, eventListener, bookSourceType
     from book_sources""",
     viewName = "book_sources_part"
 )
 data class BookSourcePart(
-    // Address, including http/https
+    // 地址，包括 http/https
     var bookSourceUrl: String = "",
-    // Name
+    // 名称
     var bookSourceName: String = "",
-    // Group
+    // 分组
     var bookSourceGroup: String? = null,
-    // Manual sort number
+    // 手动排序编号
     var customOrder: Int = 0,
-    // Is Enabled
+    // 是否启用
     var enabled: Boolean = true,
-    // Enable Explore
+    // 启用发现
     var enabledExplore: Boolean = true,
-    // Has Login URL
+    // 是否有登录地址
     var hasLoginUrl: Boolean = false,
-    // Last update time, for sorting
+    // 最后更新时间，用于排序
     var lastUpdateTime: Long = 0,
-    // Response time, for sorting
+    // 响应时间，用于排序
     var respondTime: Long = 180000L,
-    // Smart sort weight
+    // 智能排序的权重
     var weight: Int = 0,
-    // Has Explore URL
-    var hasExploreUrl: Boolean = false
+    // 是否有发现url
+    var hasExploreUrl: Boolean = false,
+    // 是否启用事件监听
+    var eventListener: Boolean = false,
+    // 书源类型
+    var bookSourceType: Int = 0
 ) {
 
     override fun hashCode(): Int {

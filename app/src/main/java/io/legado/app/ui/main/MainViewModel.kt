@@ -1,8 +1,7 @@
 package io.legado.app.ui.main
 
-import io.legado.app.utils.TranslateUtils
-
 import android.app.Application
+import android.os.Build
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView.RecycledViewPool
@@ -44,9 +43,10 @@ import kotlinx.coroutines.launch
 import java.util.LinkedList
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
-import splitties.init.appCtx
-import io.legado.app.R
+import kotlin.collections.forEach
 import kotlin.math.min
+import io.legado.app.model.RuleUpdate
+import io.legado.app.model.SourceCallBack
 
 class MainViewModel(application: Application) : BaseViewModel(application) {
     private var threadCount = AppConfig.threadCount
@@ -54,6 +54,7 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
     private var upTocPool = Executors.newFixedThreadPool(poolSize).asCoroutineDispatcher()
     private val waitUpTocBooks = LinkedList<String>()
     private val onUpTocBooks = ConcurrentHashMap.newKeySet<String>()
+    private val eventListenerSource = ConcurrentHashMap<BookSource, Boolean>()
     val onUpBooksLiveData = MutableLiveData<Int>()
     private var upTocJob: Job? = null
     private var cacheBookJob: Job? = null
@@ -63,10 +64,13 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
     val booksGridRecycledViewPool = RecycledViewPool().apply {
         setMaxRecycledViews(0, 100)
     }
+    var callback: CallBack? = null
+    fun setActivityCallback(callback: CallBack) {
+        this.callback = callback
+    }
 
     init {
         deleteNotShelfBook()
-        checkSourceTranslation()
     }
 
     override fun onCleared() {
@@ -94,23 +98,38 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
 
     fun upAllBookToc() {
         execute {
-            addToWaitUp(appDb.bookDao.hasUpdateBooks)
+            addToWaitUp(appDb.bookDao.hasUpdateBooks, AppConfig.onlyUpdateRead)
         }
     }
 
-    fun upToc(books: List<Book>) {
+    fun ruleSubsUp() {
+        execute {
+            val ruleSubs = appDb.ruleSubDao.all
+            for (ruleSub in ruleSubs) {
+                if (ruleSub.autoUpdate) {
+                    val checkResult = RuleUpdate.cacheSource(ruleSub)
+                    if(checkResult) {
+                        callback?.openImportUi(ruleSub.type, ruleSub.url)
+                    }
+                }
+            }
+        }
+    }
+
+    fun upToc(books: List<Book>, onlyUpdateRead: Boolean) {
         execute(context = upTocPool) {
             books.filter {
                 !it.isLocal && it.canUpdate
             }.let {
-                addToWaitUp(it)
+                addToWaitUp(it, onlyUpdateRead)
             }
         }
     }
 
     @Synchronized
-    private fun addToWaitUp(books: List<Book>) {
+    private fun addToWaitUp(books: List<Book>, onlyUpdateRead: Boolean) {
         books.forEach { book ->
+            if (onlyUpdateRead && book.getUnreadChapterNum() > 0) return@forEach
             if (!waitUpTocBooks.contains(book.bookUrl) && !onUpTocBooks.contains(book.bookUrl)) {
                 waitUpTocBooks.add(book.bookUrl)
             }
@@ -142,11 +161,11 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
                     startUpTocJob()
                 }
                 if (it == null && cacheBookJob == null && !CacheBookService.isRun) {
-                    //Start caching chapters after all catalogs updated
+                    //所有目录更新完再开始缓存章节
                     cacheBook()
                 }
             }.catch {
-                AppLog.put(appCtx.getString(R.string.update_toc_error, it.localizedMessage), it)
+                AppLog.put("更新目录出错\n${it.localizedMessage}", it)
             }.collect()
         }
     }
@@ -160,6 +179,13 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
                 appDb.bookDao.update(book)
             }
             return
+        }
+        if (source.eventListener) {
+            // 使用 putIfAbsent 确保只添加一次
+            if (eventListenerSource.putIfAbsent(source, true) == null) {
+                // 通知监听事件的书源，书架刷新开始
+                SourceCallBack.callBackSource(viewModelScope, SourceCallBack.START_SHELF_REFRESH, source)
+            }
         }
         kotlin.runCatching {
             val oldBook = book.copy()
@@ -183,8 +209,8 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
             addDownload(source, book)
         }.onFailure {
             currentCoroutineContext().ensureActive()
-            AppLog.put(appCtx.getString(R.string.update_toc_failed, book.name, it.localizedMessage), it)
-            //Book info might change due to long time, refetch
+            AppLog.put("${book.name} 更新目录失败\n${it.localizedMessage}", it)
+            //这里可能因为时间太长书籍信息已经更改,所以重新获取
             appDb.bookDao.getBook(book.bookUrl)?.let { book ->
                 book.addType(BookType.updateError)
                 appDb.bookDao.update(book)
@@ -194,7 +220,13 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
 
     fun postUpBooksLiveData(reset: Boolean = false) {
         if (AppConfig.showWaitUpCount) {
-            onUpBooksLiveData.postValue(waitUpTocBooks.size + onUpTocBooks.size)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                onUpBooksLiveData.postValue(waitUpTocBooks.size + onUpTocBooks.size)
+            } else {
+                var count = 0
+                onUpTocBooks.forEach { _ -> count++ }
+                onUpBooksLiveData.postValue(waitUpTocBooks.size + count)
+            }
         } else if (reset) {
             onUpBooksLiveData.postValue(0)
         }
@@ -212,16 +244,31 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * Cache book
+     * 缓存书籍
      */
     private fun cacheBook() {
+        //开始缓存前，通知监听事件的书源，书架刷新已完成
+        eventListenerSource.toList().forEach {
+            SourceCallBack.callBackSource(viewModelScope, SourceCallBack.END_SHELF_REFRESH, it.first)
+        }
+        eventListenerSource.clear()
         if (AppConfig.preDownloadNum == 0) return
         cacheBookJob?.cancel()
         cacheBookJob = viewModelScope.launch(upTocPool) {
             launch {
                 while (isActive && CacheBook.isRun) {
-                    //No cache on catalog update, prioritize catalog, sites limit concurrency
-                    CacheBook.setWorkingState(waitUpTocBooks.isEmpty() && onUpTocBooks.isEmpty())
+                    val isOnUpTocBooksEmpty = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        onUpTocBooks.isEmpty()
+                    } else {
+                        var isEmpty = true
+                        onUpTocBooks.forEach { _ ->
+                            isEmpty = false
+                            return@forEach
+                        }
+                        isEmpty
+                    }
+                    //有目录更新是不缓存,优先更新目录,现在更多网站限制并发
+                    CacheBook.setWorkingState(waitUpTocBooks.isEmpty() && isOnUpTocBooksEmpty)
                     delay(1000)
                 }
             }
@@ -251,74 +298,8 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
         }
     }
 
-    fun checkSourceTranslation() {
-        execute {
-            if (TranslateUtils.isTranslateEnabled()) {
-                val sources = appDb.bookSourceDao.all
-                val updatedSources = arrayListOf<BookSource>()
-                sources.forEach { source ->
-                    var changed = false
-                    val newName = TranslateUtils.translateMeta(source.bookSourceName)
-                    if (newName != source.bookSourceName) {
-                        source.bookSourceName = newName
-                        changed = true
-                    }
-                    val newGroup = TranslateUtils.translateMeta(source.bookSourceGroup)
-                    if (newGroup != source.bookSourceGroup) {
-                        source.bookSourceGroup = newGroup
-                        changed = true
-                    }
-                    val newComment = TranslateUtils.translateMeta(source.bookSourceComment)
-                    if (newComment != source.bookSourceComment) {
-                        source.bookSourceComment = newComment
-                        changed = true
-                    }
-                    if (changed) {
-                        updatedSources.add(source)
-                    }
-                }
-                if (updatedSources.isNotEmpty()) {
-                    appDb.bookSourceDao.update(*updatedSources.toTypedArray())
-                }
-
-                val rssSources = appDb.rssSourceDao.all
-                val updatedRssSources = arrayListOf<io.legado.app.data.entities.RssSource>()
-                rssSources.forEach { source ->
-                    var changed = false
-                    val newName = TranslateUtils.translateMeta(source.sourceName)
-                    if (newName != source.sourceName) {
-                        source.sourceName = newName
-                        changed = true
-                    }
-                    val newGroup = TranslateUtils.translateMeta(source.sourceGroup)
-                    if (newGroup != source.sourceGroup) {
-                        source.sourceGroup = newGroup
-                        changed = true
-                    }
-                    val newComment = TranslateUtils.translateMeta(source.sourceComment)
-                    if (newComment != source.sourceComment) {
-                        source.sourceComment = newComment
-                        changed = true
-                    }
-                    val newSortUrl = TranslateUtils.translateCode(source.sortUrl)
-                    if (newSortUrl != source.sortUrl) {
-                        source.sortUrl = newSortUrl
-                        changed = true
-                    }
-                    val newRuleContent = TranslateUtils.translateCode(source.ruleContent)
-                    if (newRuleContent != source.ruleContent) {
-                        source.ruleContent = newRuleContent
-                        changed = true
-                    }
-                    if (changed) {
-                        updatedRssSources.add(source)
-                    }
-                }
-                if (updatedRssSources.isNotEmpty()) {
-                    appDb.rssSourceDao.update(*updatedRssSources.toTypedArray())
-                }
-            }
-        }
+    interface CallBack {
+        fun openImportUi(type: Int, source: String)
     }
 
 }

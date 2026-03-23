@@ -93,7 +93,7 @@
         \u3000\u3000這是一款使用 Kotlin 全新開發的開源的閲讀應用程式，歡迎你的加入。
     </string>
     <string name="app_share_description">
-        閲讀3.0下載地址：\nhttps://github.com/dat-bi/legado-qt/releases
+        閲讀3.0下載地址：\nhttps://github.com/gedoor/legado/releases
     </string>
     <string name="version_name">Version %s</string>
     <string name="pt_background_verification">後臺校驗書源</string>
@@ -816,7 +816,7 @@
     <string name="sync_book_progress_t">同步閱讀進度</string>
     <string name="sync_book_progress_s">進入退出閱讀介面時同步閱讀進度</string>
     <string name="sync_book_progress_plus_t">同步增強</string>
-    <string name="sync_book_progress_plus_s">重新進入頁面（熄屏、返回背景等）或者當網絡可用時同步雲端進度</string>
+    <string name="sync_book_progress_plus_s">重新進入頁面（息屏、從背景返回等）或網路恢復可用時同步雲端進度，同步新進度時會詢問</string>
     <string name="create_bookmark_error">建立書籤失敗</string>
     <string name="single_url">單URL</string>
     <string name="export_bookshelf">導出書單</string>
@@ -1212,8 +1212,6 @@
     <string name="hide_manga_title">隐藏漫画列表标题</string>
     <string name="refresh_explore">刷新发现</string>
     <string name="padding_display_cutouts">填充刘海区域</string>
-    <string name="system_media_control_compatibility_change">系統媒體控件相容性更改</string>
-    <string name="system_media_control_compatibility_change_summary">當鎖屏不顯示系統媒體控件時可以嘗試開啟，比如 OneUI7.0 或 vivo 等</string>
     <string name="read_aloud_pause_resume">朗讀暫停/繼續</string>
     <string name="manga_epaper">墨水屏</string>
     <string name="manga_epaper_stting">墨水屏设置</string>

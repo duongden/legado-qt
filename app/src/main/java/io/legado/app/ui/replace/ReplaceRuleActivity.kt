@@ -1,7 +1,6 @@
 package io.legado.app.ui.replace
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -39,13 +38,11 @@ import io.legado.app.utils.GSON
 import io.legado.app.utils.applyTint
 import io.legado.app.utils.isAbsUrl
 import io.legado.app.utils.launch
-import io.legado.app.utils.readText
 import io.legado.app.utils.sendToClip
 import io.legado.app.utils.setEdgeEffectColor
 import io.legado.app.utils.showDialogFragment
 import io.legado.app.utils.showHelp
 import io.legado.app.utils.splitNotBlank
-import io.legado.app.utils.toastOnUi
 import io.legado.app.utils.transaction
 import io.legado.app.utils.viewbindingdelegate.viewBinding
 import kotlinx.coroutines.Dispatchers.IO
@@ -77,9 +74,7 @@ class ReplaceRuleActivity : VMBaseActivity<ActivityReplaceRuleBinding, ReplaceRu
     private var dataInit = false
     private val qrCodeResult = registerForActivityResult(QrCodeResult()) {
         it ?: return@registerForActivityResult
-        showDialogFragment(
-            ImportReplaceRuleDialog(it)
-        )
+        showDialogFragment(ImportReplaceRuleDialog(it))
     }
     private val editActivity =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -88,14 +83,8 @@ class ReplaceRuleActivity : VMBaseActivity<ActivityReplaceRuleBinding, ReplaceRu
             }
         }
     private val importDoc = registerForActivityResult(HandleFileContract()) {
-        kotlin.runCatching {
-            it.uri?.readText(this)?.let {
-                showDialogFragment(
-                    ImportReplaceRuleDialog(it)
-                )
-            }
-        }.onFailure {
-            toastOnUi(getString(R.string.read_text_error, it.localizedMessage))
+        it.uri?.let { uri ->
+            showDialogFragment(ImportReplaceRuleDialog(uri.toString()))
         }
     }
     private val exportResult = registerForActivityResult(HandleFileContract()) {
@@ -193,6 +182,14 @@ class ReplaceRuleActivity : VMBaseActivity<ActivityReplaceRuleBinding, ReplaceRu
                     appDb.replaceRuleDao.flowAll()
                 }
 
+                searchKey == getString(R.string.enabled) -> {
+                    appDb.replaceRuleDao.flowEnabled()
+                }
+
+                searchKey == getString(R.string.disabled) -> {
+                    appDb.replaceRuleDao.flowDisabled()
+                }
+
                 searchKey == getString(R.string.no_group) -> {
                     appDb.replaceRuleDao.flowNoGroup()
                 }
@@ -201,20 +198,31 @@ class ReplaceRuleActivity : VMBaseActivity<ActivityReplaceRuleBinding, ReplaceRu
                     val key = searchKey.substringAfter("group:")
                     appDb.replaceRuleDao.flowGroupSearch("%$key%")
                 }
+
                 else -> {
                     appDb.replaceRuleDao.flowSearch("%$searchKey%")
                 }
             }.catch {
-                AppLog.put(getString(R.string.error_update_replace_rule), it)
+                AppLog.put("替换规则管理界面更新数据出错", it)
             }.flowOn(IO).conflate().collect {
                 if (dataInit) {
-                    setResult(Activity.RESULT_OK)
+                    setResult(RESULT_OK)
                 }
                 adapter.setItems(it, adapter.diffItemCallBack)
                 dataInit = true
                 delay(100)
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        adapter.upResumed(true)
+    }
+
+    override fun onPause() {
+        adapter.upResumed(false)
+        super.onPause()
     }
 
     private fun observeGroupData() {
@@ -231,18 +239,28 @@ class ReplaceRuleActivity : VMBaseActivity<ActivityReplaceRuleBinding, ReplaceRu
         when (item.itemId) {
             R.id.menu_add_replace_rule ->
                 editActivity.launch(ReplaceEditActivity.startIntent(this))
+
             R.id.menu_group_manage -> showDialogFragment<GroupManageDialog>()
+            R.id.menu_enabled_group -> {
+                searchView.setQuery(getString(R.string.enabled), true)
+            }
+
+            R.id.menu_disabled_group -> {
+                searchView.setQuery(getString(R.string.disabled), true)
+            }
             R.id.menu_del_selection -> viewModel.delSelection(adapter.selection)
             R.id.menu_import_onLine -> showImportDialog()
             R.id.menu_import_local -> importDoc.launch {
                 mode = HandleFileContract.FILE
                 allowExtensions = arrayOf("txt", "json")
             }
+
             R.id.menu_import_qr -> qrCodeResult.launch()
             R.id.menu_help -> showHelp("replaceRuleHelp")
             R.id.menu_group_null -> {
                 searchView.setQuery(getString(R.string.no_group), true)
             }
+
             else -> if (item.groupId == R.id.replace_group) {
                 searchView.setQuery("group:${item.title}", true)
             }
@@ -284,7 +302,7 @@ class ReplaceRuleActivity : VMBaseActivity<ActivityReplaceRuleBinding, ReplaceRu
             ?.toMutableList() ?: mutableListOf()
         alert(titleResource = R.string.import_on_line) {
             val alertBinding = DialogEditTextBinding.inflate(layoutInflater).apply {
-                editView.hint = getString(R.string.url_hint)
+                editView.hint = "url"
                 editView.setFilterValues(cacheUrls)
                 editView.delCallBack = {
                     cacheUrls.remove(it)

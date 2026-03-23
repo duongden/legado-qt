@@ -8,6 +8,7 @@ import io.legado.app.base.BaseViewModel
 import io.legado.app.constant.AppLog
 import io.legado.app.data.appDb
 import io.legado.app.data.entities.Book
+import io.legado.app.data.entities.BookSource
 import io.legado.app.data.entities.BookSourcePart
 import io.legado.app.exception.NoStackTraceException
 import io.legado.app.help.config.AppConfig
@@ -16,11 +17,13 @@ import io.legado.app.help.http.decompressed
 import io.legado.app.help.http.newCallResponseBody
 import io.legado.app.help.http.okHttpClient
 import io.legado.app.help.http.text
+import io.legado.app.model.analyzeRule.AnalyzeUrl
 import io.legado.app.model.webBook.WebBook
 import io.legado.app.utils.FileUtils
 import io.legado.app.utils.GSON
 import io.legado.app.utils.NetworkUtils
 import io.legado.app.utils.fromJsonArray
+import io.legado.app.utils.fromJsonObject
 import io.legado.app.utils.isAbsUrl
 import io.legado.app.utils.isJsonArray
 import io.legado.app.utils.printOnDebug
@@ -50,9 +53,28 @@ class BookshelfViewModel(application: Application) : BaseViewModel(application) 
                     continue
                 }
                 val baseUrl = NetworkUtils.getBaseUrl(bookUrl) ?: continue
-                var source = appDb.bookSourceDao.getBookSourceAddBook(baseUrl)
+                var source: BookSource? = null
+                val urlMatcher = AnalyzeUrl.paramPattern.matcher(bookUrl)
+                if (urlMatcher.find()) { //指定书源
+                    val origin = GSON.fromJsonObject<AnalyzeUrl.UrlOption>(
+                        bookUrl.substring(urlMatcher.end())
+                    ).getOrNull()?.getOrigin()
+                    try {
+                        origin?.let {
+                            appDb.bookSourceDao.getBookSource(it)?.let { bs ->
+                                if (bookUrl.matches(bs.bookUrlPattern!!.toRegex())) {
+                                    source = bs
+                                }
+                            }
+                        }
+                    } catch (_: Exception) {
+                    }
+                }
+                if (source == null) { //根据域名找书源
+                    source = appDb.bookSourceDao.getBookSourceAddBook(baseUrl)
+                }
                 if (source == null) {
-                    for (bookSource in hasBookUrlPattern) {
+                    for (bookSource in hasBookUrlPattern) { //在所有启用的书源中查找
                         try {
                             val bs = bookSource.getBookSource()!!
                             if (bookUrl.matches(bs.bookUrlPattern!!.toRegex())) {
@@ -90,10 +112,10 @@ class BookshelfViewModel(application: Application) : BaseViewModel(application) 
             if (successCount > 0) {
                 context.toastOnUi(R.string.success)
             } else {
-                context.toastOnUi(R.string.sc_add_URL_failed)
+                context.toastOnUi("添加网址失败")
             }
         }.onError {
-            AppLog.put(context.getString(R.string.sc_add_URL_error, it.localizedMessage), it, true)
+            AppLog.put("添加网址出错\n${it.localizedMessage}", it, true)
         }.onFinally {
             addBookProgressLiveData.postValue(-1)
         }
@@ -120,11 +142,11 @@ class BookshelfViewModel(application: Application) : BaseViewModel(application) 
                     writer.close()
                 }
                 file
-            } ?: throw NoStackTraceException(context.getString(R.string.sc_book_cannot_be_empty))
+            } ?: throw NoStackTraceException("书籍不能为空")
         }.onSuccess {
             success(it)
         }.onError {
-            context.toastOnUi(context.getString(R.string.sc_export_book_error, it.localizedMessage))
+            context.toastOnUi("导出书籍出错\n${it.localizedMessage}")
         }
     }
 
@@ -145,7 +167,7 @@ class BookshelfViewModel(application: Application) : BaseViewModel(application) 
                 }
 
                 else -> {
-                    throw NoStackTraceException(context.getString(R.string.sc_format_error))
+                    throw NoStackTraceException("格式不对")
                 }
             }
         }.onError {

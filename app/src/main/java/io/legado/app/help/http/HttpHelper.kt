@@ -12,6 +12,7 @@ import okhttp3.ConnectionSpec
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.Credentials
+import okhttp3.Dns
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import java.net.InetSocketAddress
@@ -34,7 +35,7 @@ val cookieJar by lazy {
 
         override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
             if (cookies.isEmpty()) return
-            //Temp save Source enable cookie option then add to DB
+            //临时保存 书源启用cookie选项再添加到数据库
             val cookieBuilder = StringBuilder()
             cookies.forEachIndexed { index, cookie ->
                 if (index > 0) cookieBuilder.append(";")
@@ -97,6 +98,12 @@ val okHttpClient: OkHttpClient by lazy {
             }
             networkResponse
         }
+    if (AppConfig.addressCache.isNotEmpty()) {
+        builder.dns { hostname ->
+            val cachedAddress = AppConfig.addressCache[hostname]
+            cachedAddress ?: Dns.SYSTEM.lookup(hostname)
+        }
+    }
     if (AppConfig.isCronet) {
         if (Cronet.loader?.install() == true) {
             Cronet.interceptor?.let {
@@ -152,8 +159,8 @@ fun getProxyClient(proxy: String? = null): OkHttpClient {
     val r = Regex("(http|socks4|socks5)://(.*):(\\d{2,5})(@.*@.*)?")
     val ms = r.findAll(proxy)
     val group = ms.first()
-    var username = ""       //Proxy server auth username
-    var password = ""       //Proxy server auth password
+    var username = ""       //代理服务器验证用户名
+    var password = ""       //代理服务器验证密码
     val type = if (group.groupValues[1] == "http") "http" else "socks"
     val host = group.groupValues[2]
     val port = group.groupValues[3].toInt()
@@ -169,7 +176,7 @@ fun getProxyClient(proxy: String? = null): OkHttpClient {
             builder.proxy(Proxy(Proxy.Type.SOCKS, InetSocketAddress(host, port)))
         }
         if (username != "" && password != "") {
-            builder.proxyAuthenticator { _, response -> //Set proxy server auth
+            builder.proxyAuthenticator { _, response -> //设置代理服务器账号密码
                 val credential: String = Credentials.basic(username, password)
                 response.request.newBuilder()
                     .header("Proxy-Authorization", credential)

@@ -8,6 +8,7 @@ import io.legado.app.data.appDb
 import io.legado.app.data.entities.RssSource
 import io.legado.app.exception.NoStackTraceException
 import io.legado.app.help.AppCacheManager
+import io.legado.app.help.ConcurrentRateLimiter.Companion.concurrentRecordMap
 import io.legado.app.help.RuleComplete
 import io.legado.app.help.http.CookieStore
 import io.legado.app.help.source.removeSortCache
@@ -40,7 +41,7 @@ class RssSourceEditViewModel(application: Application) : BaseViewModel(applicati
 
     fun save(source: RssSource, success: ((RssSource) -> Unit)) {
         execute {
-            if (source.sourceName.isBlank() || source.sourceName.isBlank()) {
+            if (source.sourceUrl.isBlank() || source.sourceName.isBlank()) {
                 throw NoStackTraceException(context.getString(R.string.non_null_name_url))
             }
             val oldSource = rssSource ?: RssSource()
@@ -55,7 +56,7 @@ class RssSourceEditViewModel(application: Application) : BaseViewModel(applicati
             }
             rssSource?.let {
                 appDb.rssSourceDao.delete(it)
-                //Update saved source url
+                //更新收藏的源地址
                 if (it.sourceUrl != source.sourceUrl) {
                     appDb.rssStarDao.updateOrigin(source.sourceUrl, it.sourceUrl)
                     appDb.rssArticleDao.updateOrigin(source.sourceUrl, it.sourceUrl)
@@ -65,6 +66,7 @@ class RssSourceEditViewModel(application: Application) : BaseViewModel(applicati
             }
             appDb.rssSourceDao.insert(source)
             rssSource = source
+            concurrentRecordMap.remove(source.sourceUrl) //删除并发限制缓存
             source
         }.onSuccess {
             success(it)
@@ -87,7 +89,7 @@ class RssSourceEditViewModel(application: Application) : BaseViewModel(applicati
             if (it != null) {
                 onSuccess(it)
             } else {
-                context.toastOnUi(R.string.invalid_format)
+                context.toastOnUi("格式不对")
             }
         }
     }

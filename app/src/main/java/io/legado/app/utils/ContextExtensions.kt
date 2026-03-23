@@ -43,8 +43,10 @@ import io.legado.app.help.IntentHelp
 import io.legado.app.help.book.isAudio
 import io.legado.app.help.book.isImage
 import io.legado.app.help.book.isLocal
+import io.legado.app.help.book.isVideo
 import io.legado.app.help.config.AppConfig
 import io.legado.app.ui.book.audio.AudioPlayActivity
+import io.legado.app.ui.video.VideoPlayerActivity
 import io.legado.app.ui.book.manga.ReadMangaActivity
 import io.legado.app.ui.book.read.ReadBookActivity
 import splitties.systemservices.clipboardManager
@@ -66,6 +68,7 @@ fun Context.startActivityForBook(
     configIntent: Intent.() -> Unit = {},
 ) {
     val cls = when {
+        book.isVideo -> VideoPlayerActivity::class.java
         book.isAudio -> AudioPlayActivity::class.java
         !book.isLocal && book.isImage && AppConfig.showMangaUi -> ReadMangaActivity::class.java
         else -> ReadBookActivity::class.java
@@ -215,14 +218,14 @@ fun Context.restart() {
                     or Intent.FLAG_ACTIVITY_CLEAR_TOP
         )
         startActivity(intent)
-        // Kill previous process
+        //杀掉以前进程
         Process.killProcess(Process.myPid())
         exitProcess(0)
     }
 }
 
 /**
- * System screen off time
+ * 系统息屏时间
  */
 val Context.sysScreenOffTime: Int
     get() {
@@ -332,7 +335,7 @@ fun Context.sendMail(mail: String) {
 }
 
 /**
- * Get battery level
+ * 获取电量
  */
 val Context.sysBattery: Int
     get() {
@@ -371,7 +374,7 @@ fun Context.openFileUri(uri: Uri, type: String? = null) {
     intent.action = Intent.ACTION_VIEW
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        //Version 7.0+
+        //7.0版本以上
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
     val uri = if (uri.isContentScheme()) uri

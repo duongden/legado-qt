@@ -75,7 +75,7 @@ class RssSourceAdapter(context: Context, val callBack: CallBack) :
         binding.run {
             if (payloads.isEmpty()) {
                 root.setBackgroundColor(ColorUtils.withAlpha(context.backgroundColor, 0.5f))
-                io.legado.app.utils.TranslateUtils.translateView(cbSource, item.getDisplayNameGroup())
+                cbSource.text = item.getDisplayNameGroup()
                 swtEnabled.isChecked = item.enabled
                 cbSource.isChecked = selected.contains(item)
             } else {
@@ -83,7 +83,7 @@ class RssSourceAdapter(context: Context, val callBack: CallBack) :
                     val bundle = payloads[i] as Bundle
                     bundle.keySet().forEach {
                         when (it) {
-                            "upName" -> io.legado.app.utils.TranslateUtils.translateView(cbSource, item.getDisplayNameGroup())
+                            "upName" -> cbSource.text = item.getDisplayNameGroup()
                             "enabled" -> swtEnabled.isChecked = bundle.getBoolean("enabled")
                             "selected" -> cbSource.isChecked = selected.contains(item)
                         }
@@ -95,28 +95,20 @@ class RssSourceAdapter(context: Context, val callBack: CallBack) :
 
     override fun registerListener(holder: ItemViewHolder, binding: ItemRssSourceBinding) {
         binding.apply {
-            swtEnabled.setOnCheckedChangeListener { view, checked ->
-                if (view.isPressed) {
-                    getItem(holder.layoutPosition)?.let {
-                        if (view.isPressed) {
-                            it.enabled = checked
-                            callBack.update(it)
-                        }
-                    }
+            swtEnabled.setOnUserCheckedChangeListener { checked ->
+                getItem(holder.layoutPosition)?.let {
+                    it.enabled = checked
+                    callBack.update(it)
                 }
             }
-            cbSource.setOnCheckedChangeListener { view, checked ->
-                if (view.isPressed) {
-                    getItem(holder.layoutPosition)?.let {
-                        if (view.isPressed) {
-                            if (checked) {
-                                selected.add(it)
-                            } else {
-                                selected.remove(it)
-                            }
-                            callBack.upCountView()
-                        }
+            cbSource.setOnUserCheckedChangeListener { checked ->
+                getItem(holder.layoutPosition)?.let {
+                    if (checked) {
+                        selected.add(it)
+                    } else {
+                        selected.remove(it)
                     }
+                    callBack.upCountView()
                 }
             }
             ivEdit.setOnClickListener {

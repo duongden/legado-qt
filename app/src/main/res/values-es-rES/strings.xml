@@ -98,7 +98,7 @@
     <string name="offline_cache_s">precarga el o los capítulos(s) seleccionado(s) en Almacenamiento en caché</string>
     <string name="change_origin">Cambiar origen</string>
     <string name="about_description">\u3000\u3000 Este es una aplicación de lectura bajo software libre, desarrollado en Kotlin, en que podrás participar. </string>
-    <string name="app_share_description">Legado (YueDu 3.0) disponible para descargar en：\n https://github.com/dat-bi/legado-qt/releases</string>
+    <string name="app_share_description">Legado (YueDu 3.0) disponible para descargar en：\n https://github.com/gedoor/legado/releases</string>
     <string name="version_name">Versión %s</string>
     <string name="pt_background_verification">Verificación en segundo plano</string>
     <string name="ps_background_verification">podrá utilizar con libertad cuando se verifique la fuente del libro</string>
@@ -820,7 +820,7 @@
     <string name="sync_book_progress_t">Progreso de lectura sincronizado</string>
     <string name="sync_book_progress_s">Sincronizar el progreso de la lectura al entrar y salir de la pantalla de lectura</string>
     <string name="sync_book_progress_plus_t">Mejora de Sincronización</string>
-    <string name="sync_book_progress_plus_s">Sincronizar el progreso en la nube al volver a entrar en la página (por ejemplo, tras apagar la pantalla o al regresar desde el fondo) o cuando la red esté disponible</string>
+    <string name="sync_book_progress_plus_s">Vuelve a sincronizar el progreso en la nube al regresar a la página (pantalla apagada, regreso desde segundo plano, etc.) o cuando la red esté disponible. Se pedirá confirmación antes de sincronizar el nuevo progreso.</string>
     <string name="create_bookmark_error">No se pudo marcar</string>
     <string name="single_url">URL única</string>
     <string name="export_bookshelf">Exportar lista de libros</string>

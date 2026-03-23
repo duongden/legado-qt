@@ -39,17 +39,30 @@ export const dateFormat = (/** @type {number} */ t: number) => {
   let str = ''
 
   if (offset <= 30) {
-    str = 'Vừa xong'
+    str = '刚刚'
   } else if (offset < 60) {
-    str = offset + ' giây trước'
+    str = offset + '秒前'
   } else if (offset < 3600) {
-    str = Math.floor(offset / 60) + ' phút trước'
+    str = Math.floor(offset / 60) + '分钟前'
   } else if (offset < 86400) {
-    str = Math.floor(offset / 3600) + ' giờ trước'
+    str = Math.floor(offset / 3600) + '小时前'
   } else if (offset < 2592000) {
-    str = Math.floor(offset / 86400) + ' ngày trước'
+    str = Math.floor(offset / 86400) + '天前'
   } else {
     str = formatDate(new Date(t), 'YYYY-MM-DD')
   }
   return str
+}
+
+/**
+ * 懒加载正则
+ */
+export const lazyRegex = (pattern: string, flags?: string) => {
+  let instance: RegExp | null = null
+  return () => {
+    if (!instance) {
+      instance = new RegExp(pattern, flags)
+    }
+    return instance
+  }
 }

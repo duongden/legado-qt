@@ -1,7 +1,5 @@
 package io.legado.app.ui.association
 
-import io.legado.app.utils.TranslateUtils
-
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.MutableLiveData
@@ -21,6 +19,7 @@ import io.legado.app.help.http.decompressed
 import io.legado.app.help.http.newCallResponseBody
 import io.legado.app.help.http.okHttpClient
 import io.legado.app.help.source.SourceHelp
+import io.legado.app.model.RuleUpdate
 import io.legado.app.utils.GSON
 import io.legado.app.utils.fromJsonArray
 import io.legado.app.utils.fromJsonObject
@@ -145,9 +144,8 @@ class ImportBookSourceViewModel(app: Application) : BaseViewModel(app) {
                     }.onFailure {
                         GSON.fromJsonObject<BookSource>(mText).getOrThrow().let {
                             if (it.bookSourceUrl.isEmpty()) {
-                                throw NoStackTraceException(context.getString(R.string.sc_not_book_source))
+                                throw NoStackTraceException("不是书源")
                             }
-                            translateSource(it)
                             allSources.add(it)
                         }
                     }
@@ -157,9 +155,8 @@ class ImportBookSourceViewModel(app: Application) : BaseViewModel(app) {
                     .let { items ->
                         val source = items.firstOrNull() ?: return@let
                         if (source.bookSourceUrl.isEmpty()) {
-                            throw NoStackTraceException(context.getString(R.string.sc_not_book_source))
+                            throw NoStackTraceException("不是书源")
                         }
-                        items.forEach { source -> translateSource(source) }
                         allSources.addAll(items)
                     }
 
@@ -173,9 +170,8 @@ class ImportBookSourceViewModel(app: Application) : BaseViewModel(app) {
                         GSON.fromJsonArray<BookSource>(inputS).getOrThrow().let {
                             val source = it.firstOrNull() ?: return@let
                             if (source.bookSourceUrl.isEmpty()) {
-                                throw NoStackTraceException(context.getString(R.string.sc_not_book_source))
+                                throw NoStackTraceException("不是书源")
                             }
-                            it.forEach { source -> translateSource(source) }
                             allSources.addAll(it)
                         }
                     }
@@ -192,6 +188,11 @@ class ImportBookSourceViewModel(app: Application) : BaseViewModel(app) {
     }
 
     private suspend fun importSourceUrl(url: String) {
+        RuleUpdate.cacheBookSourceMap[url]?.also {
+            allSources.addAll(it)
+            RuleUpdate.cacheBookSourceMap.remove(url)
+            return
+        }
         okHttpClient.newCallResponseBody {
             if (url.endsWith("#requestWithoutUA")) {
                 url(url.substringBeforeLast("#requestWithoutUA"))
@@ -203,9 +204,8 @@ class ImportBookSourceViewModel(app: Application) : BaseViewModel(app) {
             GSON.fromJsonArray<BookSource>(it).getOrThrow().let { list ->
                 val source = list.firstOrNull() ?: return@let
                 if (source.bookSourceUrl.isEmpty()) {
-                    throw NoStackTraceException(context.getString(R.string.sc_not_book_source))
+                    throw NoStackTraceException("不是书源")
                 }
-                list.forEach { source -> translateSource(source) }
                 allSources.addAll(list)
             }
         }
@@ -221,15 +221,6 @@ class ImportBookSourceViewModel(app: Application) : BaseViewModel(app) {
                 updateSourceStatus.add(source != null && source.lastUpdateTime < it.lastUpdateTime)
             }
             successLiveData.postValue(allSources.size)
-        }
-    }
-
-
-    private suspend fun translateSource(source: BookSource) {
-        if (TranslateUtils.isTranslateEnabled()) {
-            source.bookSourceName = TranslateUtils.translateMeta(source.bookSourceName)
-            source.bookSourceGroup = TranslateUtils.translateMeta(source.bookSourceGroup)
-            source.bookSourceComment = TranslateUtils.translateMeta(source.bookSourceComment)
         }
     }
 

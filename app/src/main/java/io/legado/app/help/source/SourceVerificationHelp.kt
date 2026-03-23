@@ -26,8 +26,8 @@ object SourceVerificationHelp {
     private fun getVerificationResultKey(sourceKey: String) = "${sourceKey}_verificationResult"
 
     /**
-     * Get source verification result
-     * Captcha, Anti-crawl, Swipe captcha, Click char etc
+     * 获取书源验证结果
+     * 图片验证码 防爬 滑动验证码 点击字符 等等
      */
     @Synchronized
     fun getVerificationResult(
@@ -35,8 +35,9 @@ object SourceVerificationHelp {
         url: String,
         title: String,
         useBrowser: Boolean,
-        refetchAfterSuccess: Boolean = true
-    ): String {
+        refetchAfterSuccess: Boolean = true,
+        html: String? = null
+    ): Pair<String, String> {
         source
             ?: throw NoStackTraceException("getVerificationResult parameter source cannot be null")
         require(url.length < 64 * 1024) { "getVerificationResult parameter url too long" }
@@ -53,37 +54,34 @@ object SourceVerificationHelp {
                 IntentData.put(getVerificationResultKey(source), Thread.currentThread())
             }
         } else {
-            startBrowser(source, url, title, true, refetchAfterSuccess)
+            startBrowser(source, url, title, true, refetchAfterSuccess, html)
         }
 
         var waitUserInput = false
         while (getResult(source.getKey()) == null) {
-            if (!waitUserInput) {
-                AppLog.putDebug(appCtx.getString(io.legado.app.R.string.waiting_verification_result))
+            if (!waitUserInput && html == null) {
+                AppLog.putDebug("等待返回验证结果...")
                 waitUserInput = true
             }
             LockSupport.parkNanos(this, waitTime)
         }
-
-        val result = getResult(source.getKey())!!
+        val result = getResult(source.getKey()) ?: throw NoStackTraceException("验证结果为空")
         clearResult(source.getKey())
-        result.ifBlank {
-            throw NoStackTraceException(appCtx.getString(io.legado.app.R.string.verification_result_empty))
-        }
-
+        if (result.second.isEmpty()) throw NoStackTraceException("验证结果为空")
         return result
     }
 
     /**
-     * Start built-in browser
-     * @param saveResult Save source to database
+     * 启动内置浏览器
+     * @param saveResult 保存网页源代码到数据库
      */
     fun startBrowser(
         source: BaseSource?,
         url: String,
         title: String,
         saveResult: Boolean? = false,
-        refetchAfterSuccess: Boolean? = true
+        refetchAfterSuccess: Boolean? = true,
+        html: String? = null
     ) {
         source ?: throw NoStackTraceException("startBrowser parameter source cannot be null")
         require(url.length < 64 * 1024) { "startBrowser parameter url too long" }
@@ -95,6 +93,7 @@ object SourceVerificationHelp {
             putExtra("sourceType", source.getSourceType())
             putExtra("sourceVerificationEnable", saveResult)
             putExtra("refetchAfterSuccess", refetchAfterSuccess)
+            putExtra("html", html)
             IntentData.put(getVerificationResultKey(source), Thread.currentThread())
         }
     }
@@ -106,12 +105,17 @@ object SourceVerificationHelp {
         LockSupport.unpark(thread)
     }
 
-    fun setResult(sourceKey: String, result: String?) {
-        CacheManager.putMemory(getVerificationResultKey(sourceKey), result ?: "")
+    fun setResult(sourceKey: String, result: String, url: String = "") {
+        CacheManager.putMemory(getVerificationResultKey(sourceKey), (url to result))
     }
 
-    fun getResult(sourceKey: String): String? {
-        return CacheManager.getFromMemory(getVerificationResultKey(sourceKey)) as? String
+    fun getResult(sourceKey: String): Pair<String, String>? {
+        val pair = CacheManager.getFromMemory(getVerificationResultKey(sourceKey)) as? Pair<*, *>
+            ?: return null
+        if (pair.first is String && pair.second is  String) {
+            return pair.first as String to pair.second as String
+        }
+        return null
     }
 
     fun clearResult(sourceKey: String) {

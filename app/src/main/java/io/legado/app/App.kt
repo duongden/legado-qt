@@ -9,7 +9,6 @@ import android.content.pm.ActivityInfo
 import android.content.pm.ApplicationInfo
 import android.content.res.Configuration
 import android.os.Build
-import io.legado.app.BuildConfig
 import com.github.liuyueyi.quick.transfer.constants.TransType
 import com.jeremyliao.liveeventbus.LiveEventBus
 import com.jeremyliao.liveeventbus.logger.DefaultLogger
@@ -41,7 +40,6 @@ import io.legado.app.help.RuleBigDataHelp
 import io.legado.app.help.book.BookHelp
 import io.legado.app.help.config.AppConfig
 import io.legado.app.help.config.ReadBookConfig
-import io.legado.app.help.config.ThemeConfig
 import io.legado.app.help.config.ThemeConfig.applyDayNight
 import io.legado.app.help.config.ThemeConfig.applyDayNightInit
 import io.legado.app.help.coroutine.Coroutine
@@ -52,7 +50,6 @@ import io.legado.app.help.rhino.NativeBaseSource
 import io.legado.app.help.source.SourceHelp
 import io.legado.app.help.storage.Backup
 import io.legado.app.model.BookCover
-import io.legado.app.model.TranslationLoader
 import io.legado.app.utils.ChineseUtils
 import io.legado.app.utils.LogUtils
 import io.legado.app.utils.defaultSharedPreferences
@@ -84,7 +81,7 @@ class App : Application() {
             LogUtils.init(this@App)
             LogUtils.d("App", "onCreate")
             LogUtils.logDeviceInfo()
-            // Pre-download Cronet so
+            //预下载Cronet so
             Cronet.preDownload()
             createNotificationChannels()
             LiveEventBus.config()
@@ -98,9 +95,9 @@ class App : Application() {
             URL.setURLStreamHandlerFactory(ObsoleteUrlFactory(okHttpClient))
             launch { installGmsTlsProvider(appCtx) }
             initRhino()
-            // Initialize cover
+            //初始化封面
             BookCover.toString()
-            // Clear expired data
+            //清除过期数据
             appDb.cacheDao.clearDeadline(System.currentTimeMillis())
             if (getPrefBoolean(PreferKey.autoClearExpired, true)) {
                 val clearTime = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)
@@ -110,17 +107,8 @@ class App : Application() {
             BookHelp.clearInvalidCache()
             Backup.clearCache()
             ReadBookConfig.clearBgAndCache()
-            ThemeConfig.clearBg()
-
-            // Prebuild translation dictionaries (persistent binary) regardless of translate toggle
-            launch {
-                try {
-                    TranslationLoader.prebuildAll()
-                } catch (e: Exception) {
-                    LogUtils.e("App", "Failed to prebuild translation dictionaries")
-                }
-            }
-            // Initialize traditional/simplified conversion engine
+//            ThemeConfig.clearBg() //每次手动切换主题时清理多余图片
+            //初始化简繁转换引擎
             when (AppConfig.chineseConverterType) {
                 1 -> {
                     ChineseUtils.fixT2sDict()
@@ -129,9 +117,9 @@ class App : Application() {
 
                 2 -> ChineseUtils.preLoad(true, TransType.SIMPLE_TO_TRADITIONAL)
             }
-            // Adjust sort order
+            //调整排序序号
             SourceHelp.adjustSortNumber()
-            // Sync reading progress
+            //同步阅读记录
             if (AppConfig.syncBookProgress) {
                 AppWebDav.downloadAllBookProgress()
             }
@@ -152,9 +140,9 @@ class App : Application() {
     }
 
     /**
-     * Attempt to use the GMS built-in Conscrypt on devices with GMS installed (GMS or MicroG)
-     * as the preferred JCE provider, enabling Okhttp to support TLSv1.3
-     * on lower versions of Android.
+     * 尝试在安装了GMS的设备上(GMS或者MicroG)使用GMS内置的Conscrypt
+     * 作为首选JCE提供程序，而使Okhttp在低版本Android上
+     * 能够启用TLSv1.3
      * https://f-droid.org/zh_Hans/2020/05/29/android-updates-and-tls-connections.html
      * https://developer.android.google.cn/reference/javax/net/ssl/SSLSocket
      *
@@ -185,7 +173,7 @@ class App : Application() {
     }
 
     /**
-     * Create notification channels
+     * 创建通知ID
      */
     private fun createNotificationChannels() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
@@ -222,7 +210,7 @@ class App : Application() {
             lockscreenVisibility = Notification.VISIBILITY_PUBLIC
         }
 
-        //Submit channel to notification manager
+        //向notification manager 提交channel
         notificationManager.createNotificationChannels(
             listOf(
                 downloadChannel,

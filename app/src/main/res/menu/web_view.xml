@@ -3,15 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/menu_translate_page"
-        android:icon="@drawable/ic_translate"
-        android:title="@string/translate_page"
-        app:showAsAction="always" />
-
-    <item
-        android:id="@+id/menu_restore_original"
-        android:icon="@drawable/ic_restore"
-        android:title="@string/restore_original"
+        android:id="@+id/menu_web_refresh"
+        android:title="@string/refresh"
+        android:icon="@drawable/ic_refresh_black_24dp"
         app:showAsAction="always" />
 
     <item
@@ -34,6 +28,11 @@
         android:id="@+id/menu_full_screen"
         android:title="@string/full_screen"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_show_web_log"
+        android:title="@string/show_web_log"
+        android:checkable="true" />
 
     <item
         android:id="@+id/menu_disable_source"

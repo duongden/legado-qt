@@ -30,13 +30,11 @@ import io.legado.app.utils.ACache
 import io.legado.app.utils.GSON
 import io.legado.app.utils.isAbsUrl
 import io.legado.app.utils.launch
-import io.legado.app.utils.readText
 import io.legado.app.utils.sendToClip
 import io.legado.app.utils.setEdgeEffectColor
 import io.legado.app.utils.showDialogFragment
 import io.legado.app.utils.showHelp
 import io.legado.app.utils.splitNotBlank
-import io.legado.app.utils.toastOnUi
 import io.legado.app.utils.viewbindingdelegate.viewBinding
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.catch
@@ -54,19 +52,11 @@ class DictRuleActivity : VMBaseActivity<ActivityDictRuleBinding, DictRuleViewMod
     private val adapter by lazy { DictRuleAdapter(this, this) }
     private val qrCodeResult = registerForActivityResult(QrCodeResult()) {
         it ?: return@registerForActivityResult
-        showDialogFragment(
-            ImportDictRuleDialog(it)
-        )
+        showDialogFragment(ImportDictRuleDialog(it))
     }
     private val importDoc = registerForActivityResult(HandleFileContract()) {
-        kotlin.runCatching {
-            it.uri?.readText(this)?.let {
-                showDialogFragment(
-                    ImportDictRuleDialog(it)
-                )
-            }
-        }.onFailure {
-            toastOnUi(getString(R.string.read_text_error, it.localizedMessage))
+        it.uri?.let { uri ->
+            showDialogFragment(ImportDictRuleDialog(uri.toString()))
         }
     }
     private val exportResult = registerForActivityResult(HandleFileContract()) {
@@ -126,11 +116,21 @@ class DictRuleActivity : VMBaseActivity<ActivityDictRuleBinding, DictRuleViewMod
     private fun observeDictRuleData() {
         lifecycleScope.launch {
             appDb.dictRuleDao.flowAll().catch {
-                AppLog.put(getString(R.string.error_get_dict_rule_data, it.localizedMessage), it)
+                AppLog.put("字典规则获取数据失败\n${it.localizedMessage}", it)
             }.flowOn(IO).collect {
                 adapter.setItems(it, adapter.diffItemCallBack)
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        adapter.upResumed(true)
+    }
+
+    override fun onPause() {
+        adapter.upResumed(false)
+        super.onPause()
     }
 
     override fun onCompatOptionsItemSelected(item: MenuItem): Boolean {
@@ -225,7 +225,7 @@ class DictRuleActivity : VMBaseActivity<ActivityDictRuleBinding, DictRuleViewMod
             ?.toMutableList() ?: mutableListOf()
         alert(titleResource = R.string.import_on_line) {
             val alertBinding = DialogEditTextBinding.inflate(layoutInflater).apply {
-                editView.hint = getString(R.string.url_hint)
+                editView.hint = "url"
                 editView.setFilterValues(cacheUrls)
                 editView.delCallBack = {
                     cacheUrls.remove(it)

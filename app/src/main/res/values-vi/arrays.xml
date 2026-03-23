@@ -13,6 +13,7 @@
 		<item>@string/screen_landscape</item>
 		<item>@string/screen_sensor</item>
 		<item>@string/screen_portrait_reversed</item>
+        <item>@string/screen_landscape_reversed</item>
 	</string-array>
     <string-array name="group_style">
         <item>Thẻ</item>
@@ -96,77 +97,4 @@
         <item>Quy tắc thay thế</item>
     </string-array>
 
-
-    <string-array name="book_sort">
-        <item>@string/text_default</item>
-        <item>@string/bookshelf_px_0</item>
-        <item>@string/bookshelf_px_1</item>
-        <item>@string/bookshelf_px_2</item>
-        <item>@string/bookshelf_px_3</item>
-        <item>@string/bookshelf_px_4</item>
-        <item>@string/bookshelf_px_5</item>
-    </string-array>
-    <string-array name="convert_s">
-        <item>@string/jf_convert_o</item>
-        <item>@string/jf_convert_j</item>
-        <item>@string/jf_convert_f</item>
-    </string-array>
-    <string-array name="default_app_variant">
-        <item>@string/default_version</item>
-        <item>@string/official_version</item>
-        <item>@string/beta_release_version</item>
-        <item>@string/beta_releaseA_version</item>
-    </string-array>
-    <string-array name="default_app_variant_value">
-        <item>default_version</item>
-        <item>official_version</item>
-        <item>beta_release_version</item>
-        <item>beta_releaseA_version</item>
-    </string-array>
-    <string-array name="default_home_page">
-        <item>@string/bookshelf</item>
-        <item>@string/discovery</item>
-        <item>@string/rss</item>
-        <item>@string/my</item>
-    </string-array>
-    <string-array name="default_home_page_value">
-        <item>bookshelf</item>
-        <item>explore</item>
-        <item>rss</item>
-        <item>my</item>
-    </string-array>
-    <string-array name="icon_names">
-        <item>iconMain</item>
-        <item>icon1</item>
-        <item>icon2</item>
-        <item>icon3</item>
-        <item>icon4</item>
-        <item>icon5</item>
-        <item>icon6</item>
-    </string-array>
-    <string-array name="indent">
-        <item>@string/indent_0</item>
-        <item>@string/indent_1</item>
-        <item>@string/indent_2</item>
-        <item>@string/indent_3</item>
-        <item>@string/indent_4</item>
-    </string-array>
-    <string-array name="server_type">
-        <item>WEBDAV</item>
-    </string-array>
-    <string-array name="text_suffix">
-        <item>.txt</item>
-        <item>.json</item>
-        <item>.xml</item>
-    </string-array>
-    <string-array name="tip_color">
-        <item>Cùng màu với nội dung</item>
-        <item>Tùy chỉnh</item>
-    </string-array>
-    <string-array name="tip_divider_color">
-        <item>Mặc định</item>
-        <item>Cùng màu với nội dung</item>
-        <item>Tùy chỉnh</item>
-    </string-array>
 </resources>
-

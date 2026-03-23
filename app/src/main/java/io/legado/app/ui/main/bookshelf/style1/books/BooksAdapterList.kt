@@ -12,7 +12,6 @@ import io.legado.app.help.book.isLocal
 import io.legado.app.help.config.AppConfig
 import io.legado.app.utils.invisible
 import io.legado.app.utils.toTimeAgo
-import io.legado.app.utils.setTranslatedText
 import splitties.views.onLongClick
 
 class BooksAdapterList(
@@ -33,11 +32,11 @@ class BooksAdapterList(
         payloads: MutableList<Any>
     ) = binding.run {
         if (payloads.isEmpty()) {
-            tvName.setTranslatedText(item.name)
-            tvAuthor.setTranslatedText(item.author)
-            tvRead.setTranslatedText(item.durChapterTitle)
-            tvLast.setTranslatedText(item.latestChapterTitle)
-            ivCover.load(item.getDisplayCover(), item.name, item.author, false, item.origin)
+            tvName.text = item.name
+            tvAuthor.text = item.author
+            tvRead.text = item.durChapterTitle
+            tvLast.text = item.latestChapterTitle
+            ivCover.load(item, false)
             upRefresh(binding, item)
             upLastUpdateTime(binding, item)
         } else {
@@ -45,16 +44,13 @@ class BooksAdapterList(
                 val bundle = payloads[i] as Bundle
                 bundle.keySet().forEach {
                     when (it) {
-                            "name" -> tvName.setTranslatedText(item.name)
-                            "author" -> tvAuthor.setTranslatedText(item.author)
-                            "dur" -> tvRead.setTranslatedText(item.durChapterTitle)
-                            "last" -> tvLast.setTranslatedText(item.latestChapterTitle)
+                        "name" -> tvName.text = item.name
+                        "author" -> tvAuthor.text = item.author
+                        "dur" -> tvRead.text = item.durChapterTitle
+                        "last" -> tvLast.text = item.latestChapterTitle
                         "cover" -> ivCover.load(
-                            item.getDisplayCover(),
-                            item.name,
-                            item.author,
+                            item,
                             false,
-                            item.origin,
                             fragment,
                             lifecycle
                         )

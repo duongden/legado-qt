@@ -392,6 +392,17 @@ class BookSourceActivity : VMBaseActivity<ActivityBookSourceBinding, BookSourceV
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        adapter.upResumed(true)
+    }
+
+    override fun onPause() {
+        adapter.upResumed(false)
+        super.onPause()
+    }
+
+
     private fun initLiveDataGroup() {
         lifecycleScope.launch {
             appDb.bookSourceDao.flowGroups()
@@ -470,11 +481,11 @@ class BookSourceActivity : VMBaseActivity<ActivityBookSourceBinding, BookSourceV
                 searchView.query?.toString(),
                 sortAscending,
                 sort
-            ) { file ->
+            ) { file, name ->
                 exportDir.launch {
                     mode = HandleFileContract.EXPORT
                     fileData = HandleFileContract.FileData(
-                        "bookSource.json",
+                        name,
                         file,
                         "application/json"
                     )
@@ -486,8 +497,8 @@ class BookSourceActivity : VMBaseActivity<ActivityBookSourceBinding, BookSourceV
                 searchView.query?.toString(),
                 sortAscending,
                 sort
-            ) {
-                share(it)
+            ) { file, name ->
+                share(file)
             }
 
             R.id.menu_check_selected_interval -> adapter.checkSelectedInterval()
@@ -499,7 +510,7 @@ class BookSourceActivity : VMBaseActivity<ActivityBookSourceBinding, BookSourceV
     private fun checkSource() {
         val dialog = alert(titleResource = R.string.search_book_key) {
             val alertBinding = DialogEditTextBinding.inflate(layoutInflater).apply {
-                editView.hint = getString(R.string.search_word)
+                editView.hint = "search word"
                 editView.setText(CheckSource.keyword)
             }
             customView { alertBinding.root }
@@ -521,7 +532,7 @@ class BookSourceActivity : VMBaseActivity<ActivityBookSourceBinding, BookSourceV
             neutralButton(R.string.check_source_config)
             cancelButton()
         }
-        //Manual listener setting avoids dialog close after clicking verify settings
+        //手动设置监听 避免点击打开校验设置后对话框关闭
         dialog.getButton(AlertDialog.BUTTON_NEUTRAL)?.setOnClickListener {
             showDialogFragment<CheckSourceConfig>()
         }
@@ -635,10 +646,9 @@ class BookSourceActivity : VMBaseActivity<ActivityBookSourceBinding, BookSourceV
                 bundleOf(Pair("checkSourceMessage", null))
             )
             groups.forEach { group ->
-                val invalidStr = getString(R.string.invalid)
-                if (group.contains(invalidStr) && searchView.query.isEmpty()) {
-                    searchView.setQuery(invalidStr, true)
-                    toastOnUi(R.string.auto_filter_invalid_sources)
+                if (group.contains("失效") && searchView.query.isEmpty()) {
+                    searchView.setQuery("失效", true)
+                    toastOnUi("发现有失效书源，已为您自动筛选！")
                 }
             }
         }
@@ -672,7 +682,7 @@ class BookSourceActivity : VMBaseActivity<ActivityBookSourceBinding, BookSourceV
     }
 
     /**
-     * Keep screen on
+     * 保持亮屏
      */
     private fun keepScreenOn(on: Boolean) {
         val isScreenOn =
@@ -752,9 +762,7 @@ class BookSourceActivity : VMBaseActivity<ActivityBookSourceBinding, BookSourceV
     }
 
     override fun searchBook(bookSource: BookSourcePart) {
-        startActivity<SearchActivity> {
-            putExtra("searchScope", SearchScope(bookSource).toString())
-        }
+        SearchActivity.start(this, bookSource)
     }
 
     override fun debug(bookSource: BookSourcePart) {

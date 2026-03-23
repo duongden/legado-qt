@@ -143,20 +143,18 @@ class ImportHttpTtsDialog() : BaseDialogFragment(R.layout.dialog_recycler_view),
                 cbSourceName.text = item.name
                 val localSource = viewModel.checkSources[holder.layoutPosition]
                 tvSourceState.text = when {
-                    localSource == null -> getString(R.string.import_status_new)
-                    item.lastUpdateTime > localSource.lastUpdateTime -> getString(R.string.import_status_update)
-                    else -> getString(R.string.import_status_exist)
+                    localSource == null -> "新增"
+                    item.lastUpdateTime > localSource.lastUpdateTime -> "更新"
+                    else -> "已有"
                 }
             }
         }
 
         override fun registerListener(holder: ItemViewHolder, binding: ItemSourceImportBinding) {
             binding.apply {
-                cbSourceName.setOnCheckedChangeListener { buttonView, isChecked ->
-                    if (buttonView.isPressed) {
-                        viewModel.selectStatus[holder.layoutPosition] = isChecked
-                        upSelectText()
-                    }
+                cbSourceName.setOnUserCheckedChangeListener { isChecked ->
+                    viewModel.selectStatus[holder.layoutPosition] = isChecked
+                    upSelectText()
                 }
                 root.onClick {
                     cbSourceName.isChecked = !cbSourceName.isChecked

@@ -17,6 +17,7 @@ import io.legado.app.help.http.decompressed
 import io.legado.app.help.http.newCallResponseBody
 import io.legado.app.help.http.okHttpClient
 import io.legado.app.help.source.SourceHelp
+import io.legado.app.model.RuleUpdate
 import io.legado.app.utils.GSON
 import io.legado.app.utils.fromJsonArray
 import io.legado.app.utils.fromJsonObject
@@ -129,9 +130,8 @@ class ImportRssSourceViewModel(app: Application) : BaseViewModel(app) {
                 GSON.fromJsonArray<RssSource>(mText).getOrThrow().let {
                     val source = it.firstOrNull() ?: return@let
                     if (source.sourceUrl.isEmpty()) {
-                        throw NoStackTraceException(context.getString(R.string.sc_not_rss_source))
+                        throw NoStackTraceException("不是订阅源")
                     }
-                    it.forEach { source -> translateSource(source) }
                     allSources.addAll(it)
                 }
             }
@@ -140,9 +140,8 @@ class ImportRssSourceViewModel(app: Application) : BaseViewModel(app) {
                 GSON.fromJsonArray<RssSource>(mText).getOrThrow().let {
                     val source = it.firstOrNull() ?: return@let
                     if (source.sourceUrl.isEmpty()) {
-                        throw NoStackTraceException(context.getString(R.string.sc_not_rss_source))
+                        throw NoStackTraceException("不是订阅源")
                     }
-                    it.forEach { source -> translateSource(source) }
                     allSources.addAll(it)
                 }
             }
@@ -160,6 +159,11 @@ class ImportRssSourceViewModel(app: Application) : BaseViewModel(app) {
     }
 
     private suspend fun importSourceUrl(url: String) {
+        RuleUpdate.cacheRssSourceMap[url]?.also {
+            allSources.addAll(it)
+            RuleUpdate.cacheRssSourceMap.remove(url)
+            return
+        }
         okHttpClient.newCallResponseBody {
             if (url.endsWith("#requestWithoutUA")) {
                 url(url.substringBeforeLast("#requestWithoutUA"))
@@ -171,11 +175,10 @@ class ImportRssSourceViewModel(app: Application) : BaseViewModel(app) {
             val items: List<Map<String, Any>> = jsonPath.parse(body).read("$")
             for (item in items) {
                 if (!item.containsKey("sourceUrl")) {
-                    throw NoStackTraceException(context.getString(R.string.sc_not_rss_source))
+                    throw NoStackTraceException("不是订阅源")
                 }
                 val jsonItem = jsonPath.parse(item)
                 GSON.fromJsonObject<RssSource>(jsonItem.jsonString()).getOrThrow().let { source ->
-                    translateSource(source)
                     allSources.add(source)
                 }
             }
@@ -190,24 +193,6 @@ class ImportRssSourceViewModel(app: Application) : BaseViewModel(app) {
                 selectStatus.add(has == null || has.lastUpdateTime < it.lastUpdateTime)
             }
             successLiveData.postValue(allSources.size)
-        }
-    }
-
-    private suspend fun translateSource(source: RssSource) {
-        if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
-            source.sourceName = io.legado.app.utils.TranslateUtils.translateMeta(source.sourceName)
-            if (!source.sourceGroup.isNullOrEmpty()) {
-                source.sourceGroup = io.legado.app.utils.TranslateUtils.translateMeta(source.sourceGroup)
-            }
-            if (!source.sourceComment.isNullOrEmpty()) {
-                source.sourceComment = io.legado.app.utils.TranslateUtils.translateMeta(source.sourceComment)
-            }
-            if (!source.sortUrl.isNullOrEmpty()) {
-                source.sortUrl = io.legado.app.utils.TranslateUtils.translateCode(source.sortUrl)
-            }
-            if (!source.ruleContent.isNullOrEmpty()) {
-                source.ruleContent = io.legado.app.utils.TranslateUtils.translateCode(source.ruleContent)
-            }
         }
     }
 

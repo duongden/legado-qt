@@ -6,8 +6,10 @@ import io.legado.app.constant.BookType
 import io.legado.app.data.entities.BookSource
 import io.legado.app.data.entities.BookSourcePart
 import io.legado.app.data.entities.rule.ExploreKind
+import io.legado.app.ui.main.explore.ExploreAdapter.Companion.exploreInfoMapList
 import io.legado.app.utils.ACache
 import io.legado.app.utils.GSON
+import io.legado.app.utils.InfoMap
 import io.legado.app.utils.MD5Utils
 import io.legado.app.utils.fromJsonArray
 import io.legado.app.utils.isJsonArray
@@ -19,7 +21,7 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Using md5 as key can automatically recalculate after category modification, no manual refresh needed
+ * 采用md5作为key可以在分类修改后自动重新计算,不需要手动刷新
  */
 
 private val mutexMap by lazy { hashMapOf<String, Mutex>() }
@@ -51,22 +53,36 @@ suspend fun BookSource.exploreKinds(): List<ExploreKind> {
         val kinds = arrayListOf<ExploreKind>()
         withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                var ruleStr = exploreUrl
-                if (exploreUrl.startsWith("<js>", true)
-                    || exploreUrl.startsWith("@js:", true)
-                ) {
-                    ruleStr = aCache.getAsString(exploreKindsKey)
-                    if (ruleStr.isNullOrBlank()) {
-                        val jsStr = if (exploreUrl.startsWith("@")) {
-                            exploreUrl.substring(4)
-                        } else {
-                            exploreUrl.substring(4, exploreUrl.lastIndexOf("<"))
+                val ruleStr = when {
+                    exploreUrl.startsWith("@js:", true) -> {
+                        aCache.getAsString(exploreKindsKey)?.takeIf { it.isNotBlank() } ?: run {
+                            val exploreInfoMap = exploreInfoMapList[bookSourceUrl] ?: InfoMap(bookSourceUrl).also {
+                                exploreInfoMapList.put(bookSourceUrl, it)
+                            }
+                            runScriptWithContext {
+                                evalJS(exploreUrl.substring(4)) {
+                                    put("infoMap", exploreInfoMap)
+                                }.toString().trim()
+                            }.also {
+                                aCache.put(exploreKindsKey, it)
+                            }
                         }
-                        ruleStr = runScriptWithContext {
-                            evalJS(jsStr).toString().trim()
-                        }
-                        aCache.put(exploreKindsKey, ruleStr)
                     }
+                    exploreUrl.startsWith("<js>", true) -> {
+                        aCache.getAsString(exploreKindsKey)?.takeIf { it.isNotBlank() } ?: run {
+                            val exploreInfoMap = exploreInfoMapList[bookSourceUrl] ?: InfoMap(bookSourceUrl).also {
+                                exploreInfoMapList.put(bookSourceUrl, it)
+                            }
+                            runScriptWithContext {
+                                evalJS(exploreUrl.substring(4, exploreUrl.lastIndexOf("<"))) {
+                                    put("infoMap", exploreInfoMap)
+                                }.toString().trim()
+                            }.also {
+                                aCache.put(exploreKindsKey, it)
+                            }
+                        }
+                    }
+                    else -> exploreUrl
                 }
                 if (ruleStr.isJsonArray()) {
                     GSON.fromJsonArray<ExploreKind>(ruleStr).getOrThrow().let {
@@ -116,6 +132,7 @@ fun BookSource.getBookType(): Int {
         BookSourceType.file -> BookType.text or BookType.webFile
         BookSourceType.image -> BookType.image
         BookSourceType.audio -> BookType.audio
+        BookSourceType.video -> BookType.video
         else -> BookType.text
     }
 }

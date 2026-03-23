@@ -3,6 +3,7 @@ package io.legado.app.utils
 import android.graphics.Canvas
 import android.graphics.Bitmap
 import android.graphics.RectF
+import android.graphics.drawable.PictureDrawable
 import android.util.Size
 import java.io.FileInputStream
 import java.io.InputStream
@@ -13,7 +14,7 @@ import kotlin.math.max
 object SvgUtils {
 
     /**
-     * Decode bitmap from Svg
+     * 从Svg中解码bitmap
      */
     
     fun createBitmap(filePath: String, width: Int, height: Int? = null): Bitmap? {
@@ -30,7 +31,16 @@ object SvgUtils {
         }.getOrNull()
     }
 
-    // Get svg image size
+    fun createDrawable(inputStream: InputStream): Pair<PictureDrawable, Size>? {
+        return kotlin.runCatching {
+            val svg = SVG.getFromInputStream(inputStream)
+            val size = getSize(svg)
+            val picture = svg.renderToPicture()
+            Pair(PictureDrawable(picture), size)
+        }.getOrNull()
+    }
+
+    //获取svg图片大小
     fun getSize(filePath: String): Size? {
         return kotlin.runCatching {
             val inputStream = FileInputStream(filePath)
@@ -50,7 +60,7 @@ object SvgUtils {
         val size = getSize(svg)
         val wRatio = width?.let { size.width / it } ?: -1
         val hRatio = height?.let { size.height / it } ?: -1
-        // If exceeds specified size, shrink by corresponding ratio
+        //如果超出指定大小，则缩小相应的比例
         val ratio = when {
             wRatio > 1 && hRatio > 1 -> max(wRatio, hRatio)
             wRatio > 1 -> wRatio

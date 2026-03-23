@@ -17,8 +17,7 @@ import io.legado.app.help.config.AppConfig
 import io.legado.app.lib.theme.backgroundColor
 import io.legado.app.ui.widget.recycler.DragSelectTouchHelper
 import io.legado.app.ui.widget.recycler.ItemTouchCallback
-import io.legado.app.utils.setTranslatedText
-import java.util.*
+import java.util.Collections
 
 class BookAdapter(context: Context, val callBack: CallBack) :
     RecyclerAdapter<Book, ItemArrangeBookBinding>(context),
@@ -51,8 +50,8 @@ class BookAdapter(context: Context, val callBack: CallBack) :
     ) {
         binding.apply {
             root.setBackgroundColor(context.backgroundColor)
-            tvName.setTranslatedText(item.name)
-            tvAuthor.setTranslatedText(item.author)
+            tvName.text = item.name
+            tvAuthor.text = item.author
             tvAuthor.visibility = if (item.author.isEmpty()) View.GONE else View.VISIBLE
             tvGroupS.text = getGroupName(item.group)
             checkbox.isChecked = selectedBooks.contains(item)
@@ -66,18 +65,14 @@ class BookAdapter(context: Context, val callBack: CallBack) :
 
     override fun registerListener(holder: ItemViewHolder, binding: ItemArrangeBookBinding) {
         binding.apply {
-            checkbox.setOnCheckedChangeListener { buttonView, isChecked ->
-                if (buttonView.isPressed) {
-                    getItem(holder.layoutPosition)?.let {
-                        if (buttonView.isPressed) {
-                            if (isChecked) {
-                                selectedBooks.add(it)
-                            } else {
-                                selectedBooks.remove(it)
-                            }
-                            callBack.upSelectCount()
-                        }
+            checkbox.setOnUserCheckedChangeListener { isChecked ->
+                getItem(holder.layoutPosition)?.let {
+                    if (isChecked) {
+                        selectedBooks.add(it)
+                    } else {
+                        selectedBooks.remove(it)
                     }
+                    callBack.upSelectCount()
                 }
             }
             root.setOnClickListener {

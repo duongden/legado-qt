@@ -14,6 +14,7 @@ import android.media.AudioManager
 import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.os.PowerManager
+import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.telephony.PhoneStateListener
@@ -109,7 +110,7 @@ abstract class BaseReadAloudService : BaseService(),
     private val mFocusRequest: AudioFocusRequestCompat by lazy {
         MediaHelp.buildAudioFocusRequestCompat(this)
     }
-    private val mediaSessionCompat: MediaSessionCompat by lazy {
+    private val mediaSessionCompat by lazy {
         MediaSessionCompat(this, "readAloud")
     }
     private val phoneStateListener by lazy {
@@ -153,7 +154,7 @@ abstract class BaseReadAloudService : BaseService(),
         upMediaSessionPlaybackState(PlaybackStateCompat.STATE_PLAYING)
         setTimer(AppConfig.ttsTimer)
         if (AppConfig.ttsTimer > 0) {
-            toastOnUi(getString(R.string.read_aloud_timer_msg, AppConfig.ttsTimer))
+            toastOnUi("朗读定时 ${AppConfig.ttsTimer} 分钟")
         }
         execute {
             ImageLoader
@@ -269,7 +270,7 @@ abstract class BaseReadAloudService : BaseService(),
                 if (play) play() else pageChanged = true
             }
         }.onError {
-            AppLog.put(getString(R.string.start_read_aloud_error, it.localizedMessage), it, true)
+            AppLog.put("启动朗读出错\n${it.localizedMessage}", it, true)
         }
     }
 
@@ -395,7 +396,7 @@ abstract class BaseReadAloudService : BaseService(),
     }
 
     /**
-     * Timer
+     * 定时
      */
     @Synchronized
     private fun doDs() {
@@ -432,100 +433,113 @@ abstract class BaseReadAloudService : BaseService(),
         val requestFocus = MediaHelp.requestFocus(mFocusRequest)
         if (!requestFocus) {
             pauseReadAloud(false)
-            toastOnUi(getString(R.string.audio_focus_not_acquired))
+            toastOnUi("未获取到音频焦点")
         }
         return requestFocus
     }
 
     /**
-     * Abandon audio focus
+     * 放弃音频焦点
      */
     private fun abandonFocus() {
         AudioManagerCompat.abandonAudioFocusRequest(audioManager, mFocusRequest)
     }
 
     /**
-     * Update media status
+     * 更新媒体状态
      */
     private fun upMediaSessionPlaybackState(state: Int) {
         mediaSessionCompat.setPlaybackState(
             PlaybackStateCompat.Builder()
                 .setActions(MediaHelp.MEDIA_SESSION_ACTIONS)
                 .setState(state, nowSpeak.toLong(), 1f)
-                // Add timer button to system media controls
+                // 为系统媒体控件添加定时按钮
                 .addCustomAction(
-                    PlaybackStateCompat.CustomAction.Builder(
-                        "ACTION_ADD_TIMER",
-                        getString(R.string.set_timer),
-                        R.drawable.ic_time_add_24dp
-                    ).build()
+                    "ACTION_ADD_TIMER",
+                    getString(R.string.set_timer),
+                    R.drawable.ic_time_add_24dp
                 )
                 .build()
         )
     }
 
     /**
-     * Init MediaSession, register media buttons
+     * 初始化MediaSession, 注册多媒体按钮
      */
     @SuppressLint("UnspecifiedImmutableFlag")
     private fun initMediaSession() {
-        if (getPrefBoolean("systemMediaControlCompatibilityChange")) {
-            mediaSessionCompat.setCallback(object : MediaSessionCompat.Callback() {
-                override fun onPlay() {
-                    resumeReadAloud()
-                }
+        mediaSessionCompat.setFlags(
+            MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
+                    MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
+        )
+        mediaSessionCompat.setCallback(object : MediaSessionCompat.Callback() {
+            override fun onPlay() {
+                resumeReadAloud()
+            }
 
-                override fun onPause() {
-                    pauseReadAloud()
-                }
+            override fun onPause() {
+                pauseReadAloud()
+            }
 
-                override fun onSkipToNext() {
-                    if (getPrefBoolean("mediaButtonPerNext", false)) {
-                        nextChapter()
-                    } else {
-                        nextP()
-                    }
+            override fun onSkipToNext() {
+                if (getPrefBoolean("mediaButtonPerNext", false)) {
+                    nextChapter()
+                } else {
+                    nextP()
                 }
+            }
 
-                override fun onSkipToPrevious() {
-                    if (getPrefBoolean("mediaButtonPerNext", false)) {
-                        prevChapter()
-                    } else {
-                        prevP()
-                    }
+            override fun onSkipToPrevious() {
+                if (getPrefBoolean("mediaButtonPerNext", false)) {
+                    prevChapter()
+                } else {
+                    prevP()
                 }
+            }
 
-                override fun onStop() {
-                    stopSelf()
-                }
+            override fun onStop() {
+                stopSelf()
+            }
 
-                override fun onCustomAction(action: String, extras: Bundle?) {
-                    if (action == "ACTION_ADD_TIMER") addTimer()
-                }
+            override fun onCustomAction(action: String, extras: Bundle?) {
+                if (action == "ACTION_ADD_TIMER") addTimer()
+            }
 
-                override fun onMediaButtonEvent(mediaButtonEvent: Intent): Boolean {
-                    return MediaButtonReceiver.handleIntent(
-                        this@BaseReadAloudService, mediaButtonEvent
-                    )
-                }
-            })
-        } else {
-            mediaSessionCompat.setCallback(object : MediaSessionCompat.Callback() {
-                override fun onMediaButtonEvent(mediaButtonEvent: Intent): Boolean {
-                    return MediaButtonReceiver.handleIntent(
-                        this@BaseReadAloudService, mediaButtonEvent
-                    )
-                }
-            })
-        }
+            override fun onMediaButtonEvent(mediaButtonEvent: Intent): Boolean {
+                return MediaButtonReceiver.handleIntent(
+                    this@BaseReadAloudService, mediaButtonEvent
+                )
+            }
+        })
         mediaSessionCompat.setMediaButtonReceiver(
             broadcastPendingIntent<MediaButtonReceiver>(Intent.ACTION_MEDIA_BUTTON)
         )
         mediaSessionCompat.isActive = true
     }
 
+    private fun upMediaMetadata() {
+        var nTitle: String = when {
+            pause -> getString(R.string.read_aloud_pause)
+            timeMinute > 0 -> getString(
+                R.string.read_aloud_timer,
+                timeMinute
+            )
+
+            else -> getString(R.string.read_aloud_t)
+        }
+        nTitle += ": ${ReadBook.book?.name}"
+        val metadata = MediaMetadataCompat.Builder()
+            .putBitmap(MediaMetadataCompat.METADATA_KEY_ART, cover)
+            .putText(MediaMetadataCompat.METADATA_KEY_TITLE, ReadBook.curTextChapter?.title ?: "null")
+            .putText(MediaMetadataCompat.METADATA_KEY_ARTIST, nTitle)
+            .putText(MediaMetadataCompat.METADATA_KEY_ALBUM, ReadBook.book?.author ?: "null")
+//            .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, nowSpeak.toLong())
+            .build()
+        mediaSessionCompat.setMetadata(metadata)
+    }
+
     /**
-     * Register media button listener
+     * 注册多媒体按钮监听
      */
     private fun initBroadcastReceiver() {
         val intentFilter = IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
@@ -537,26 +551,26 @@ abstract class BaseReadAloudService : BaseService(),
      */
     override fun onAudioFocusChange(focusChange: Int) {
         if (AppConfig.ignoreAudioFocus) {
-            AppLog.put(getString(R.string.ignore_audio_focus_tts))
+            AppLog.put("忽略音频焦点处理(TTS)")
             return
         }
         when (focusChange) {
             AudioManager.AUDIOFOCUS_GAIN -> {
                 if (needResumeOnAudioFocusGain) {
-                    AppLog.put(getString(R.string.audio_focus_gain_resume_read_aloud))
+                    AppLog.put("音频焦点获得,继续朗读")
                     resumeReadAloud()
                 } else {
-                    AppLog.put(getString(R.string.audio_focus_gain))
+                    AppLog.put("音频焦点获得")
                 }
             }
 
             AudioManager.AUDIOFOCUS_LOSS -> {
-                AppLog.put(getString(R.string.audio_focus_loss_pause_read_aloud))
+                AppLog.put("音频焦点丢失,暂停朗读")
                 pauseReadAloud()
             }
 
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-                AppLog.put(getString(R.string.audio_focus_loss_transient_pause_read_aloud))
+                AppLog.put("音频焦点暂时丢失并会很快再次获得,暂停朗读")
                 if (!pause) {
                     needResumeOnAudioFocusGain = true
                     pauseReadAloud(false)
@@ -564,8 +578,8 @@ abstract class BaseReadAloudService : BaseService(),
             }
 
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-                // Transient focus loss, other app requested transient focus, hoping to duck/mute other audio (e.g. SMS notification),
-                AppLog.put(getString(R.string.audio_focus_loss_transient_can_duck))
+                // 短暂丢失焦点，这种情况是被其他应用申请了短暂的焦点希望其他声音能压低音量（或者关闭声音）凸显这个声音（比如短信提示音），
+                AppLog.put("音频焦点短暂丢失,不做处理")
             }
         }
     }
@@ -573,22 +587,13 @@ abstract class BaseReadAloudService : BaseService(),
     private fun upReadAloudNotification() {
         upNotificationJob = execute {
             try {
+                upMediaMetadata()
                 val notification = createNotification()
                 notificationManager.notify(NotificationId.ReadAloudService, notification.build())
             } catch (e: Exception) {
-                AppLog.put(getString(R.string.create_read_aloud_notification_error, e.localizedMessage), e, true)
+                AppLog.put("创建朗读通知出错,${e.localizedMessage}", e, true)
             }
         }
-    }
-
-    private fun choiceMediaStyle(): androidx.media.app.NotificationCompat.MediaStyle {
-        val mediaStyle = androidx.media.app.NotificationCompat.MediaStyle()
-            .setShowActionsInCompactView(1, 2, 4)
-        if (getPrefBoolean("systemMediaControlCompatibilityChange")) {
-            //fix #4090 android 14 can not show play control in lock screen
-            mediaStyle.setMediaSession(mediaSessionCompat.sessionToken)
-        }
-        return mediaStyle
     }
 
     private fun createNotification(): NotificationCompat.Builder {
@@ -623,7 +628,7 @@ abstract class BaseReadAloudService : BaseService(),
             .setSound(null)
             .setLights(0, 0, 0)
         builder.setLargeIcon(cover)
-        // Button definitions: Prev Chapter, Play, Stop, Next Chapter, Timer
+        // 按钮定义：上一章、播放、停止、下一章、定时
         builder.addAction(
             R.drawable.ic_skip_previous,
             getString(R.string.previous_chapter),
@@ -643,35 +648,39 @@ abstract class BaseReadAloudService : BaseService(),
             )
         }
         builder.addAction(
-            R.drawable.ic_stop_black_24dp,
-            getString(R.string.stop),
-            aloudServicePendingIntent(IntentAction.stop)
-        )
-        builder.addAction(
             R.drawable.ic_skip_next,
             getString(R.string.next_chapter),
             aloudServicePendingIntent(IntentAction.next)
+        )
+        builder.addAction(
+            R.drawable.ic_stop_black_24dp,
+            getString(R.string.stop),
+            aloudServicePendingIntent(IntentAction.stop)
         )
         builder.addAction(
             R.drawable.ic_time_add_24dp,
             getString(R.string.set_timer),
             aloudServicePendingIntent(IntentAction.addTimer)
         )
-        builder.setStyle(choiceMediaStyle())
+        builder.setStyle(androidx.media.app.NotificationCompat.MediaStyle()
+            .setShowActionsInCompactView(0, 1, 2)
+            .setMediaSession(mediaSessionCompat.sessionToken)
+        )
         return builder
     }
 
     /**
-     * Update notification
+     * 更新通知
      */
     override fun startForegroundNotification() {
         execute {
             try {
+                upMediaMetadata()
                 val notification = createNotification()
                 startForeground(NotificationId.ReadAloudService, notification.build())
             } catch (e: Exception) {
-                AppLog.put(getString(R.string.create_read_aloud_notification_error, e.localizedMessage), e, true)
-                //Create notification error, not ending service crashes, service must bind notification
+                AppLog.put("创建朗读通知出错,${e.localizedMessage}", e, true)
+                //创建通知出错不结束服务就会崩溃,服务必须绑定通知
                 stopSelf()
             }
         }
@@ -687,7 +696,7 @@ abstract class BaseReadAloudService : BaseService(),
 
     open fun nextChapter() {
         ReadBook.upReadTime()
-        AppLog.putDebug(getString(R.string.read_aloud_next_chapter_msg, ReadBook.curTextChapter?.chapter?.title))
+        AppLog.putDebug("${ReadBook.curTextChapter?.chapter?.title} 朗读结束跳转下一章并朗读")
         resumeReadAloudInternal()
         if (!ReadBook.moveToNextChapter(true)) {
             stopSelf()
@@ -747,25 +756,25 @@ abstract class BaseReadAloudService : BaseService(),
             when (state) {
                 TelephonyManager.CALL_STATE_IDLE -> {
                     if (needResumeOnCallStateIdle) {
-                        AppLog.put(getString(R.string.call_ended_resume_read_aloud))
+                        AppLog.put("来电结束,继续朗读")
                         resumeReadAloud()
                     } else {
-                        AppLog.put(getString(R.string.call_ended))
+                        AppLog.put("来电结束")
                     }
                 }
 
                 TelephonyManager.CALL_STATE_RINGING -> {
                     if (!pause) {
-                        AppLog.put(getString(R.string.call_ringing_pause_read_aloud))
+                        AppLog.put("来电响铃,暂停朗读")
                         needResumeOnCallStateIdle = true
                         pauseReadAloud()
                     } else {
-                        AppLog.put(getString(R.string.call_ringing))
+                        AppLog.put("来电响铃")
                     }
                 }
 
                 TelephonyManager.CALL_STATE_OFFHOOK -> {
-                    AppLog.put(getString(R.string.call_answered_no_action))
+                    AppLog.put("来电接听,不做处理")
                 }
             }
         }

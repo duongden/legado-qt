@@ -35,7 +35,11 @@ class TTSReadAloudService : BaseReadAloudService(), TextToSpeech.OnInitListener 
 
     override fun onCreate() {
         super.onCreate()
-        initTts()
+        kotlin.runCatching {
+            initTts()
+        }.onFailure {
+            AppLog.put("${getString(R.string.tts_init_failed)}\n$it", it, true)
+        }
     }
 
     override fun onDestroy() {
@@ -83,7 +87,7 @@ class TTSReadAloudService : BaseReadAloudService(), TextToSpeech.OnInitListener 
         if (!ttsInitFinish) return
         if (!requestFocus()) return
         if (contentList.isEmpty()) {
-            AppLog.put(getString(R.string.read_aloud_list_empty))
+            AppLog.putDebug("朗读列表为空")
             ReadBook.readAloud()
             return
         }
@@ -109,11 +113,11 @@ class TTSReadAloudService : BaseReadAloudService(), TextToSpeech.OnInitListener 
                     val result = tts.runCatching {
                         speak(text, TextToSpeech.QUEUE_FLUSH, null, AppConst.APP_TAG + i)
                     }.getOrElse {
-                        AppLog.put(getString(R.string.tts_error, it.localizedMessage), it, true)
+                        AppLog.put("tts出错\n${it.localizedMessage}", it, true)
                         TextToSpeech.ERROR
                     }
                     if (result == TextToSpeech.ERROR) {
-                        AppLog.put(getString(R.string.tts_error_reinit))
+                        AppLog.put("tts出错 尝试重新初始化")
                         clearTTS()
                         initTts()
                         return@execute
@@ -122,11 +126,11 @@ class TTSReadAloudService : BaseReadAloudService(), TextToSpeech.OnInitListener 
                     val result = tts.runCatching {
                         speak(text, TextToSpeech.QUEUE_ADD, null, AppConst.APP_TAG + i)
                     }.getOrElse {
-                        AppLog.put(getString(R.string.tts_error, it.localizedMessage), it, true)
+                        AppLog.put("tts出错\n${it.localizedMessage}", it, true)
                         TextToSpeech.ERROR
                     }
                     if (result == TextToSpeech.ERROR) {
-                        AppLog.put(getString(R.string.tts_read_error, text))
+                        AppLog.put("tts朗读出错:$text")
                     }
                 }
                 isAddedText = true
@@ -138,7 +142,7 @@ class TTSReadAloudService : BaseReadAloudService(), TextToSpeech.OnInitListener 
                 nextChapter()
             }
         }.onError {
-            AppLog.put(getString(R.string.tts_read_error_msg, it.localizedMessage), it, true)
+            AppLog.put("tts朗读出错\n${it.localizedMessage}", it, true)
         }
     }
 
@@ -149,7 +153,7 @@ class TTSReadAloudService : BaseReadAloudService(), TextToSpeech.OnInitListener 
     }
 
     /**
-     * Update read speed
+     * 更新朗读速度
      */
     override fun upSpeechRate(reset: Boolean) {
         if (AppConfig.ttsFlowSys) {
@@ -164,7 +168,7 @@ class TTSReadAloudService : BaseReadAloudService(), TextToSpeech.OnInitListener 
     }
 
     /**
-     * Pause reading
+     * 暂停朗读
      */
     override fun pauseReadAloud(abandonFocus: Boolean) {
         super.pauseReadAloud(abandonFocus)
@@ -175,7 +179,7 @@ class TTSReadAloudService : BaseReadAloudService(), TextToSpeech.OnInitListener 
     }
 
     /**
-     * Resume reading aloud
+     * 恢复朗读
      */
     override fun resumeReadAloud() {
         super.resumeReadAloud()
@@ -183,7 +187,7 @@ class TTSReadAloudService : BaseReadAloudService(), TextToSpeech.OnInitListener 
     }
 
     /**
-     * Read aloud listener
+     * 朗读监听
      */
     private inner class TTSUtteranceListener : UtteranceProgressListener() {
 
@@ -235,7 +239,7 @@ class TTSReadAloudService : BaseReadAloudService(), TextToSpeech.OnInitListener 
         }
 
         private fun nextParagraph() {
-            //Skip full punctuation paragraph
+            //跳过全标点段落
             do {
                 readAloudNumber += contentList[nowSpeak].length + 1 - paragraphStartPos
                 paragraphStartPos = 0

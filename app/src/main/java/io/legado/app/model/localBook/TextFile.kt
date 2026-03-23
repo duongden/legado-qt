@@ -1,5 +1,8 @@
 package io.legado.app.model.localBook
 
+import androidx.annotation.Keep
+import com.script.ScriptBindings
+import com.script.rhino.RhinoScriptEngine
 import io.legado.app.constant.AppLog
 import io.legado.app.data.appDb
 import io.legado.app.data.entities.Book
@@ -8,6 +11,7 @@ import io.legado.app.data.entities.TxtTocRule
 import io.legado.app.exception.EmptyFileException
 import io.legado.app.help.DefaultData
 import io.legado.app.help.book.isLocalModified
+import io.legado.app.help.config.AppConfig
 import io.legado.app.utils.EncodingDetect
 import io.legado.app.utils.MD5Utils
 import io.legado.app.utils.StringUtils
@@ -24,6 +28,7 @@ class TextFile(private var book: Book) {
     @Suppress("ConstPropertyName")
     companion object {
         private val padRegex = "^[\\n\\s]+".toRegex()
+        const val spaceChars = "🫅🈳🏻"
         private const val txtBufferSize = 8 * 1024 * 1024
         private var textFile: TextFile? = null
 
@@ -56,13 +61,13 @@ class TextFile(private var book: Book) {
 
     private val blank: Byte = 0x0a
 
-    //Default get length from file
+    //默认从文件中获取数据的长度
     private val bufferSize = 512000
 
-    //Max length per chapter when no title
+    //没有标题的时候，每个章节的最大长度
     private val maxLengthWithNoToc = 10 * 1024
 
-    //Use regex to split catalog, max allowed length per chapter
+    //使用正则划分目录，每个章节的最大允许长度
     private val maxLengthWithToc = 102400
 
     private var charset: Charset = book.fileCharset()
@@ -71,8 +76,14 @@ class TextFile(private var book: Book) {
     private var bufferStart = -1L
     private var bufferEnd = -1L
 
+    //选中更好的目录规则判断阈值
+    private val overRuleCount = 2
+    private val replaceBook = book.toReplaceBook()
+    class MutableRef<String>(var value: String)
+    private val lastVolumeTitle = MutableRef("")
+
     /**
-     * Get catalog
+     * 获取目录
      */
     @Throws(FileNotFoundException::class, SecurityException::class, EmptyFileException::class)
     fun getChapterList(): ArrayList<BookChapter> {
@@ -88,17 +99,19 @@ class TextFile(private var book: Book) {
                 charset = book.fileCharset()
                 if (book.tocUrl.isBlank() || modified) {
                     val blockContent = String(buffer, 0, length, charset)
-                    book.tocUrl = getTocRule(blockContent)?.pattern() ?: ""
+                    val tocRule = getTocRule(blockContent)
+                    book.tocUrl = tocRule?.let { it.rule + spaceChars + it.replacement } ?: ""
                 }
             }
         }
-        val (toc, wordCount) = analyze(book.tocUrl.toPattern(Pattern.MULTILINE))
+        val (toc, wordCount) = analyze(book.tocUrl.split(spaceChars, limit = 2))
         book.wordCount = StringUtils.wordCountFormat(wordCount)
         toc.forEachIndexed { index, bookChapter ->
             bookChapter.index = index
             bookChapter.bookUrl = book.bookUrl
             bookChapter.url = MD5Utils.md5Encode16(book.originName + index + bookChapter.title)
         }
+        getWordCount(toc, book)
         return toc
     }
 
@@ -120,13 +133,13 @@ class TextFile(private var book: Book) {
 
         @Suppress("ConvertTwoComparisonsToRangeCheck")
         if (start < bufferEnd && end > bufferEnd || start < bufferStart && end > bufferStart) {
-            /** Chapter content at buffer boundary */
+            /** 章节内容在缓冲区交界处 */
             LocalBook.getBookInputStream(book).use { bis ->
                 bis.skip(start)
                 bis.read(buffer)
             }
         } else {
-            /** Chapter content inside buffer */
+            /** 章节内容在缓冲区内 */
             txtBuffer!!.copyInto(
                 buffer,
                 0,
@@ -136,24 +149,27 @@ class TextFile(private var book: Book) {
         }
 
         return String(buffer, charset)
-            .substringAfter(chapter.title)
+            //.substringAfter(chapter.title) //之前裁切没有间隙，所以正文保留了标题，需要在这儿去掉
             .replace(padRegex, "　　")
     }
 
     /**
-     * Parse catalog by rule
+     * 按规则解析目录
      */
-    private fun analyze(pattern: Pattern?): Pair<ArrayList<BookChapter>, Int> {
-        if (pattern == null || pattern.pattern().isNullOrEmpty()) {
+    private fun analyze(rr: List<String>): Pair<ArrayList<BookChapter>, Int> {
+        val pattern = rr[0].toPattern(Pattern.MULTILINE)
+        val jsStr = rr.getOrNull(1)
+        if (rr[0].isEmpty()) {
             return analyze()
         }
+        lastVolumeTitle.value = ""
         val toc = arrayListOf<BookChapter>()
         var bookWordCount = 0
         LocalBook.getBookInputStream(book).use { bis ->
             var blockContent: String
-            //Load chapter
+            //加载章节
             var curOffset: Long = 0
-            //Read length
+            //读取的长度
             var length: Int
             var lastChapterWordCount = 0
             val buffer = ByteArray(bufferSize)
@@ -163,7 +179,7 @@ class TextFile(private var book: Book) {
                 bufferStart = 0
                 curOffset = 3
             }
-            //Get file data to buffer until no data
+            //获取文件中的数据到buffer，直到没有数据为止
             while (bis.read(
                     buffer, bufferStart, bufferSize - bufferStart
                 ).also { length = it } > 0
@@ -177,33 +193,41 @@ class TextFile(private var book: Book) {
                         }
                     }
                 }
-                //Convert data to String, cannot exceed length
+                //将数据转换成String, 不能超过length
                 blockContent = String(buffer, 0, end, charset)
                 buffer.copyInto(buffer, 0, end, bufferStart + length)
                 bufferStart = bufferStart + length - end
                 length = end
-                //Pointer to String used in current Block
+                //当前Block下使过的String的指针
                 var seekPos = 0
-                //Perform regex match
+                //进行正则匹配
                 val matcher: Matcher = pattern.matcher(blockContent)
-                //If corresponding chapter exists
-                while (matcher.find()) { //Get start position of matched char in string
+                //如果存在相应章节
+                while (matcher.find()) { //获取匹配到的字符在字符串中的起始位置
                     val chapterStart = matcher.start()
-                    //Get chapter content
+                    //获取章节内容
                     val chapterContent = blockContent.substring(seekPos, chapterStart)
+                    val chapterContentLength = chapterContent.length
                     val chapterLength = chapterContent.toByteArray(charset).size.toLong()
+                    val titleLength = matcher.group().toByteArray(charset).size.toLong()
                     val lastStart = toc.lastOrNull()?.start ?: curOffset
                     if (book.getSplitLongChapter() && curOffset + chapterLength - lastStart > maxLengthWithToc) {
-                        toc.lastOrNull()?.let {
+                        //章节字数太多进行拆分
+                        val lastTitle = toc.lastOrNull()?.let {
                             it.end = it.start
+                            it.isVolume = true
+                            lastVolumeTitle.value = it.title
                             it.tag = null
+                            it.title
                         }
-                        //Split chapter if too many words
-                        val lastTitle = toc.lastOrNull()?.title
-                        val lastTitleLength = lastTitle?.toByteArray(charset)?.size ?: 0
-                        val (chapters, wordCount) = analyze(
-                            lastStart + lastTitleLength, curOffset + chapterLength
-                        )
+                        val title = replacement(
+                            matcher.group(),
+                            jsStr,
+                            toc,
+                            lastTitle,
+                            chapterContentLength
+                        ).takeIf { it.isNotEmpty() } ?: continue
+                        val (chapters, wordCount) = analyze(lastStart, curOffset + chapterLength)
                         lastTitle?.let {
                             chapters.forEachIndexed { index, bookChapter ->
                                 bookChapter.title = "$lastTitle(${index + 1})"
@@ -211,111 +235,146 @@ class TextFile(private var book: Book) {
                         }
                         toc.addAll(chapters)
                         bookWordCount += wordCount
-                        //Create current chapter
+                        //创建当前章节
                         val curChapter = BookChapter()
-                        curChapter.title = matcher.group()
+                        curChapter.title = title
                         curChapter.start = curOffset + chapterLength
                         curChapter.end = curChapter.start
                         toc.add(curChapter)
                         lastChapterWordCount = 0
                     } else if (seekPos == 0 && chapterStart != 0) {
                         /**
-                         * If seekPos == 0 && chapterStart != 0 it means there is content before current block
-                         * First case must be prologue, second case is content of previous chapter
+                         * 如果 seekPos == 0 && chapterStart != 0 表示当前block处前面有一段内容
+                         * 第一种情况一定是序章 第二种情况是上一个章节的内容
                          */
-                        if (toc.isEmpty()) { //If no current chapter, it's prologue
-                            //Add intro
+                        if (toc.isEmpty()) { //如果当前没有章节，那么就是序章
+                            //加入简介
                             if (chapterContent.isNotBlank()) {
-                                val qyChapter = BookChapter()
-                                qyChapter.title = "前言"
-                                qyChapter.start = curOffset
-                                qyChapter.end = curOffset + chapterLength
-                                qyChapter.wordCount =
-                                    StringUtils.wordCountFormat(chapterContent.length)
-                                toc.add(qyChapter)
-                                book.intro = if (chapterContent.length <= 500) {
-                                    chapterContent
+                                val title = replacement("前言", jsStr, toc)
+                                if (title.isNotEmpty()) {
+                                    //如果js把"前言"处理成空了，那么就不要前言,并且前言内容会全部放到简介里面去
+                                    val qyChapter = BookChapter()
+                                    qyChapter.title = title
+                                    qyChapter.start = curOffset
+                                    qyChapter.end = curOffset + chapterLength
+                                    qyChapter.wordCount =
+                                        StringUtils.wordCountFormat(chapterContentLength)
+                                    toc.add(qyChapter)
+                                }
+                                book.intro = if (chapterContentLength > 600 && title.isNotEmpty()) {
+                                    chapterContent.take(600)
                                 } else {
-                                    chapterContent.substring(0, 500)
+                                    chapterContent
                                 }
                             }
-                            //Create current chapter
+                            val title = replacement(
+                                matcher.group(),
+                                jsStr,
+                                toc
+                            ).takeIf { it.isNotEmpty() } ?: continue
+                            //创建当前章节
                             val curChapter = BookChapter()
-                            curChapter.title = matcher.group()
-                            curChapter.start = curOffset + chapterLength
+                            curChapter.title = title
+                            curChapter.start = curOffset + chapterLength + titleLength
                             curChapter.end = curChapter.start
                             toc.add(curChapter)
-                        } else { //Else remaining content of prev chapter after block split
-                            //Get previous chapter
+                        } else { //否则就block分割之后，上一个章节的剩余内容
+                            //获取上一章节
                             val lastChapter = toc.last()
-                            lastChapter.isVolume =
-                                chapterContent.substringAfter(lastChapter.title).isBlank()
-                            //Add current paragraph to previous chapter
+                            val title = replacement(
+                                matcher.group(),
+                                jsStr,
+                                toc,
+                                lastChapter.title,
+                                chapterContentLength
+                            ).takeIf { it.isNotEmpty() } ?: continue
+                            if (chapterContent.isBlank()) {
+                                lastChapter.isVolume = true
+                                lastVolumeTitle.value = lastChapter.title
+                            } else {
+                                lastChapter.isVolume = false
+                            }
+                            //将当前段落添加上一章去
                             lastChapter.end = lastChapter.end!! + chapterLength
-                            lastChapterWordCount += chapterContent.length
+                            lastChapterWordCount += chapterContentLength
                             lastChapter.wordCount =
                                 StringUtils.wordCountFormat(lastChapterWordCount)
-                            //Create current chapter
+                            //创建当前章节
                             val curChapter = BookChapter()
-                            curChapter.title = matcher.group()
-                            curChapter.start = lastChapter.end
+                            curChapter.title = title
+                            curChapter.start = lastChapter.end!! + titleLength
                             curChapter.end = curChapter.start
                             toc.add(curChapter)
                         }
-                        bookWordCount += chapterContent.length
+                        bookWordCount += chapterContentLength
                         lastChapterWordCount = 0
                     } else {
-                        if (toc.isNotEmpty()) { //Get chapter content
-                            //Get previous chapter
+                        if (toc.isNotEmpty()) { //获取章节内容
+                            //获取上一章节
                             val lastChapter = toc.last()
-                            lastChapter.isVolume =
-                                chapterContent.substringAfter(lastChapter.title).isBlank()
+                            val title = replacement(
+                                matcher.group(),
+                                jsStr,
+                                toc,
+                                lastChapter.title,
+                                chapterContentLength
+                            ).takeIf { it.isNotEmpty() }
+                                ?: continue
+                            if (chapterContent.isBlank()) {
+                                lastChapter.isVolume = true
+                                lastVolumeTitle.value = lastChapter.title
+                            } else {
+                                lastChapter.isVolume = false
+                            }
                             lastChapter.end =
                                 lastChapter.start!! + chapterLength
                             lastChapter.wordCount =
-                                StringUtils.wordCountFormat(chapterContent.length)
-                            //Create current chapter
+                                StringUtils.wordCountFormat(chapterContentLength)
+                            //创建当前章节
                             val curChapter = BookChapter()
-                            curChapter.title = matcher.group()
-                            curChapter.start = lastChapter.end
+                            curChapter.title = title
+                            curChapter.start = lastChapter.end!! + titleLength
                             curChapter.end = curChapter.start
                             toc.add(curChapter)
-                        } else { //Create chapter if not exists
+                        } else { //如果章节不存在则创建章节
+                            val title = replacement(matcher.group(), jsStr, toc).takeIf { it.isNotEmpty() }
+                                ?: continue
                             val curChapter = BookChapter()
-                            curChapter.title = matcher.group()
-                            curChapter.start = curOffset
-                            curChapter.end = curOffset
+                            curChapter.title = title
+                            curChapter.start = curOffset + titleLength
+                            curChapter.end = curChapter.start
                             curChapter.wordCount =
-                                StringUtils.wordCountFormat(chapterContent.length)
+                                StringUtils.wordCountFormat(chapterContentLength)
                             toc.add(curChapter)
                         }
-                        bookWordCount += chapterContent.length
+                        bookWordCount += chapterContentLength
                         lastChapterWordCount = 0
                     }
-                    //Set pointer offset
-                    seekPos += chapterContent.length
+                    //设置指针偏移
+                    seekPos += chapterContentLength + matcher.group().length
                 }
                 val wordCount = blockContent.length - seekPos
                 bookWordCount += wordCount
                 lastChapterWordCount += wordCount
-                //block offset point
+                //block的偏移点
                 curOffset += length.toLong()
-                //Set previous chapter end
+                //设置上一章的结尾
                 toc.lastOrNull()?.let {
                     it.end = curOffset
                     it.wordCount = StringUtils.wordCountFormat(lastChapterWordCount)
                 }
             }
             toc.lastOrNull()?.let { chapter ->
-                //Split chapter if too many words
+                //章节字数太多进行拆分
                 if (book.getSplitLongChapter() && chapter.end!! - chapter.start!! > maxLengthWithToc) {
                     val end = chapter.end!!
                     chapter.end = chapter.start
+                    chapter.isVolume = true
                     chapter.tag = null
                     val lastTitle = chapter.title
-                    val lastTitleLength = lastTitle.toByteArray(charset).size
+                    lastVolumeTitle.value = lastTitle
                     val (chapters, _) = analyze(
-                        chapter.start!! + lastTitleLength, end
+                        chapter.start!!, end
                     )
                     chapters.forEachIndexed { index, bookChapter ->
                         bookChapter.title = "$lastTitle(${index + 1})"
@@ -330,7 +389,7 @@ class TextFile(private var book: Book) {
     }
 
     /**
-     * Split catalog without rule
+     * 无规则拆分目录
      */
     private fun analyze(
         fileStart: Long = 0L, fileEnd: Long = Long.MAX_VALUE
@@ -338,12 +397,12 @@ class TextFile(private var book: Book) {
         val toc = arrayListOf<BookChapter>()
         var bookWordCount = 0
         LocalBook.getBookInputStream(book).use { bis ->
-            //block count
+            //block的个数
             var blockPos = 0
-            //Load chapter
+            //加载章节
             var curOffset: Long = 0
             var chapterPos = 0
-            //Read length
+            //读取的长度
             var length = 0
             var lastChapterWordCount = 0
             val buffer = ByteArray(bufferSize)
@@ -359,27 +418,29 @@ class TextFile(private var book: Book) {
                 curOffset = fileStart
                 bufferStart = 0
             }
-            //Get file data to buffer until no data
-            while (fileEnd - curOffset - bufferStart > 0 && bis.read(
-                    buffer, bufferStart, min(
-                        (bufferSize - bufferStart).toLong(), fileEnd - curOffset - bufferStart
-                    ).toInt()
+            //获取文件中的数据到buffer，直到没有数据为止
+            while (
+                fileEnd - curOffset - bufferStart > 0 &&
+                bis.read(
+                    buffer,
+                    bufferStart,
+                    min((bufferSize - bufferStart).toLong(), fileEnd - curOffset - bufferStart).toInt()
                 ).also { length = it } > 0
             ) {
                 blockPos++
-                //Chapter offset in buffer
+                //章节在buffer的偏移量
                 var chapterOffset = 0
-                //Current remaining allocatable length
+                //当前剩余可分配的长度
                 length += bufferStart
                 var strLength = length
-                //Chapter split position
+                //分章的位置
                 chapterPos = 0
                 while (strLength > 0) {
                     chapterPos++
-                    //Length exceeds one chapter?
-                    if (strLength > maxLengthWithNoToc) { //Chapter end point in buffer
+                    //是否长度超过一章
+                    if (strLength > maxLengthWithNoToc) { //在buffer中一章的终止点
                         var end = length
-                        //Find newline as end point
+                        //寻找换行符作为终止点
                         for (i in chapterOffset + maxLengthWithNoToc until length) {
                             if (buffer[i] == blank) {
                                 end = i
@@ -395,9 +456,9 @@ class TextFile(private var book: Book) {
                         chapter.end = chapter.start!! + end - chapterOffset
                         chapter.wordCount = StringUtils.wordCountFormat(content.length)
                         toc.add(chapter)
-                        //Subtract allocated length
+                        //减去已经被分配的长度
                         strLength -= (end - chapterOffset)
-                        //Set offset position
+                        //设置偏移的位置
                         chapterOffset = end
                     } else {
                         buffer.copyInto(buffer, 0, length - strLength, length)
@@ -406,10 +467,10 @@ class TextFile(private var book: Book) {
                         strLength = 0
                     }
                 }
-                //block offset point
+                //block的偏移点
                 curOffset += length.toLong()
             }
-            //Set end chapter
+            //设置结尾章节
             val content = String(buffer, 0, bufferStart, charset)
             bookWordCount += content.length
             if (bufferStart > 100 || toc.isEmpty()) {
@@ -431,12 +492,12 @@ class TextFile(private var book: Book) {
     }
 
     /**
-     * Get suitable catalog rule
+     * 获取合适的目录规则
      */
-    private fun getTocRule(content: String): Pattern? {
-        val rules = getTocRules().reversed()
-        var maxNum = 1
-        var tocPattern: Pattern? = null
+    private fun getTocRule(content: String): TxtTocRule? {
+        val rules = getTocRules() //.reversed() 改动num >= maxNum条件，不需要再反转
+        var maxNum = -1
+        var mTocRule: TxtTocRule? = null
         for (tocRule in rules) {
             val pattern = try {
                 tocRule.rule.toPattern(Pattern.MULTILINE)
@@ -446,23 +507,91 @@ class TextFile(private var book: Book) {
             }
             val matcher = pattern.matcher(content)
             var start = 0
-            var num = 0
+            var csNum = 0
+            var numE = 0
+            var lastTitle: String? = null
             while (matcher.find()) {
-                if (start == 0 || matcher.start() - start > 1000) {
-                    num++
+                val contentLength = matcher.start() - start
+                if (start == 0 || contentLength > 1000) {
+                    val title = replacement(matcher.group(), tocRule.replacement, csNum, lastTitle, contentLength)
+                    if (title.isNotEmpty()) {
+                        lastTitle = title
+                        csNum++
+                    }
                     start = matcher.end()
+                } else if (contentLength < 100) {
+                    numE++ //这种不足100字的一般被识别为卷，即错误识别，正常章节数小于卷3倍的不选
                 }
             }
-            if (num >= maxNum) {
-                maxNum = num
-                tocPattern = pattern
+            if (csNum >= numE * 3 && (csNum > maxNum + overRuleCount)) { //后面的规则匹配数量没超过最大值2个，那么依旧用前面那个
+                maxNum = csNum
+                mTocRule = tocRule
+                if (maxNum > 70) {
+                    break
+                } //能获取60个章节，说明这个规则能基本匹配，并且排在前面，所以不考虑后面的规则
             }
         }
-        return tocPattern
+        return mTocRule
+    }
+
+    @Keep
+    @Suppress("unused")
+    class JsExtensions(val lastVolumeTitle: MutableRef<String>, val toc: ArrayList<BookChapter>? = null) {
+        fun putVolume(title: String) {
+            lastVolumeTitle.value = title
+            if (toc != null) {
+                val start = toc.lastOrNull()?.end ?: 0
+                toc.add(BookChapter(title = title, isVolume = true, start = start, end = start))
+            }
+        }
     }
 
     /**
-     * Get enabled catalog rule
+     * 净化标题
+     */
+    private fun replacement(
+        content: String,
+        jsStr: String?,
+        toc: ArrayList<BookChapter>,
+        prevTitle: String? = null,
+        prevLength: Int = -1
+    ): String {
+        if (jsStr.isNullOrBlank()) {
+            return content
+        }
+        return evalJs(content, jsStr, toc.size + 1, prevTitle, prevLength, toc)
+    }
+
+    private fun replacement(
+        content: String,
+        jsStr: String?,
+        index: Int,
+        prevTitle: String? = null,
+        prevLength: Int = -1
+    ): String {
+        if (jsStr.isNullOrBlank()) {
+            return content
+        }
+        return evalJs(content, jsStr, index + 1, prevTitle, prevLength)
+    }
+
+    private fun evalJs(content: String, jsStr: String, index: Int, prevTitle: String?, prevLength: Int = -1, toc: ArrayList<BookChapter>? = null):String {
+        return RhinoScriptEngine.run {
+            val bindings = ScriptBindings()
+            bindings["result"] = content
+            bindings["book"] = replaceBook
+            bindings["index"] = index
+            bindings["prevTitle"] = prevTitle
+            bindings["prevLength"] = prevLength
+            bindings["lastVolumeTitle"] = lastVolumeTitle.value
+            bindings["java"] = JsExtensions(lastVolumeTitle, toc)
+            eval(jsStr, bindings)
+        }.toString()
+    }
+
+
+            /**
+     * 获取启用的目录规则
      */
     private fun getTocRules(): List<TxtTocRule> {
         var rules = appDb.txtTocRuleDao.enabled
@@ -474,6 +603,22 @@ class TextFile(private var book: Book) {
             }
         }
         return rules
+    }
+
+    private fun getWordCount(list: ArrayList<BookChapter>, book: Book) {
+        if (!AppConfig.tocCountWords) {
+            return
+        }
+        val chapterList = appDb.bookChapterDao.getChapterList(book.bookUrl)
+        if (chapterList.isNotEmpty()) {
+            val map = chapterList.associateBy({ it.getFileName() }, { it.wordCount })
+            for (bookChapter in list) {
+                val wordCount = map[bookChapter.getFileName()]
+                if (wordCount != null) {
+                    bookChapter.wordCount = wordCount
+                }
+            }
+        }
     }
 
 }

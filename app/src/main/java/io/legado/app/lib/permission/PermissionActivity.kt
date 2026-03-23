@@ -18,6 +18,8 @@ import io.legado.app.exception.NoStackTraceException
 import io.legado.app.utils.registerForActivityResult
 import io.legado.app.utils.toastOnUi
 import kotlinx.coroutines.launch
+import androidx.core.content.edit
+import androidx.core.net.toUri
 
 class PermissionActivity : AppCompatActivity() {
 
@@ -38,10 +40,10 @@ class PermissionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val rationale = intent.getStringExtra(KEY_RATIONALE)
-        val requestCode = intent.getIntExtra(KEY_INPUT_PERMISSIONS_CODE, 1000)
+//        val requestCode = intent.getIntExtra(KEY_INPUT_PERMISSIONS_CODE, 1000)
         val permissions = intent.getStringArrayExtra(KEY_INPUT_PERMISSIONS)!!
         when (intent.getIntExtra(KEY_INPUT_REQUEST_TYPE, Request.TYPE_REQUEST_PERMISSION)) {
-            //Permission request
+            //权限请求
             Request.TYPE_REQUEST_PERMISSION -> showSettingDialog(permissions, rationale) {
                 lifecycleScope.launch {
                     try {
@@ -58,11 +60,11 @@ class PermissionActivity : AppCompatActivity() {
                     }
                 }
             }
-            //Jump to settings
+            //跳转到设置界面
             Request.TYPE_REQUEST_SETTING -> showSettingDialog(permissions, rationale) {
                 openSettingsActivity()
             }
-            //All files management permission
+            //所有文件的管理权限
             Request.TYPE_MANAGE_ALL_FILES_ACCESS -> showSettingDialog(permissions, rationale) {
                 try {
                     if (Permissions.isManageExternalStorage()) {
@@ -90,7 +92,7 @@ class PermissionActivity : AppCompatActivity() {
                         ) {
                             onRequestPermissionFinish()
                         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            //Scheme applicable to API 26 (8.0)+
+                            //这种方案适用于 API 26, 即8.0（含8.0）以上可以用
                             val intent = Intent()
                             intent.action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
                             intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
@@ -133,6 +135,21 @@ class PermissionActivity : AppCompatActivity() {
                         AppLog.put("请求后台权限出错\n$e", e, true)
                         RequestPlugins.sRequestCallback?.onError(e)
                         finish()
+                    }
+                }
+            }
+            Request.TYPE_SYSTEM_ALERT_WINDOW -> showSettingDialog(permissions, rationale) {
+                lifecycleScope.launch {
+                    try {
+                        if (requestPermissionResult.launch(Permissions.SYSTEM_ALERT_WINDOW)) {
+                            onRequestPermissionFinish()
+                        } else {
+                            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, "package:$packageName".toUri())
+                            settingActivityResult.launch(intent)
+                        }
+                    } catch (e: Exception) {
+                        AppLog.put("请求悬浮窗权限出错\n$e", e, true)
+                        RequestPlugins.sRequestCallback?.onError(e)
                     }
                 }
             }
@@ -195,6 +212,12 @@ class PermissionActivity : AppCompatActivity() {
             finish()
             return
         }
+        permissions.forEach {
+            if (getDenyCount(it) > 5) {
+                finish()
+                return
+            }
+        }
         rationaleDialog = AlertDialog.Builder(this)
             .setTitle(R.string.dialog_title)
             .setMessage(rationale)
@@ -206,6 +229,7 @@ class PermissionActivity : AppCompatActivity() {
                     permissions,
                     IntArray(0)
                 )
+                permissions.forEach { incrementDenyCount(it) }
                 finish()
             }.setOnCancelListener {
                 RequestPlugins.sRequestCallback?.onRequestPermissionsResult(
@@ -215,6 +239,21 @@ class PermissionActivity : AppCompatActivity() {
                 finish()
             }
             .show()
+    }
+
+    private fun incrementDenyCount(permission: String): Int {
+        val prefs = getSharedPreferences("permission_deny_count", MODE_PRIVATE)
+        val count = prefs.getInt(permission, 0) + 1
+        prefs.edit { putInt(permission, count) }
+        return count
+    }
+    private fun getDenyCount(permission: String): Int {
+        val prefs = getSharedPreferences("permission_deny_count", MODE_PRIVATE)
+        return prefs.getInt(permission, 0)
+    }
+    private fun resetDenyCount(permission: String) {
+        val prefs = getSharedPreferences("permission_deny_count", MODE_PRIVATE)
+        prefs.edit { remove(permission) }
     }
 
     companion object {

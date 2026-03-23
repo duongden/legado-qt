@@ -6,12 +6,15 @@ import io.legado.app.BuildConfig
 import io.legado.app.constant.AppConst
 import io.legado.app.constant.PreferKey
 import io.legado.app.data.appDb
+import io.legado.app.utils.GSON
 import io.legado.app.utils.canvasrecorder.CanvasRecorderFactory
+import io.legado.app.utils.fromJsonObject
 import io.legado.app.utils.getPrefBoolean
 import io.legado.app.utils.getPrefInt
 import io.legado.app.utils.getPrefLong
 import io.legado.app.utils.getPrefString
 import io.legado.app.utils.isNightMode
+import io.legado.app.utils.parseIpsFromString
 import io.legado.app.utils.putPrefBoolean
 import io.legado.app.utils.putPrefInt
 import io.legado.app.utils.putPrefLong
@@ -20,13 +23,17 @@ import io.legado.app.utils.removePref
 import io.legado.app.utils.sysConfiguration
 import io.legado.app.utils.toastOnUi
 import splitties.init.appCtx
-import io.legado.app.R
+import java.net.InetAddress
 
 @Suppress("MemberVisibilityCanBePrivate", "ConstPropertyName")
 object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
     val isCronet = appCtx.getPrefBoolean(PreferKey.cronet)
     var useAntiAlias = appCtx.getPrefBoolean(PreferKey.antiAlias)
     var userAgent: String = getPrefUserAgent()
+    var customHosts = appCtx.getPrefString(PreferKey.customHosts)
+    var editTheme = appCtx.getPrefInt(PreferKey.editTheme, 0)
+    var editThemeDark = appCtx.getPrefInt(PreferKey.editThemeDark, 0)
+    var editTemeAuto = appCtx.getPrefBoolean(PreferKey.editTemeAuto)
     var isEInkMode = appCtx.getPrefString(PreferKey.themeMode) == "3"
     var clickActionTL = appCtx.getPrefInt(PreferKey.clickActionTL, 2)
     var clickActionTC = appCtx.getPrefInt(PreferKey.clickActionTC, 2)
@@ -42,9 +49,22 @@ object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
     var optimizeRender = CanvasRecorderFactory.isSupport
             && appCtx.getPrefBoolean(PreferKey.optimizeRender, false)
     var recordLog = appCtx.getPrefBoolean(PreferKey.recordLog)
+    var editFontScale = appCtx.getPrefInt(PreferKey.editFontScale, 16)
+    var editNonPrintable = appCtx.getPrefInt(PreferKey.editNonPrintable, 0)
+    var editAutoWrap = appCtx.getPrefBoolean(PreferKey.editAutoWrap, true)
+    var editAutoComplete = appCtx.getPrefBoolean(PreferKey.editAutoComplete, true)
+    var showBoardLine = appCtx.getPrefInt(PreferKey.showBoardLine, 1)
+    var adaptSpecialStyle = appCtx.getPrefBoolean(PreferKey.adaptSpecialStyle, true)
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         when (key) {
+            PreferKey.editFontScale -> editFontScale = appCtx.getPrefInt(PreferKey.editFontScale, 16)
+            PreferKey.editNonPrintable -> editNonPrintable = appCtx.getPrefInt(PreferKey.editNonPrintable, 0)
+            PreferKey.editAutoWrap -> editAutoWrap = appCtx.getPrefBoolean(PreferKey.editAutoWrap, true)
+            PreferKey.editAutoComplete -> editAutoComplete = appCtx.getPrefBoolean(PreferKey.editAutoComplete, true)
+            PreferKey.showBoardLine -> showBoardLine = appCtx.getPrefInt(PreferKey.showBoardLine, 1)
+            PreferKey.adaptSpecialStyle -> adaptSpecialStyle = appCtx.getPrefBoolean(PreferKey.adaptSpecialStyle, true)
+
             PreferKey.themeMode -> {
                 themeMode = appCtx.getPrefString(PreferKey.themeMode, "0")
                 isEInkMode = themeMode == "3"
@@ -85,6 +105,18 @@ object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
 
             PreferKey.userAgent -> userAgent = getPrefUserAgent()
 
+            PreferKey.customHosts -> {
+                customHosts = appCtx.getPrefString(PreferKey.customHosts)
+                _hostMap = null
+                _addressCache = null
+            }
+
+            PreferKey.editTheme -> editTheme = appCtx.getPrefInt(PreferKey.editTheme, 0)
+
+            PreferKey.editThemeDark -> editThemeDark = appCtx.getPrefInt(PreferKey.editThemeDark, 0)
+
+            PreferKey.editTemeAuto -> editTemeAuto = appCtx.getPrefBoolean(PreferKey.editTemeAuto)
+
             PreferKey.antiAlias -> useAntiAlias = appCtx.getPrefBoolean(PreferKey.antiAlias)
 
             PreferKey.useDefaultCover -> useDefaultCover =
@@ -97,6 +129,35 @@ object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
 
         }
     }
+
+    //dns配置
+    private var _hostMap: Map<String, Any?>? = null
+    val hostMap: Map<String, Any?>
+        get() = _hostMap ?: run {
+            val cache = GSON.fromJsonObject<Map<String, Any?>>(customHosts).getOrNull() ?: emptyMap()
+            _hostMap = cache
+            cache
+        }
+    private var _addressCache: Map<String, List<InetAddress>>? = null
+    val addressCache: Map<String, List<InetAddress>>
+        get() = _addressCache ?: run {
+            val cache = hostMap.mapNotNull { (host, ipValue) ->
+                val addresses = when (ipValue) {
+                    is String -> ipValue.parseIpsFromString()
+                    is List<*> -> ipValue.parseIpsFromList()
+                    else -> null
+                }
+                addresses?.let { host to it }
+            }.toMap()
+            _addressCache = cache
+            cache
+        }
+    private fun List<*>.parseIpsFromList(): List<InetAddress> =
+        mapNotNull { element ->
+            (element as? String)?.trim()?.takeIf { it.isNotEmpty() }
+                ?.runCatching { InetAddress.getByName(this) }
+                ?.getOrNull()
+        }
 
     var isNightTheme: Boolean
         get() = when (themeMode) {
@@ -113,6 +174,16 @@ object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
                     appCtx.putPrefString(PreferKey.themeMode, "1")
                 }
             }
+        }
+    var showBookname: Int
+        get() = appCtx.getPrefInt(PreferKey.showBooknameLayout, 0)
+        set(value) {
+            appCtx.putPrefInt(PreferKey.showBooknameLayout, value)
+        }
+    var bookshelfMargin: Int
+        get() = appCtx.getPrefInt(PreferKey.bookshelfMargin, 12)
+        set(value) {
+            appCtx.putPrefInt(PreferKey.bookshelfMargin, value)
         }
 
     var showUnread: Boolean
@@ -183,7 +254,7 @@ object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
             appCtx.putPrefString(PreferKey.bookExportFileName, value)
         }
 
-    // Save custom export chapter mode filename js expression
+    // 保存 自定义导出章节模式 文件名js表达式
     var episodeExportFileName: String?
         get() = appCtx.getPrefString(PreferKey.episodeExportFileName, "")
         set(value) {
@@ -206,7 +277,7 @@ object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
             }
         }
 
-    // Book save location
+    // 书籍保存位置
     var defaultBookTreeUri: String?
         get() = appCtx.getPrefString(PreferKey.defaultBookTreeUri)
         set(value) {
@@ -226,6 +297,9 @@ object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
     val autoRefreshBook: Boolean
         get() = appCtx.getPrefBoolean(PreferKey.autoRefresh)
 
+    val onlyUpdateRead: Boolean
+        get() = appCtx.getPrefBoolean(PreferKey.onlyUpdateRead)
+
     var enableReview: Boolean
         get() = BuildConfig.DEBUG && appCtx.getPrefBoolean(PreferKey.enableReview, false)
         set(value) {
@@ -244,7 +318,7 @@ object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
             appCtx.putPrefLong(PreferKey.remoteServerId, value)
         }
 
-    // Add locally selected directory
+    // 添加本地选择的目录
     var importBookPath: String?
         get() = appCtx.getPrefString("importBookPath")
         set(value) {
@@ -336,7 +410,7 @@ object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
             appCtx.putPrefBoolean(PreferKey.exportNoChapterName, value)
         }
 
-    // Is custom export enabled default->false
+    // 是否启用自定义导出 default->false
     var enableCustomExport: Boolean
         get() = appCtx.getPrefBoolean(PreferKey.enableCustomExport, false)
         set(value) {
@@ -448,12 +522,14 @@ object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
         set(value) {
             appCtx.putPrefBoolean(PreferKey.importKeepEnable, value)
         }
-
-    var previewImageByClick: Boolean
-        get() = appCtx.getPrefBoolean(PreferKey.previewImageByClick, false)
+    var importShowComment: Boolean
+        get() = appCtx.getPrefBoolean(PreferKey.importShowComment, false)
         set(value) {
-            appCtx.putPrefBoolean(PreferKey.previewImageByClick, value)
+            appCtx.putPrefBoolean(PreferKey.importShowComment, value)
         }
+
+    val clickImgWay: String?
+        get() = appCtx.getPrefString(PreferKey.clickImgWay)
 
     var preDownloadNum
         get() = appCtx.getPrefInt(PreferKey.preDownloadNum, 10)
@@ -537,6 +613,12 @@ object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
             appCtx.putPrefInt(PreferKey.pageTouchSlop, value)
         }
 
+    var pageTouchClick: Int
+        get() = appCtx.getPrefInt(PreferKey.pageTouchClick, 0)
+        set(value) {
+            appCtx.putPrefInt(PreferKey.pageTouchClick, value)
+        }
+
     var bookshelfSort: Int
         get() = appCtx.getPrefInt(PreferKey.bookshelfSort, 0)
         set(value) {
@@ -609,15 +691,15 @@ object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
             * clickActionBL * clickActionBC * clickActionBR != 0
         ) {
             appCtx.putPrefInt(PreferKey.clickActionMC, 0)
-            appCtx.toastOnUi(appCtx.getString(R.string.menu_area_restored))
+            appCtx.toastOnUi("当前没有配置菜单区域,自动恢复中间区域为菜单.")
         }
     }
 
-    //Jump to manga UI not using rich text mode
+    //跳转到漫画界面不使用富文本模式
     val showMangaUi: Boolean
         get() = appCtx.getPrefBoolean(PreferKey.showMangaUi, true)
 
-    //Disable manga zoom
+    //禁用漫画缩放
     var disableMangaScale: Boolean
         get() = appCtx.getPrefBoolean(PreferKey.disableMangaScale, true)
         set(value) {
@@ -630,35 +712,35 @@ object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
             appCtx.putPrefBoolean(PreferKey.disableMangaPageAnim, value)
         }
 
-    //Manga preload count
+    //漫画预加载数量
     var mangaPreDownloadNum
         get() = appCtx.getPrefInt(PreferKey.mangaPreDownloadNum, 10)
         set(value) {
             appCtx.putPrefInt(PreferKey.mangaPreDownloadNum, value)
         }
 
-    //Click page turn
+    //点击翻页
     var disableClickScroll
         get() = appCtx.getPrefBoolean(PreferKey.disableClickScroll, false)
         set(value) {
             appCtx.putPrefBoolean(PreferKey.disableClickScroll, value)
         }
 
-    //Manga scroll speed
+    //漫画滚动速度
     var mangaAutoPageSpeed
         get() = appCtx.getPrefInt(PreferKey.mangaAutoPageSpeed, 3)
         set(value) {
             appCtx.putPrefInt(PreferKey.mangaAutoPageSpeed, value)
         }
 
-    //Manga footer config
+    //漫画页脚配置
     var mangaFooterConfig
         get() = appCtx.getPrefString(PreferKey.mangaFooterConfig, "")
         set(value) {
             appCtx.putPrefString(PreferKey.mangaFooterConfig, value)
         }
 
-    //Manga horizontal scroll
+    //漫画水平滚动
     var enableMangaHorizontalScroll
         get() = appCtx.getPrefBoolean(PreferKey.enableMangaHorizontalScroll, false)
         set(value) {
@@ -671,14 +753,14 @@ object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
             appCtx.putPrefString(PreferKey.mangaColorFilter, value)
         }
 
-    //Disable manga title
+    //禁用漫画内标题
     var hideMangaTitle
         get() = appCtx.getPrefBoolean(PreferKey.hideMangaTitle, false)
         set(value) {
             appCtx.putPrefBoolean(PreferKey.hideMangaTitle, value)
         }
 
-    //Enable E-ink mode
+    //开启墨水屏模式
     var enableMangaEInk
         get() = appCtx.getPrefBoolean(PreferKey.enableMangaEInk, false)
         set(value) {
@@ -739,5 +821,6 @@ object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
             appCtx.putPrefBoolean(PreferKey.welcomeShowIconDark, value)
         }
 
+    val autoUpdateVariant get() = appCtx.getPrefBoolean("autoUpdateVariant", true)
 }
 

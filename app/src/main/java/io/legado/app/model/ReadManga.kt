@@ -46,8 +46,8 @@ object ReadManga : CoroutineScope by MainScope() {
     var inBookshelf = false
     var book: Book? = null
     val executor = globalExecutor
-    var durChapterIndex = 0 //Chapter position
-    var chapterSize = 0//Total chapters
+    var durChapterIndex = 0 //章节位置
+    var chapterSize = 0//总章节
     var durChapterPos = 0
     var chapterChanged = false
     var prevMangaChapter: MangaChapter? = null
@@ -126,7 +126,7 @@ object ReadManga : CoroutineScope by MainScope() {
         nextMangaChapter = null
     }
 
-    //Update reading record on chapter switch
+    //每次切换章节更新阅读记录
     fun upReadTime() {
         executor.execute {
             if (!AppConfig.enableReadRecord) {
@@ -189,7 +189,7 @@ object ReadManga : CoroutineScope by MainScope() {
     }
 
     /**
-     * Content loading complete
+     * 内容加载完成
      */
     suspend fun contentLoadFinish(
         chapter: BookChapter,
@@ -269,7 +269,7 @@ object ReadManga : CoroutineScope by MainScope() {
     }
 
     /**
-     * Load next chapter
+     * 加载下一章
      */
     fun moveToNextChapter(toFirst: Boolean = false): Boolean {
         if (durChapterIndex < simulatedChapterSize - 1) {
@@ -338,7 +338,8 @@ object ReadManga : CoroutineScope by MainScope() {
                     appDb.bookChapterDao.getChapter(book.bookUrl, durChapterIndex)?.let {
                         book.durChapterTitle = it.getDisplayTitle(
                             ContentProcessor.get(book.name, book.origin).getTitleReplaceRules(),
-                            book.getUseReplaceRule()
+                            book.getUseReplaceRule(),
+                            replaceBook = book.toReplaceBook()
                         )
                     }
                 }
@@ -380,11 +381,12 @@ object ReadManga : CoroutineScope by MainScope() {
         if (book?.isLocal == true) return
         executor.execute {
             if (AppConfig.preDownloadNum < 2) {
+                upToc()
                 return@execute
             }
             preDownloadTask?.cancel()
             preDownloadTask = launch(IO) {
-                //Pre-download
+                //预下载
                 launch {
                     val maxChapterIndex =
                         min(durChapterIndex + AppConfig.preDownloadNum, chapterSize)
@@ -432,7 +434,7 @@ object ReadManga : CoroutineScope by MainScope() {
     }
 
     /**
-     * Get content body
+     * 获取正文
      */
     private suspend fun download(
         scope: CoroutineScope,
@@ -463,17 +465,22 @@ object ReadManga : CoroutineScope by MainScope() {
         val bookSource = bookSource ?: return
         val book = book ?: return
         if (!book.canUpdate) return
+        if (chapterSize - durChapterIndex - 1 >= 3) return
         if (System.currentTimeMillis() - book.lastCheckTime < 600000) return
         book.lastCheckTime = System.currentTimeMillis()
+        val oldBook = book.copy()
         WebBook.getChapterList(this, bookSource, book).onSuccess(IO) { cList ->
-            if (book.bookUrl == ReadManga.book?.bookUrl
-                && cList.size > chapterSize
-            ) {
-                appDb.bookChapterDao.delByBook(book.bookUrl)
+            ensureActive()
+            if (cList.size > chapterSize) {
+                if (oldBook.bookUrl == book.bookUrl) {
+                    appDb.bookDao.update(book)
+                } else {
+                    appDb.bookDao.replace(oldBook, book)
+                    BookHelp.updateCacheFolder(oldBook, book)
+                }
+                appDb.bookChapterDao.delByBook(oldBook.bookUrl)
                 appDb.bookChapterDao.insert(*cList.toTypedArray())
-                saveRead()
-                chapterSize = cList.size
-                simulatedChapterSize = book.simulatedTotalChapterNum()
+                onChapterListUpdated(book, false)
                 nextMangaChapter ?: loadContent(durChapterIndex + 1)
             }
         }
@@ -492,8 +499,8 @@ object ReadManga : CoroutineScope by MainScope() {
     }
 
     /**
-     * Sync reading progress
-     * If current progress faster than server or no progress, upload. If slower, execute input action
+     * 同步阅读进度
+     * 如果当前进度快于服务器进度或者没有进度进行上传，如果慢与服务器进度则执行传入动作
      */
     fun syncProgress(
         newProgressAction: ((progress: BookProgress) -> Unit)? = null,
@@ -511,7 +518,7 @@ object ReadManga : CoroutineScope by MainScope() {
                 (progress.durChapterIndex == book.durChapterIndex
                         && progress.durChapterPos < book.durChapterPos)
             ) {
-                // Server has no progress or progress faster than server, upload current progress
+                // 服务器没有进度或者进度比服务器快，上传现有进度
                 Coroutine.async {
                     AppWebDav.uploadBookProgress(BookProgress(book), uploadSuccessAction)
                     book.update()
@@ -519,7 +526,7 @@ object ReadManga : CoroutineScope by MainScope() {
             } else if (progress.durChapterIndex > book.durChapterIndex ||
                 progress.durChapterPos > book.durChapterPos
             ) {
-                // Progress slower than server, execute input action
+                // 进度比服务器慢，执行传入动作
                 newProgressAction?.invoke(progress)
             } else {
                 syncSuccessAction?.invoke()
@@ -553,7 +560,7 @@ object ReadManga : CoroutineScope by MainScope() {
         mCallback?.loadFail(msg, retry)
     }
 
-    fun onChapterListUpdated(newBook: Book) {
+    fun onChapterListUpdated(newBook: Book, loadContent: Boolean = true) {
         if (newBook.isSameNameAuthor(book)) {
             book = newBook
             chapterSize = newBook.totalChapterNum
@@ -563,21 +570,21 @@ object ReadManga : CoroutineScope by MainScope() {
             }
             if (mCallback == null) {
                 clearMangaChapter()
-            } else {
+            } else if (loadContent) {
                 loadContent()
             }
         }
     }
 
     /**
-     * Register callback
+     * 注册回调
      */
     fun register(cb: Callback) {
         mCallback = cb
     }
 
     /**
-     * Unregister callback
+     * 取消注册回调
      */
     fun unregister(cb: Callback) {
         if (mCallback === cb) {

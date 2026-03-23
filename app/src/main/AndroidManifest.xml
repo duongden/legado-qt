@@ -20,10 +20,10 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <application
         android:name=".App"
-        android:largeHeap="true"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="${app_name}"
@@ -114,6 +114,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- 图标7 -->
+        <activity
+            android:name=".ui.welcome.Launcher7"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/launcher7">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <!-- 主界面 -->
         <activity
             android:name=".ui.main.MainActivity"
@@ -161,6 +173,11 @@
         <activity
             android:name="io.legado.app.ui.book.audio.AudioPlayActivity"
             android:launchMode="singleTask" />
+        <!-- 视频播放器界面 -->
+        <activity
+            android:name="io.legado.app.ui.video.VideoPlayerActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:launchMode="singleTask" />
         <!-- 授权界面 -->
         <activity
             android:name="io.legado.app.lib.permission.PermissionActivity"
@@ -188,6 +205,12 @@
         <!-- 替换规则编辑 -->
         <activity
             android:name=".ui.replace.edit.ReplaceEditActivity"
+            android:configChanges="locale|keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
+        <!-- 代码文本编辑 -->
+        <activity
+            android:name=".ui.code.CodeEditActivity"
             android:configChanges="locale|keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize|stateHidden" />
@@ -253,7 +276,7 @@
             android:name=".ui.rss.read.ReadRssActivity"
             android:configChanges="orientation|screenSize"
             android:hardwareAccelerated="true"
-            android:launchMode="singleTop" />
+            android:launchMode="standard" />
         <!-- 导入书籍 -->
         <activity
             android:name=".ui.book.import.local.ImportBookActivity"
@@ -301,10 +324,6 @@
         <!-- 字典管理 -->
         <activity
             android:name=".ui.dict.rule.DictRuleActivity"
-            android:configChanges="orientation|screenSize"
-            android:hardwareAccelerated="true" />
-        <activity
-            android:name=".ui.dict.manage.DictManageActivity"
             android:configChanges="orientation|screenSize"
             android:hardwareAccelerated="true" />
         <!-- 文件管理 -->
@@ -490,11 +509,11 @@
             android:name=".service.AudioPlayService"
             android:foregroundServiceType="mediaPlayback" />
         <service
+            android:name=".service.VideoPlayService"
+            android:foregroundServiceType="mediaPlayback" />
+        <service
             android:name=".service.DownloadService"
             android:foregroundServiceType="dataSync" />
-        <service
-            android:name=".service.AITranslationService"
-            android:exported="false" />
 
         <receiver
             android:name=".receiver.MediaButtonReceiver"
@@ -518,15 +537,6 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
-        </provider>
-        <provider
-            android:name="androidx.startup.InitializationProvider"
-            android:authorities="${applicationId}.androidx-startup"
-            android:exported="false"
-            tools:node="merge">
-            <meta-data
-                android:name="androidx.emoji2.text.EmojiCompatInitializer"
-                tools:node="remove" />
         </provider>
 
         <meta-data

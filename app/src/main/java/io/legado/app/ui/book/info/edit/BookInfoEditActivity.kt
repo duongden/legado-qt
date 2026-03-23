@@ -16,6 +16,7 @@ import io.legado.app.help.book.addType
 import io.legado.app.help.book.isAudio
 import io.legado.app.help.book.isImage
 import io.legado.app.help.book.isLocal
+import io.legado.app.help.book.isVideo
 import io.legado.app.help.book.removeType
 import io.legado.app.ui.book.changecover.ChangeCoverDialog
 import io.legado.app.ui.file.HandleFileContract
@@ -101,6 +102,7 @@ class BookInfoEditActivity :
         tieBookAuthor.setText(book.author)
         spType.setSelection(
             when {
+                book.isVideo -> 4
                 book.isImage -> 2
                 book.isAudio -> 1
                 else -> 0
@@ -113,7 +115,7 @@ class BookInfoEditActivity :
 
     private fun upCover() {
         viewModel.book?.let {
-            binding.ivCover.load(it.getDisplayCover(), it.name, it.author, false, it.origin)
+            binding.ivCover.load(it, false)
         }
     }
 
@@ -124,11 +126,12 @@ class BookInfoEditActivity :
         book.author = tieBookAuthor.text?.toString() ?: ""
         val local = if (book.isLocal) BookType.local else 0
         val bookType = when (spType.selectedItemPosition) {
+            4 -> BookType.video or local
             2 -> BookType.image or local
             1 -> BookType.audio or local
             else -> BookType.text or local
         }
-        book.removeType(BookType.local, BookType.image, BookType.audio, BookType.text)
+        book.removeType(BookType.video, BookType.local, BookType.image, BookType.audio, BookType.text)
         book.addType(bookType)
         val customCoverUrl = tieCoverUrl.text?.toString()
         book.customCoverUrl = if (customCoverUrl == book.coverUrl) null else customCoverUrl
@@ -148,13 +151,21 @@ class BookInfoEditActivity :
     }
 
     private fun coverChangeTo(uri: Uri) {
+        if (uri.scheme?.lowercase() in listOf("http", "https")) {
+            coverChangeTo(uri.toString())
+            return
+        }
         readUri(uri) { fileDoc, inputStream ->
             runCatching {
                 inputStream.use {
                     var file = this.externalFiles
-                    val suffix = fileDoc.name.substringAfterLast(".")
+                    val suffix = if (fileDoc.name.contains(".9.png", true)) {
+                        ".9.png"
+                    } else {
+                        "." + fileDoc.name.substringAfterLast(".")
+                    }
                     val fileName = uri.inputStream(this).getOrThrow().use {
-                        MD5Utils.md5Encode(it) + ".$suffix"
+                        MD5Utils.md5Encode(it) + suffix
                     }
                     file = FileUtils.createFileIfNotExist(file, "covers", fileName)
                     FileOutputStream(file).use { outputStream ->

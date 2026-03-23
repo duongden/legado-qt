@@ -16,6 +16,7 @@ import io.legado.app.data.entities.rule.ExploreRule
 import io.legado.app.data.entities.rule.ReviewRule
 import io.legado.app.data.entities.rule.SearchRule
 import io.legado.app.data.entities.rule.TocRule
+import io.legado.app.model.AudioPlay
 import io.legado.app.utils.GSON
 import io.legado.app.utils.fromJsonObject
 import io.legado.app.utils.splitNotBlank
@@ -29,72 +30,76 @@ import kotlinx.parcelize.Parcelize
     indices = [(Index(value = ["bookSourceUrl"], unique = false))]
 )
 data class BookSource(
-    // Address, including http/https
+    // 地址，包括 http/https
     @PrimaryKey
     var bookSourceUrl: String = "",
-    // Name
+    // 名称
     var bookSourceName: String = "",
-    // Group
+    // 分组
     var bookSourceGroup: String? = null,
-    // Type, 0 Text, 1 Audio, 2 Image, 3 File (Sites like Zhixuan that only provide downloads)
+    // 类型，0 文本，1 音频, 2 图片, 3 文件（指的是类似知轩藏书只提供下载的网站）, 4 视频
     @BookSourceType.Type
     var bookSourceType: Int = 0,
-    // Detail page url regex
+    // 详情页url正则
     var bookUrlPattern: String? = null,
-    // Manual sort number
+    // 手动排序编号
     @ColumnInfo(defaultValue = "0")
     var customOrder: Int = 0,
-    // Is Enabled
+    // 是否启用
     @ColumnInfo(defaultValue = "1")
     var enabled: Boolean = true,
-    // Enable Explore
+    // 启用发现
     @ColumnInfo(defaultValue = "1")
     var enabledExplore: Boolean = true,
-    // js library
+    // js库
     override var jsLib: String? = null,
-    // Enable okhttp CookieJar auto save cookie for every request
+    // 启用okhttp CookieJAr 自动保存每次请求的cookie
     @ColumnInfo(defaultValue = "0")
     override var enabledCookieJar: Boolean? = true,
-    // Concurrency rate
+    // 并发率
     override var concurrentRate: String? = null,
-    // Request header
+    // 请求头
     override var header: String? = null,
-    // Login URL
+    // 登录地址
     override var loginUrl: String? = null,
-    // Login UI
+    // 登录UI
     override var loginUi: String? = null,
-    // Login check js
+    // 登录检测js
     var loginCheckJs: String? = null,
-    // Cover decryption js
+    // 封面解密js
     var coverDecodeJs: String? = null,
-    // Comment
+    // 注释
     var bookSourceComment: String? = null,
-    // Custom variable description
+    // 自定义变量说明
     var variableComment: String? = null,
-    // Last update time, for sorting
+    // 最后更新时间，用于排序
     var lastUpdateTime: Long = 0,
-    // Response time, for sorting
+    // 响应时间，用于排序
     var respondTime: Long = 180000L,
-    // Smart sort weight
+    // 智能排序的权重
     var weight: Int = 0,
-    // Explore URL
+    // 发现url
     var exploreUrl: String? = null,
-    // Explore filter rule
+    // 发现筛选规则
     var exploreScreen: String? = null,
-    // Explore rule
+    // 发现规则
     var ruleExplore: ExploreRule? = null,
-    // Search URL
+    // 搜索url
     var searchUrl: String? = null,
-    // Search rule
+    // 搜索规则
     var ruleSearch: SearchRule? = null,
-    // Book info page rule
+    // 书籍信息页规则
     var ruleBookInfo: BookInfoRule? = null,
-    // Catalog page rule
+    // 目录页规则
     var ruleToc: TocRule? = null,
-    // Content page rule
+    // 正文页规则
     var ruleContent: ContentRule? = null,
-    // Paragraph comment rule
-    var ruleReview: ReviewRule? = null
+    // 段评规则
+    var ruleReview: ReviewRule? = null,
+    @ColumnInfo(defaultValue = "0")
+    var eventListener: Boolean = false, // 是否监听事件来执行回调规则
+    @ColumnInfo(defaultValue = "0")
+    var customButton: Boolean = false //由书源控制的自定义按钮
 ) : Parcelable, BaseSource {
 
     override fun getTag(): String {
@@ -207,7 +212,7 @@ data class BookSource(
 
     fun getCheckKeyword(default: String): String {
         ruleSearch?.checkKeyWord?.let {
-            if (it.isNotBlank()) {
+            if (it.isNotBlank() && !it.contains("http")  && !it.contains("::") && !it.contains("++") && !it.contains("--")) {
                 return it
             }
         }

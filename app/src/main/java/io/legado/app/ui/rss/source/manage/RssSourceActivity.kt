@@ -34,7 +34,6 @@ import io.legado.app.utils.applyTint
 import io.legado.app.utils.dpToPx
 import io.legado.app.utils.isAbsUrl
 import io.legado.app.utils.launch
-import io.legado.app.utils.readText
 import io.legado.app.utils.sendToClip
 import io.legado.app.utils.setEdgeEffectColor
 import io.legado.app.utils.share
@@ -42,7 +41,6 @@ import io.legado.app.utils.showDialogFragment
 import io.legado.app.utils.showHelp
 import io.legado.app.utils.splitNotBlank
 import io.legado.app.utils.startActivity
-import io.legado.app.utils.toastOnUi
 import io.legado.app.utils.transaction
 import io.legado.app.utils.viewbindingdelegate.viewBinding
 import kotlinx.coroutines.Dispatchers.IO
@@ -73,19 +71,11 @@ class RssSourceActivity : VMBaseActivity<ActivityRssSourceBinding, RssSourceView
     private var groupMenu: SubMenu? = null
     private val qrCodeResult = registerForActivityResult(QrCodeResult()) {
         it ?: return@registerForActivityResult
-        showDialogFragment(
-            ImportRssSourceDialog(it)
-        )
+        showDialogFragment(ImportRssSourceDialog(it))
     }
     private val importDoc = registerForActivityResult(HandleFileContract()) {
-        kotlin.runCatching {
-            it.uri?.readText(this)?.let {
-                showDialogFragment(
-                    ImportRssSourceDialog(it)
-                )
-            }
-        }.onFailure {
-            toastOnUi(getString(R.string.read_text_error, it.localizedMessage))
+        it.uri?.let { uri ->
+            showDialogFragment(ImportRssSourceDialog(uri.toString()))
         }
     }
     private val exportResult = registerForActivityResult(HandleFileContract()) {
@@ -169,17 +159,17 @@ class RssSourceActivity : VMBaseActivity<ActivityRssSourceBinding, RssSourceView
             R.id.menu_remove_group -> selectionRemoveFromGroups()
             R.id.menu_top_sel -> viewModel.topSource(*adapter.selection.toTypedArray())
             R.id.menu_bottom_sel -> viewModel.bottomSource(*adapter.selection.toTypedArray())
-            R.id.menu_export_selection -> viewModel.saveToFile(adapter.selection) { file ->
+            R.id.menu_export_selection -> viewModel.saveToFile(adapter.selection) { file, name ->
                 exportResult.launch {
                     mode = HandleFileContract.EXPORT
                     fileData = HandleFileContract.FileData(
-                        "exportRssSource.json", file, "application/json"
+                        name, file, "application/json"
                     )
                 }
             }
 
-            R.id.menu_share_source -> viewModel.saveToFile(adapter.selection) {
-                share(it)
+            R.id.menu_share_source -> viewModel.saveToFile(adapter.selection) { file, name ->
+                share(file)
             }
 
             R.id.menu_check_selected_interval -> adapter.checkSelectedInterval()
@@ -341,12 +331,22 @@ class RssSourceActivity : VMBaseActivity<ActivityRssSourceBinding, RssSourceView
                     appDb.rssSourceDao.flowSearch(searchKey)
                 }
             }.catch {
-                AppLog.put(getString(R.string.error_update_rss_source_manage), it)
+                AppLog.put("订阅源管理界面更新数据出错", it)
             }.flowOn(IO).conflate().collect {
                 adapter.setItems(it, adapter.diffItemCallback)
                 delay(100)
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        adapter.upResumed(true)
+    }
+
+    override fun onPause() {
+        adapter.upResumed(false)
+        super.onPause()
     }
 
     override fun upCountView() {
@@ -365,7 +365,7 @@ class RssSourceActivity : VMBaseActivity<ActivityRssSourceBinding, RssSourceView
             ?.toMutableList() ?: mutableListOf()
         alert(titleResource = R.string.import_on_line) {
             val alertBinding = DialogEditTextBinding.inflate(layoutInflater).apply {
-                editView.hint = getString(R.string.url_hint)
+                editView.hint = "url"
                 editView.setFilterValues(cacheUrls)
                 editView.delCallBack = {
                     cacheUrls.remove(it)

@@ -27,7 +27,6 @@ import io.legado.app.utils.gone
 import io.legado.app.utils.invisible
 import io.legado.app.utils.startActivity
 import io.legado.app.utils.visible
-import io.legado.app.utils.setTranslatedText
 import java.util.Collections
 
 
@@ -100,7 +99,7 @@ class BookSourceAdapter(
         binding.run {
             if (payloads.isEmpty()) {
                 root.setBackgroundColor(ColorUtils.withAlpha(context.backgroundColor, 0.5f))
-                cbBookSource.setTranslatedText(item.getDisPlayNameGroup())
+                cbBookSource.text = item.getDisPlayNameGroup()
                 swtEnabled.isChecked = item.enabled
                 cbBookSource.isChecked = selected.contains(item)
                 upCheckSourceMessage(binding, item)
@@ -112,7 +111,7 @@ class BookSourceAdapter(
                     bundle.keySet().forEach {
                         when (it) {
                             "enabled" -> swtEnabled.isChecked = bundle.getBoolean("enabled")
-                            "upName" -> cbBookSource.setTranslatedText(item.getDisPlayNameGroup())
+                            "upName" -> cbBookSource.text = item.getDisPlayNameGroup()
                             "upExplore" -> upShowExplore(ivExplore, item)
                             "selected" -> cbBookSource.isChecked = selected.contains(item)
                             "checkSourceMessage" -> upCheckSourceMessage(binding, item)
@@ -126,24 +125,20 @@ class BookSourceAdapter(
 
     override fun registerListener(holder: ItemViewHolder, binding: ItemBookSourceBinding) {
         binding.apply {
-            swtEnabled.setOnCheckedChangeListener { view, checked ->
+            swtEnabled.setOnUserCheckedChangeListener { checked ->
                 getItem(holder.layoutPosition)?.let {
-                    if (view.isPressed) {
-                        it.enabled = checked
-                        callBack.enable(checked, it)
-                    }
+                    it.enabled = checked
+                    callBack.enable(checked, it)
                 }
             }
-            cbBookSource.setOnCheckedChangeListener { view, checked ->
+            cbBookSource.setOnUserCheckedChangeListener { checked ->
                 getItem(holder.layoutPosition)?.let {
-                    if (view.isPressed) {
-                        if (checked) {
-                            selected.add(it)
-                        } else {
-                            selected.remove(it)
-                        }
-                        callBack.upCountView()
+                    if (checked) {
+                        selected.add(it)
+                    } else {
+                        selected.remove(it)
                     }
+                    callBack.upCountView()
                 }
             }
             ivEdit.setOnClickListener {
@@ -239,7 +234,7 @@ class BookSourceAdapter(
         val isEmpty = msg.isEmpty()
         var isFinalMessage = msg.contains(finalMessageRegex)
         if (!Debug.isChecking && !isFinalMessage) {
-            Debug.updateFinalMessage(item.bookSourceUrl, context.getString(R.string.validation_failed))
+            Debug.updateFinalMessage(item.bookSourceUrl, "校验失败")
             ivDebugText.text = Debug.debugMessageMap[item.bookSourceUrl] ?: ""
             isFinalMessage = true
         }

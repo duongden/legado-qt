@@ -5,9 +5,12 @@ package io.legado.app.lib.cronet
 
 import androidx.annotation.Keep
 import io.legado.app.constant.AppLog
+import io.legado.app.constant.AppPattern
+import io.legado.app.help.config.AppConfig
 import io.legado.app.help.http.CookieManager.cookieJarHeader
 import io.legado.app.help.http.SSLHelper
 import io.legado.app.help.http.okHttpClient
+import io.legado.app.model.analyzeRule.AnalyzeUrl.Companion.customIp
 import io.legado.app.utils.DebugLog
 import io.legado.app.utils.externalCache
 import okhttp3.Headers
@@ -28,14 +31,14 @@ val cronetEngine: ExperimentalCronetEngine? by lazy {
     disableCertificateVerify()
     val builder = ExperimentalCronetEngine.Builder(appCtx).apply {
         if (CronetLoader.install()) {
-            setLibraryLoader(CronetLoader)//Set custom so lib load
+            setLibraryLoader(CronetLoader)//设置自定义so库加载
         }
-        setStoragePath(appCtx.externalCache.absolutePath)//Set cache path
-        enableHttpCache(HTTP_CACHE_DISK, (1024 * 1024 * 50).toLong())//Set 50M disk cache
-        enableQuic(true)//Set http/3 support
-        enableHttp2(true)  //Set http/2 support
+        setStoragePath(appCtx.externalCache.absolutePath)//设置缓存路径
+        enableHttpCache(HTTP_CACHE_DISK, (1024 * 1024 * 50).toLong())//设置50M的磁盘缓存
+        enableQuic(true)//设置支持http/3
+        enableHttp2(true)  //设置支持http/2
         enablePublicKeyPinningBypassForLocalTrustAnchors(true)
-        enableBrotli(true)//Brotli compression
+        enableBrotli(true)//Brotli压缩
         setExperimentalOptions(options)
     }
     try {
@@ -51,13 +54,13 @@ val cronetEngine: ExperimentalCronetEngine? by lazy {
 val options by lazy {
     val options = JSONObject()
 
-    //Set domain mapping rule
+    //设置域名映射规则
     //MAP hostname ip,MAP hostname ip
 //    val host = JSONObject()
 //    host.put("host_resolver_rules","")
 //    options.put("HostResolverRules", host)
 
-    //Enable DnsHttpsSvcb easier migration to http3
+    //启用DnsHttpsSvcb更容易迁移到http3
     val dnsSvcb = JSONObject()
     dnsSvcb.put("enable", true)
     dnsSvcb.put("enable_insecure", true)
@@ -75,11 +78,11 @@ fun buildRequest(request: Request, callback: UrlRequest.Callback): UrlRequest? {
     val headers: Headers = request.headers
     val requestBody = request.body
     return cronetEngine?.newUrlRequestBuilder(
-        url,
+        customHost(url),
         callback,
         okHttpClient.dispatcher.executorService
     )?.apply {
-        setHttpMethod(request.method)//Set
+        setHttpMethod(request.method)//设置
         allowDirectExecutor()
         headers.forEachIndexed { index, _ ->
             if (headers.name(index) == cookieJarHeader) return@forEachIndexed
@@ -100,11 +103,26 @@ fun buildRequest(request: Request, callback: UrlRequest.Callback): UrlRequest? {
             provider.use {
                 this.setUploadDataProvider(it, okHttpClient.dispatcher.executorService)
             }
-
         }
-
     }?.build()
+}
 
+private fun customHost(url: String): String {
+    val urlIp = customIp.remove(url)
+    if (AppConfig.hostMap.isEmpty() && urlIp == null) return url
+    val host = AppPattern.domainRegex.find(url)?.groupValues?.getOrNull(1) ?: return url
+    if (urlIp != null) return url.replaceFirst(host, urlIp)
+    val ip = when (val configIps = AppConfig.hostMap[host]) {
+        is String -> configIps.splitToSequence(',')
+            .firstOrNull { it.isNotBlank() }
+            ?.trim()
+        is List<*> -> configIps.firstOrNull()
+            ?.toString()
+            ?.takeIf { it.isNotBlank() }
+            ?.trim()
+        else -> null
+    } ?: return url
+    return url.replaceFirst(host, ip)
 }
 
 private fun disableCertificateVerify() {

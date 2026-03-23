@@ -25,8 +25,15 @@ import io.legado.app.lib.dialogs.alert
 import io.legado.app.lib.theme.primaryColor
 import io.legado.app.ui.widget.dialog.CodeDialog
 import io.legado.app.ui.widget.dialog.WaitDialog
-import io.legado.app.utils.*
+import io.legado.app.utils.GSON
+import io.legado.app.utils.dpToPx
+import io.legado.app.utils.fromJsonObject
+import io.legado.app.utils.gone
+import io.legado.app.utils.putPrefBoolean
+import io.legado.app.utils.setLayout
+import io.legado.app.utils.showDialogFragment
 import io.legado.app.utils.viewbindingdelegate.viewBinding
+import io.legado.app.utils.visible
 import splitties.views.onClick
 
 
@@ -138,12 +145,16 @@ class ImportBookSourceDialog() : BaseDialogFragment(R.layout.dialog_recycler_vie
     private fun initMenu() {
         binding.toolBar.setOnMenuItemClickListener(this)
         binding.toolBar.inflateMenu(R.menu.import_source)
-        binding.toolBar.menu.findItem(R.id.menu_keep_original_name)
-            ?.isChecked = AppConfig.importKeepName
-        binding.toolBar.menu.findItem(R.id.menu_keep_group)
-            ?.isChecked = AppConfig.importKeepGroup
-        binding.toolBar.menu.findItem(R.id.menu_keep_enable)
-            ?.isChecked = AppConfig.importKeepEnable
+        binding.toolBar.menu.apply {
+            findItem(R.id.menu_keep_original_name)
+                ?.isChecked = AppConfig.importKeepName
+            findItem(R.id.menu_keep_group)
+                ?.isChecked = AppConfig.importKeepGroup
+            findItem(R.id.menu_keep_enable)
+                ?.isChecked = AppConfig.importKeepEnable
+            findItem(R.id.menu_show_comment)
+                ?.isChecked = AppConfig.importShowComment
+        }
     }
 
     @SuppressLint("InflateParams", "NotifyDataSetChanged")
@@ -185,6 +196,12 @@ class ImportBookSourceDialog() : BaseDialogFragment(R.layout.dialog_recycler_vie
             R.id.menu_keep_enable -> {
                 item.isChecked = !item.isChecked
                 AppConfig.importKeepEnable = item.isChecked
+            }
+
+            R.id.menu_show_comment -> {
+                item.isChecked = !item.isChecked
+                AppConfig.importShowComment = item.isChecked
+                adapter.notifyDataSetChanged()
             }
         }
         return false
@@ -244,22 +261,37 @@ class ImportBookSourceDialog() : BaseDialogFragment(R.layout.dialog_recycler_vie
             binding.apply {
                 cbSourceName.isChecked = viewModel.selectStatus[holder.layoutPosition]
                 cbSourceName.text = item.bookSourceName
+                if (AppConfig.importShowComment) {
+                    item.bookSourceComment?.takeIf{ it.isNotBlank() }?.let {
+                        showComment.text = it
+                        showComment.visible()
+                        showComment.setOnClickListener {
+                            if (showComment.maxLines == 3) {
+                                showComment.maxLines = 39
+                            } else {
+                                showComment.maxLines = 3
+                            }
+                        }
+                    } ?: run {
+                        showComment.gone()
+                    }
+                } else {
+                    showComment.gone()
+                }
                 val localSource = viewModel.checkSources[holder.layoutPosition]
                 tvSourceState.text = when {
-                    localSource == null -> getString(R.string.import_status_new)
-                    item.lastUpdateTime > localSource.lastUpdateTime -> getString(R.string.import_status_update)
-                    else -> getString(R.string.import_status_exist)
+                    localSource == null -> "新增"
+                    item.lastUpdateTime > localSource.lastUpdateTime -> "更新"
+                    else -> "已有"
                 }
             }
         }
 
         override fun registerListener(holder: ItemViewHolder, binding: ItemSourceImportBinding) {
             binding.apply {
-                cbSourceName.setOnCheckedChangeListener { buttonView, isChecked ->
-                    if (buttonView.isPressed) {
-                        viewModel.selectStatus[holder.layoutPosition] = isChecked
-                        upSelectText()
-                    }
+                cbSourceName.setOnUserCheckedChangeListener { isChecked ->
+                    viewModel.selectStatus[holder.layoutPosition] = isChecked
+                    upSelectText()
                 }
                 root.onClick {
                     cbSourceName.isChecked = !cbSourceName.isChecked

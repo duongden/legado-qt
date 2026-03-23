@@ -15,7 +15,6 @@ import io.legado.app.help.book.isLocal
 import io.legado.app.model.CacheBook
 import io.legado.app.utils.gone
 import io.legado.app.utils.visible
-import io.legado.app.utils.setTranslatedText
 
 class CacheAdapter(context: Context, private val callBack: CallBack) :
     DiffRecyclerAdapter<Book, ItemDownloadBinding>(context) {
@@ -45,8 +44,8 @@ class CacheAdapter(context: Context, private val callBack: CallBack) :
     ) {
         binding.run {
             if (payloads.isEmpty()) {
-                tvName.setTranslatedText(item.name)
-                tvAuthor.setTranslatedText(item.getRealAuthor()) { context.getString(R.string.author_show, it) }
+                tvName.text = item.name
+                tvAuthor.text = context.getString(R.string.author_show, item.getRealAuthor())
                 if (item.isLocal) {
                     tvDownload.setText(R.string.local_book)
                 } else {

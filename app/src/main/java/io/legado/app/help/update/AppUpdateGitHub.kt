@@ -21,24 +21,29 @@ object AppUpdateGitHub : AppUpdate.AppUpdateInterface {
             "official_version" -> AppVariant.OFFICIAL
             "beta_release_version" -> AppVariant.BETA_RELEASE
             "beta_releaseA_version" -> AppVariant.BETA_RELEASEA
+            "beta_releaseS_version" -> AppVariant.BETA_RELEASES
             else -> AppConst.appInfo.appVariant
         }
 
     private suspend fun getLatestRelease(): List<AppReleaseInfo> {
-        val lastReleaseUrl = "https://api.github.com/repos/dat-bi/legado-qt/releases/latest"
+        val lastReleaseUrl = if (checkVariant.isBeta()) {
+            "https://api.github.com/repos/gedoor/legado/releases/tags/beta"
+        } else {
+            "https://api.github.com/repos/gedoor/legado/releases/latest"
+        }
         val res = okHttpClient.newCallResponse {
             url(lastReleaseUrl)
         }
         if (!res.isSuccessful) {
-            throw NoStackTraceException(splitties.init.appCtx.getString(io.legado.app.R.string.get_new_version_error_code, res.code))
+            throw NoStackTraceException("获取新版本出错(${res.code})")
         }
         val body = res.body.text()
         if (body.isBlank()) {
-            throw NoStackTraceException(splitties.init.appCtx.getString(io.legado.app.R.string.get_new_version_error))
+            throw NoStackTraceException("获取新版本出错")
         }
         return GSON.fromJsonObject<GithubRelease>(body)
             .getOrElse {
-                throw NoStackTraceException(splitties.init.appCtx.getString(io.legado.app.R.string.get_new_version_error_msg, it.localizedMessage))
+                throw NoStackTraceException("获取新版本出错 " + it.localizedMessage)
             }
             .gitReleaseToAppReleaseInfo()
             .sortedByDescending { it.createdAt }
@@ -59,7 +64,7 @@ object AppUpdateGitHub : AppUpdate.AppUpdateInterface {
                         it.name
                     )
                 }
-                ?: throw NoStackTraceException(splitties.init.appCtx.getString(io.legado.app.R.string.already_latest_version))
+                ?: throw NoStackTraceException("已是最新版本")
         }.timeout(10000)
     }
 }

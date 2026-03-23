@@ -3,8 +3,10 @@ package io.legado.app.ui.book.info
 import android.app.Application
 import android.content.Intent
 import android.net.Uri
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.script.rhino.runScriptWithContext
 import io.legado.app.R
 import io.legado.app.base.BaseViewModel
 import io.legado.app.constant.AppLog
@@ -36,6 +38,8 @@ import io.legado.app.model.ReadManga
 import io.legado.app.model.analyzeRule.AnalyzeUrl
 import io.legado.app.model.localBook.LocalBook
 import io.legado.app.model.webBook.WebBook
+import io.legado.app.model.SourceCallBack
+import io.legado.app.ui.login.SourceLoginJsExtensions
 import io.legado.app.utils.ArchiveUtils
 import io.legado.app.utils.UrlUtil
 import io.legado.app.utils.isContentScheme
@@ -49,6 +53,7 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
     val chapterListData = MutableLiveData<List<BookChapter>>()
     val webFiles = mutableListOf<WebFile>()
     var inBookshelf = false
+    var hasCustomBtn = false
     var bookSource: BookSource? = null
     private var changeSourceCoroutine: Coroutine<*>? = null
     val waitDialogData = MutableLiveData<Boolean>()
@@ -98,10 +103,12 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
 
     private fun upBook(book: Book) {
         execute {
+            bookSource = if (book.isLocal) null else
+                appDb.bookSourceDao.getBookSource(book.origin)?.also {
+                    hasCustomBtn = it.customButton
+                }
             bookData.postValue(book)
             upCoverByRule(book)
-            bookSource = if (book.isLocal) null else
-                appDb.bookSourceDao.getBookSource(book.origin)
             if (book.tocUrl.isEmpty() && !book.isLocal) {
                 loadBookInfo(book, runPreUpdateJs = inBookshelf)
             } else {
@@ -109,7 +116,7 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
                 if (chapterList.isNotEmpty()) {
                     chapterListData.postValue(chapterList)
                 } else {
-                    loadChapter(book)
+                    loadChapter(book, isFromBookInfo = true)
                 }
             }
         }
@@ -189,10 +196,9 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
                     val dbBook = appDb.bookDao.getBook(book.name, book.author)
                     if (!inBookshelf && dbBook != null && !dbBook.isNotShelf && dbBook.origin == book.origin) {
                         /**
-                         * When book comes from search (inBookshelf == false), the searched book title does not exist in bookshelf,
-                         * but after loading details, title updates and duplicate exists.
-                         * At this time book data differs from database, needs update #3652 #4619
-                         * After book loads details, although title/author same, it might not be the same book in database (different source) #3149
+                         * book 来自搜索时(inBookshelf == false)，搜索的书名不存在于书架，但是加载详情后，书名更新，存在同名书籍
+                         * 此时 book 的数据会与数据库中的不同，需要更新 #3652 #4619
+                         * book 加载详情后虽然书名作者相同，但是又可能不是数据库中(书源不同)的那本书 #3149
                          */
                         dbBook.updateTo(it)
                         inBookshelf = true
@@ -204,7 +210,7 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
                     if (it.isWebFile) {
                         loadWebFile(it)
                     } else {
-                        loadChapter(it, runPreUpdateJs)
+                        loadChapter(it, runPreUpdateJs, isFromBookInfo = true)
                     }
                 }.onError {
                     AppLog.put("获取书籍信息失败\n${it.localizedMessage}", it)
@@ -213,10 +219,11 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
         }
     }
 
-    private fun loadChapter(
+    fun loadChapter(
         book: Book,
         runPreUpdateJs: Boolean = true,
-        scope: CoroutineScope = viewModelScope
+        scope: CoroutineScope = viewModelScope,
+        isFromBookInfo: Boolean = false
     ) {
         if (book.isLocal) {
             execute(scope) {
@@ -238,12 +245,13 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
                 return
             }
             val oldBook = book.copy()
-            WebBook.getChapterList(scope, bookSource, book, runPreUpdateJs)
+            WebBook.getChapterList(scope, bookSource, book, runPreUpdateJs, isFromBookInfo = isFromBookInfo)
                 .onSuccess(IO) {
                     if (inBookshelf) {
+                        book.removeType(BookType.updateError)
                         appDb.bookDao.replace(oldBook, book)
                         /**
-                         * runPreUpdateJs might modify book's bookUrl
+                         * runPreUpdateJs 有可能会修改 book 的 bookUrl
                          */
                         if (oldBook.bookUrl != book.bookUrl) {
                             BookHelp.updateCacheFolder(oldBook, book)
@@ -281,18 +289,24 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
                     it, source = bookSource,
                     coroutineContext = coroutineContext
                 )
-                val mFileName = UrlUtil.getFileName(analyzeUrl)
-                    ?: "${fileNameNoExtension}.${analyzeUrl.type}"
+                var mFileName = UrlUtil.getFileName(analyzeUrl)
+                    ?: fileNameNoExtension
+                analyzeUrl.type?.let { suffix ->
+                    mFileName += ".${suffix}"
+                }
                 WebFile(it, mFileName)
             }
         }.onError {
             context.toastOnUi("LoadWebFileError\n${it.localizedMessage}")
         }.onSuccess {
             webFiles.addAll(it)
+            book.latestChapterTitle = "已下载"
+            bookData.postValue(book)
+            chapterListData.postValue(emptyList())
         }
     }
 
-    /* Import or download online file */
+    /* 导入或者下载在线文件 */
     fun <T> importOrDownloadWebFile(webFile: WebFile, success: ((T) -> Unit)?) {
         bookSource ?: return
         execute {
@@ -366,8 +380,13 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
     fun changeTo(source: BookSource, book: Book, toc: List<BookChapter>) {
         changeSourceCoroutine?.cancel()
         changeSourceCoroutine = execute {
-            bookSource = source
+            bookSource = source.also {
+                hasCustomBtn = it.customButton
+            }
             bookData.value?.migrateTo(book, toc)
+            if (book.isWebFile) {
+                loadWebFile(book)
+            }
             if (inBookshelf) {
                 book.removeType(BookType.updateError)
                 bookData.value?.delete()
@@ -424,7 +443,7 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
         }
     }
 
-    fun addToBookshelf(success: (() -> Unit)?) {
+    fun addToBookshelf(success: (() -> Unit)?) { //点击书架按钮或在加分组时触发
         execute {
             bookData.value?.let { book ->
                 book.removeType(BookType.notShelf)
@@ -442,6 +461,7 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
                     AudioPlay.book = book
                 }
                 book.save()
+                SourceCallBack.callBackBook(SourceCallBack.ADD_BOOK_SHELF, bookSource, book)
             }
             chapterListData.value?.let {
                 appDb.bookChapterDao.insert(*it.toTypedArray())
@@ -474,13 +494,13 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
         }
     }
 
-    fun clearCache() {
+    fun clearCache(book: Book) {
         execute {
-            BookHelp.clearCache(bookData.value!!)
-            if (ReadBook.book?.bookUrl == bookData.value!!.bookUrl) {
+            BookHelp.clearCache(book)
+            if (ReadBook.book?.bookUrl == book.bookUrl) {
                 ReadBook.clearTextChapter()
             }
-            if (ReadManga.book?.bookUrl == bookData.value!!.bookUrl) {
+            if (ReadManga.book?.bookUrl == book.bookUrl) {
                 ReadManga.clearMangaChapter()
             }
         }.onSuccess {
@@ -507,6 +527,24 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
         }
     }
 
+    fun onButtonClick(activity: AppCompatActivity, name: String, click: String) {
+        val source = bookSource ?: return
+        val book = bookData.value ?: return
+        execute {
+            val java = SourceLoginJsExtensions(activity, source)
+            runScriptWithContext {
+                source.evalJS(click) {
+                    put("result", null)
+                    put("java", java)
+                    put("book", book)
+                }
+            }
+        }.onError {
+            AppLog.put("${source.bookSourceName}: ${it.localizedMessage}", it)
+            context.toastOnUi("$name click error\n${it.localizedMessage}")
+        }
+    }
+
     data class WebFile(
         val url: String,
         val name: String,
@@ -516,13 +554,13 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
             return name
         }
 
-        // Suffix
+        // 后缀
         val suffix: String = UrlUtil.getSuffix(name)
 
-        // txt epub umd pdf etc files
+        // txt epub umd pdf等文件
         val isSupported: Boolean = AppPattern.bookFileRegex.matches(name)
 
-        // Archive format txt epub umd pdf files
+        // 压缩包形式的txt epub umd pdf文件
         val isSupportDecompress: Boolean = AppPattern.archiveFileRegex.matches(name)
 
     }

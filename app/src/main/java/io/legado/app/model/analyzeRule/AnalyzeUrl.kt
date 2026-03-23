@@ -13,8 +13,6 @@ import com.script.rhino.RhinoScriptEngine
 import com.script.rhino.runScriptWithContext
 import io.legado.app.constant.AppConst.UA_NAME
 import io.legado.app.constant.AppPattern
-import io.legado.app.constant.AppPattern.JS_PATTERN
-import io.legado.app.constant.AppPattern.dataUriRegex
 import io.legado.app.data.entities.BaseSource
 import io.legado.app.data.entities.Book
 import io.legado.app.data.entities.BookChapter
@@ -39,6 +37,7 @@ import io.legado.app.help.http.postForm
 import io.legado.app.help.http.postJson
 import io.legado.app.help.http.postMultipart
 import io.legado.app.help.source.getShareScope
+import io.legado.app.model.Debug
 import io.legado.app.utils.EncoderUtils
 import io.legado.app.utils.GSON
 import io.legado.app.utils.GSONStrict
@@ -50,15 +49,21 @@ import io.legado.app.utils.isJson
 import io.legado.app.utils.isJsonArray
 import io.legado.app.utils.isJsonObject
 import io.legado.app.utils.isXml
+import io.legado.app.utils.parseIpsFromString
+import io.legado.app.utils.stackTraceStr
 import kotlinx.coroutines.runBlocking
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import okhttp3.Dns
+import okhttp3.Request
+import okhttp3.ResponseBody.Companion.toResponseBody
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.net.URLEncoder
 import java.nio.charset.Charset
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 import kotlin.coroutines.ContinuationInterceptor
@@ -87,8 +92,10 @@ class AnalyzeUrl(
     private val callTimeout: Long? = null,
     private var coroutineContext: CoroutineContext = EmptyCoroutineContext,
     headerMapF: Map<String, String>? = null,
-    hasLoginHeader: Boolean = true
+    hasLoginHeader: Boolean = true,
+    private val infoMap: MutableMap<String, String>? = null
 ) : JsExtensions {
+    constructor(mUrl: String) : this(mUrl, null)
 
     var ruleUrl = ""
         private set
@@ -98,7 +105,8 @@ class AnalyzeUrl(
         private set
     val headerMap = LinkedHashMap<String, String>()
     private var body: String? = null
-    private var urlNoQuery: String = ""
+    var urlNoQuery: String = ""
+        private set
     private var encodedForm: String? = null
     private var encodedQuery: String? = null
     private var charset: String? = null
@@ -107,12 +115,14 @@ class AnalyzeUrl(
     private var retry: Int = 0
     private var useWebView: Boolean = false
     private var webJs: String? = null
+    private var bodyJs: String? = null
+    private var dnsIp: String? = null
     private val enabledCookieJar = source?.enabledCookieJar == true
     private val domain: String
     private var webViewDelayTime: Long = 0
     private val concurrentRateLimiter = ConcurrentRateLimiter(source)
 
-    // Server ID
+    // 服务器ID
     var serverID: Long? = null
         private set
 
@@ -134,24 +144,24 @@ class AnalyzeUrl(
     }
 
     /**
-     * Process url
+     * 处理url
      */
     fun initUrl() {
         ruleUrl = mUrl
-        //Execute @js,<js></js>
+        //执行@js,<js></js>
         analyzeJs()
-        //Replace params
+        //替换参数
         replaceKeyPageJs()
-        //Process URL
+        //处理URL
         analyzeUrl()
     }
 
     /**
-     * Execute @js,<js></js>
+     * 执行@js,<js></js>
      */
     private fun analyzeJs() {
         var start = 0
-        val jsMatcher = JS_PATTERN.matcher(ruleUrl)
+        val jsMatcher = AppPattern.JS_PATTERN.matcher(ruleUrl)
         var result = ruleUrl
         while (jsMatcher.find()) {
             if (jsMatcher.start() > start) {
@@ -175,18 +185,18 @@ class AnalyzeUrl(
     }
 
     /**
-     * Replace keywords, page count, JS
+     * 替换关键字,页数,JS
      */
-    private fun replaceKeyPageJs() { //Replace inline rules then page rules, avoid wrong split when inline rules contain <>
+    private fun replaceKeyPageJs() { //先替换内嵌规则再替换页数规则，避免内嵌规则中存在大于小于号时，规则被切错
         //js
         if (ruleUrl.contains("{{") && ruleUrl.contains("}}")) {
-            val analyze = RuleAnalyzer(ruleUrl) //Create parser
-            //Replace all inline {{js}}
+            val analyze = RuleAnalyzer(ruleUrl) //创建解析
+            //替换所有内嵌{{js}}
             val url = analyze.innerRule("{{", "}}") {
                 val jsEval = evalJS(it) ?: ""
-                when {
-                    jsEval is String -> jsEval
-                    jsEval is Double && jsEval % 1.0 == 0.0 -> String.format("%.0f", jsEval)
+                when (jsEval) {
+                    is String -> jsEval
+                    is Double if jsEval % 1.0 == 0.0 -> String.format("%.0f", jsEval)
                     else -> jsEval.toString()
                 }
             }
@@ -197,7 +207,7 @@ class AnalyzeUrl(
             val matcher = pagePattern.matcher(ruleUrl)
             while (matcher.find()) {
                 val pages = matcher.group(1)!!.split(",")
-                ruleUrl = if (page < pages.size) { //pages[pages.size - 1] same as pages.last()
+                ruleUrl = if (page < pages.size) { //pages[pages.size - 1]等同于pages.last()
                     ruleUrl.replace(matcher.group(), pages[page - 1].trim { it <= ' ' })
                 } else {
                     ruleUrl.replace(matcher.group(), pages.last().trim { it <= ' ' })
@@ -207,10 +217,10 @@ class AnalyzeUrl(
     }
 
     /**
-     * Parse Url
+     * 解析Url
      */
     private fun analyzeUrl() {
-        //replaceKeyPageJs already replaced extras, url here is base form, can cut before first ',' string.
+        //replaceKeyPageJs已经替换掉额外内容，此处url是基础形式，可以直接切首个‘,’之前字符串。
         val urlMatcher = paramPattern.matcher(ruleUrl)
         val urlNoOption =
             if (urlMatcher.find()) ruleUrl.substring(0, urlMatcher.start()) else ruleUrl
@@ -229,7 +239,11 @@ class AnalyzeUrl(
             }
             urlOption?.let { option ->
                 option.getMethod()?.let {
-                    if (it.equals("POST", true)) method = RequestMethod.POST
+                    method = when (it.uppercase()) {
+                        "POST" -> RequestMethod.POST
+                        "HEAD" -> RequestMethod.HEAD
+                        else -> RequestMethod.GET
+                    }
                 }
                 option.getHeaderMap()?.forEach { entry ->
                     headerMap[entry.key.toString()] = entry.value.toString()
@@ -242,6 +256,8 @@ class AnalyzeUrl(
                 retry = option.getRetry()
                 useWebView = option.useWebView()
                 webJs = option.getWebJs()
+                bodyJs = option.getBodyJs()
+                dnsIp = option.getDnsIp()
                 option.getJs()?.let { jsStr ->
                     evalJS(jsStr, url)?.toString()?.let {
                         url = it
@@ -253,25 +269,24 @@ class AnalyzeUrl(
         }
         urlNoQuery = url
         when (method) {
-            RequestMethod.GET -> {
+            RequestMethod.POST -> body?.let {
+                if (!it.isJson() && !it.isXml() && headerMap["Content-Type"].isNullOrEmpty()) {
+                    analyzeFields(it)
+                }
+            }
+
+            else -> {
                 val pos = url.indexOf('?')
                 if (pos != -1) {
                     analyzeQuery(url.substring(pos + 1))
                     urlNoQuery = url.substring(0, pos)
                 }
             }
-
-            RequestMethod.POST -> body?.let {
-                if (!it.isJson() && !it.isXml() && headerMap["Content-Type"].isNullOrEmpty()) {
-                    analyzeFields(it)
-                }
-            }
         }
     }
 
     /**
-     * Parse form fields, encoding value supports:
-     * name=<value>
+     * 解析QueryMap <key>=<value>
      * name=
      * name=name
      * name=<BASE64> eg name=bmFtZQ==
@@ -342,8 +357,9 @@ class AnalyzeUrl(
         }
     }
 
+
     /**
-     * Execute JS
+     * 执行JS
      */
     fun evalJS(jsStr: String, result: Any? = null): Any? {
         val bindings = buildScriptBindings { bindings ->
@@ -358,6 +374,7 @@ class AnalyzeUrl(
             bindings["book"] = ruleData as? Book
             bindings["source"] = source
             bindings["result"] = result
+            bindings["infoMap"] = infoMap
         }
         val sharedScope = source?.getShareScope(coroutineContext)
         val scope = if (sharedScope == null) {
@@ -371,6 +388,9 @@ class AnalyzeUrl(
     }
 
     fun put(key: String, value: String): String {
+        if (key == "bookName" || key == "title") {
+            Debug.log("≡变量 $key 在特定情况下会被覆盖，建议使用其他键名")
+        }
         chapter?.putVariable(key, value)
             ?: ruleData?.putVariable(key, value)
         return value
@@ -398,13 +418,30 @@ class AnalyzeUrl(
         jsStr: String? = null,
         sourceRegex: String? = null,
         useWebView: Boolean = true,
+        isTest: Boolean = false,
+        skipRateLimit: Boolean = false
     ): StrResponse {
         if (type != null) {
             return StrResponse(url, HexUtil.encodeHexStr(getByteArrayAwait()))
         }
+        if (skipRateLimit) {
+            return executeStrRequest(jsStr, sourceRegex, useWebView, isTest)
+        }
         concurrentRateLimiter.withLimit {
-            setCookie()
-            val strResponse: StrResponse
+            return executeStrRequest(jsStr, sourceRegex, useWebView, isTest)
+        }
+    }
+
+    private suspend fun executeStrRequest(
+        jsStr: String? = null,
+        sourceRegex: String? = null,
+        useWebView: Boolean = true,
+        isTest: Boolean = false
+    ): StrResponse {
+        setCookie()
+        val startTime = System.currentTimeMillis()
+        val strResponse: StrResponse
+        try {
             if (this.useWebView && useWebView) {
                 strResponse = when (method) {
                     RequestMethod.POST -> {
@@ -455,6 +492,11 @@ class AnalyzeUrl(
                             }
                         }
 
+                        RequestMethod.HEAD -> {
+                            get(urlNoQuery, encodedQuery)
+                            head()
+                        }
+
                         else -> get(urlNoQuery, encodedQuery)
                     }
                 }.let {
@@ -462,10 +504,35 @@ class AnalyzeUrl(
                         ?.matches(AppPattern.xmlContentTypeRegex) == true
                     if (isXml && it.body?.trim()?.startsWith("<?xml", true) == false) {
                         StrResponse(it.raw, "<?xml version=\"1.0\"?>" + it.body)
+                    } else if (bodyJs != null) {
+                        val body = evalJS(bodyJs!!, it.body).toString()
+                        StrResponse(it.raw, body)
                     } else it
                 }
             }
+            val connectionTime = System.currentTimeMillis() - startTime
+            strResponse.putCallTime(connectionTime.toInt())
             return strResponse
+        } catch (e: Exception) {
+            if (!isTest) {
+                throw e
+            }
+            val errorCode = when (e) {
+                is java.net.SocketTimeoutException -> -2  // 超时错误
+                is java.net.UnknownHostException -> -3   // 未找到域名
+                is java.net.ConnectException -> -4       // 连接被拒绝
+                is java.net.SocketException -> -5        // Socket错误（包括连接重置）
+                is javax.net.ssl.SSLException -> -6      // SSL证书或握手错误
+                is java.io.InterruptedIOException -> {
+                    if (e.message?.contains("timeout") == true) {
+                        -1  // 超过设定时间
+                    } else -7
+                }
+                else -> -7  // 其它错误
+            }
+            return StrResponse(url, e.message).apply {
+                putCallTime(errorCode)
+            }
         }
     }
 
@@ -510,10 +577,30 @@ class AnalyzeUrl(
         }
     }
 
+    /**
+     * 返回一个errResponse
+     */
+    fun getErrResponse(e: Throwable): Response = Response.Builder()
+        .request(Request.Builder().url(url).build())
+        .protocol(okhttp3.Protocol.HTTP_1_1)
+        .code(500)
+        .message(e.message ?: "Error Response")
+        .body(e.stackTraceStr.toResponseBody(null))
+        .build()
+
+    /**
+     * 返回一个errStrResponse
+     */
+    fun getErrStrResponse(e: Throwable): StrResponse =
+        StrResponse(getErrResponse(e), e.stackTraceStr)
+
     private fun getClient(): OkHttpClient {
         val client = getProxyClient(proxy)
-        if (readTimeout == null && callTimeout == null) {
+        if (readTimeout == null && callTimeout == null && dnsIp == null) {
             return client
+        }
+        if (AppConfig.isCronet && dnsIp != null) {
+            customIp[urlNoQuery] = dnsIp!!
         }
         return client.newBuilder().run {
             if (readTimeout != null) {
@@ -523,9 +610,20 @@ class AnalyzeUrl(
             if (callTimeout != null) {
                 callTimeout(callTimeout, TimeUnit.MILLISECONDS)
             }
+            if (dnsIp != null) {
+                val inetAddress = dnsIp!!.parseIpsFromString()
+                dns { hostname ->
+                    inetAddress ?: Dns.SYSTEM.lookup(hostname)
+                }
+            }
             build()
         }
     }
+
+    private fun extractHostFromUrl(url: String): String? {
+        return AppPattern.domainRegex.find(url)?.groupValues?.getOrNull(1)
+    }
+
 
     fun getResponse(): Response {
         return runBlocking(coroutineContext) {
@@ -537,7 +635,7 @@ class AnalyzeUrl(
         if (!urlNoQuery.startsWith("data:")) {
             return null
         }
-        val dataUriFindResult = dataUriRegex.find(urlNoQuery)
+        val dataUriFindResult = AppPattern.dataUriRegex.find(urlNoQuery)
         if (dataUriFindResult != null) {
             val dataUriBase64 = dataUriFindResult.groupValues[1]
             val byteArray = Base64.decode(dataUriBase64, Base64.DEFAULT)
@@ -579,7 +677,7 @@ class AnalyzeUrl(
     }
 
     /**
-     * Upload file
+     * 上传文件
      */
     suspend fun upload(fileName: String, file: Any, contentType: String): StrResponse {
         return getProxyClient(proxy).newCallStrResponse(retry) {
@@ -604,13 +702,14 @@ class AnalyzeUrl(
      */
     private fun setCookie() {
         val cookie = kotlin.run {
-            /* Every time getXX is called cookieJar has already been saved */
+            /* 每次调用getXX cookieJar已经保存过了
             if (enabledCookieJar) {
                 val key = "${domain}_cookieJar"
                 CacheManager.getFromMemory(key)?.let {
-                    return@run it as? String ?: ""
+                    return@run it
                 }
             }
+            */
             CookieStore.getCookie(domain)
         }
         if (cookie.isNotEmpty()) {
@@ -626,10 +725,10 @@ class AnalyzeUrl(
     }
 
     /**
-     * Save cookies in cookieJar at end of access, don't wait for next access
+     * 保存cookieJar中的cookie在访问结束时就保存,不等到下次访问
      */
     private fun saveCookie() {
-        //When source enables save cookie, add memory cookies to DB
+        //书源启用保存cookie时 添加内存中的cookie到数据库
         if (enabledCookieJar) {
             val key = "${domain}_cookieJar"
             CacheManager.getFromMemory(key)?.let {
@@ -661,12 +760,16 @@ class AnalyzeUrl(
         return source
     }
 
+    override fun getTag(): String? {
+        return source?.getTag()
+    }
+
     companion object {
         val paramPattern: Pattern = Pattern.compile("\\s*,\\s*(?=\\{)")
         private val pagePattern = Pattern.compile("<(.*?)>")
         private val queryEncoder =
             RFC3986.UNRESERVED.orNew(PercentCodec.of("!$%&()*+,/:;=?@[\\]^`{|}"))
-
+        val customIp by lazy { ConcurrentHashMap<String, String>() }
         fun AnalyzeUrl.getMediaItem(): MediaItem {
             setCookie()
             return ExoPlayerHelper.createMediaItem(url, headerMap)
@@ -681,36 +784,45 @@ class AnalyzeUrl(
         private var headers: Any? = null,
         private var body: Any? = null,
         /**
-         * Source Url
+         * 源Url
          **/
         private var origin: String? = null,
         /**
-         * Retry count
+         * 重试次数
          **/
         private var retry: Int? = null,
         /**
-         * Type
+         * 类型
          **/
         private var type: String? = null,
         /**
-         * Whether to use webView
+         * 是否使用webView
          **/
         private var webView: Any? = null,
         /**
-         * js executed in webView
+         * webView中执行的js
          **/
         private var webJs: String? = null,
         /**
-         * JS executed after parsing url parameters
-         * Execution result will be assigned to url
+         * 自定义的域名ip
+         **/
+        private var dnsIp: String? = null,
+        /**
+         * 解析完url参数时执行的js
+         * 执行结果会赋值给url
          */
         private var js: String? = null,
         /**
-         * Server id
+         * 得到访问结果后执行的js,对结果进行二次处理
+         * 执行结果返回为body
+         */
+        private var bodyJs: String? = null,
+        /**
+         * 服务器id
          */
         private var serverID: Long? = null,
         /**
-         * webview wait delay for page load completion (ms)
+         * webview等待页面加载完毕的延迟时间（毫秒）
          */
         private var webViewDelayTime: Long? = null,
     ) {
@@ -803,6 +915,13 @@ class AnalyzeUrl(
         fun getWebJs(): String? {
             return webJs
         }
+        fun setDnsIp(value: String?) {
+            dnsIp = if (value.isNullOrBlank()) null else value
+        }
+
+        fun getDnsIp(): String? {
+            return dnsIp
+        }
 
         fun setJs(value: String?) {
             js = if (value.isNullOrBlank()) null else value
@@ -810,6 +929,14 @@ class AnalyzeUrl(
 
         fun getJs(): String? {
             return js
+        }
+
+        fun setBodyJs(value: String?) {
+            bodyJs = if (value.isNullOrBlank()) null else value
+        }
+
+        fun getBodyJs(): String? {
+            return bodyJs
         }
 
         fun setServerID(value: String?) {
@@ -831,15 +958,19 @@ class AnalyzeUrl(
 
     data class ConcurrentRecord(
         /**
-         * Whether by frequency
-         */
-        val isConcurrent: Boolean,
-        /**
-         * Start access time
+         * 开始访问时间
          */
         var time: Long,
         /**
-         * Number of current accesses
+         * 限制次数
+         */
+        var accessLimit : Int,
+        /**
+         * 间隔时间
+         */
+        var interval : Int,
+        /**
+         * 正在访问的个数
          */
         var frequency: Int
     )

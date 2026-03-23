@@ -5,9 +5,11 @@ import android.graphics.BitmapFactory
 import android.os.ParcelFileDescriptor
 import android.text.TextUtils
 import io.legado.app.constant.AppLog
+import io.legado.app.data.appDb
 import io.legado.app.data.entities.Book
 import io.legado.app.data.entities.BookChapter
 import io.legado.app.help.book.BookHelp
+import io.legado.app.help.config.AppConfig
 import io.legado.app.utils.FileUtils
 import io.legado.app.utils.HtmlFormatter
 import io.legado.app.utils.encodeURI
@@ -39,7 +41,7 @@ class EpubFile(var book: Book) {
         private fun getEFile(book: Book): EpubFile {
             if (eFile == null || eFile?.book?.bookUrl != book.bookUrl) {
                 eFile = EpubFile(book)
-                //Replacement disabled by default for Epub
+                //对于Epub文件默认不启用替换
                 //io.legado.app.data.entities.Book getUseReplaceRule
                 return eFile!!
             }
@@ -105,7 +107,7 @@ class EpubFile(var book: Book) {
      */
     private fun readEpub(): EpubBook? {
         return kotlin.runCatching {
-            //ContentScheme copy to private folder uses lazy load to prevent OOM
+            //ContentScheme拷贝到私有文件夹采用懒加载防止OOM
             //val zipFile = BookHelp.getEpubFile(book)
             BookHelp.getBookPFD(book)?.let {
                 fileDescriptor = it
@@ -121,7 +123,7 @@ class EpubFile(var book: Book) {
     }
 
     private fun getContent(chapter: BookChapter): String? {
-        /*Get current chapter text*/
+        /*获取当前章节文本*/
         val contents = epubBookContents ?: return null
         val nextChapterFirstResourceHref = chapter.getVariable("nextUrl").substringBeforeLast("#")
         val currentChapterFirstResourceHref = chapter.url.substringBeforeLast("#")
@@ -131,33 +133,33 @@ class EpubFile(var book: Book) {
         val elements = Elements()
         var findChapterFirstSource = false
         val includeNextChapterResource = !endFragmentId.isNullOrBlank()
-        /*Some books rely on href indexed resource containing multiple chapters, need fragmentId to truncate to current chapter content*/
-        /*Note: This greatly increases content load time, so cache locally after first fetch to reduce repeat loading*/
+        /*一些书籍依靠href索引的resource会包含多个章节，需要依靠fragmentId来截取到当前章节的内容*/
+        /*注:这里较大增加了内容加载的时间，所以首次获取内容后可存储到本地cache，减少重复加载*/
         for (res in contents) {
             if (!findChapterFirstSource) {
                 if (currentChapterFirstResourceHref != res.href) continue
                 findChapterFirstSource = true
-                // First xhtml file
+                // 第一个xhtml文件
                 elements.add(
                     getBody(res, startFragmentId, endFragmentId)
                 )
-                // Not last chapter AND already traversed to next chapter content, stop
+                // 不是最后章节 且 已经遍历到下一章节的内容时停止
                 if (!isLastChapter && res.href == nextChapterFirstResourceHref) break
                 continue
             }
             if (nextChapterFirstResourceHref != res.href) {
-                // The rest
+                // 其余部分
                 elements.add(getBody(res, null, null))
             } else {
-                // First xhtml of next chapter
+                // 下一章节的第一个xhtml
                 if (includeNextChapterResource) {
-                    //Has Fragment add to previous chapter
+                    //有Fragment 则添加到上一章节
                     elements.add(getBody(res, null, endFragmentId))
                 }
                 break
             }
         }
-        //Content in title tag not needed in body, remove
+        //title标签中的内容不需要显示在正文中，去除
         elements.select("title").remove()
         elements.select("[style*=display:none]").remove()
         elements.select("img[src=\"cover.jpeg\"]").forEachIndexed { i, it ->
@@ -183,7 +185,7 @@ class EpubFile(var book: Book) {
         /**
          * <image width="1038" height="670" xlink:href="..."/>
          * ...titlepage.xhtml
-         * Most epub files cover page will have cover, can partially solve cover reading issue
+         * 大多数epub文件的封面页都会带有cover，可以一定程度上解决封面读取问题
          */
         if (res.href.contains("titlepage.xhtml") ||
             res.href.contains("cover")
@@ -191,26 +193,26 @@ class EpubFile(var book: Book) {
             return Jsoup.parseBodyFragment("<img src=\"cover.jpeg\" />")
         }
 
-        // Jsoup may fix non-standard xhtml, parse and process before getting
+        // Jsoup可能会修复不规范的xhtml文件 解析处理后再获取
         var bodyElement = Jsoup.parse(String(res.data, mCharset)).body()
         bodyElement.children().run {
             select("script").remove()
             select("style").remove()
         }
-        // Get text corresponding to body
+        // 获取body对应的文本
         var bodyString = bodyElement.outerHtml()
         val originBodyString = bodyString
         /**
-         * Some xhtml files chapter title and content are not in same node or sibling nodes
+         * 某些xhtml文件 章节标题和内容不在一个节点或者不是兄弟节点
          * <div>
-         *    <a class="mulu1>Catalog 1</a>
+         *    <a class="mulu1>目录1</a>
          * </div>
          * <p>....</p>
          * <div>
-         *    <a class="mulu2>Catalog 2</a>
+         *    <a class="mulu2>目录2</a>
          * </div>
          * <p>....</p>
-         * First find Element corresponding to FragmentId then directly truncate html between
+         * 先找到FragmentId对应的Element 然后直接截取之间的html
          */
         if (!startFragmentId.isNullOrBlank()) {
             bodyElement.getElementById(startFragmentId)?.outerHtml()?.let {
@@ -224,11 +226,11 @@ class EpubFile(var book: Book) {
                 bodyString = bodyString.substringBefore(tagStart)
             }
         }
-        //Truncated then re-parsed
+        //截取过再重新解析
         if (bodyString != originBodyString) {
             bodyElement = Jsoup.parse(bodyString).body()
         }
-        /*Choose to remove H tags in content, some book titles duplicate reading title, needs optimization*/
+        /*选择去除正文中的H标签，部分书籍标题与阅读标题重复待优化*/
         val tag = Book.hTag
         if (book.getDelTag(tag)) {
             bodyElement.run {
@@ -264,7 +266,7 @@ class EpubFile(var book: Book) {
                 if (fastCheck && File(book.coverUrl!!).exists()) {
                     return
                 }
-                /*Some books cover fetch abnormal after DRM processing, needs optimization*/
+                /*部分书籍DRM处理后，封面获取异常，待优化*/
                 it.coverImage?.inputStream?.use { input ->
                     val cover = BitmapFactory.decodeStream(input)
                     val out = FileOutputStream(FileUtils.createFileIfNotExist(book.coverUrl!!))
@@ -352,11 +354,12 @@ class EpubFile(var book: Book) {
                 }
             }
         }
+        getWordCount(chapterList, book)
         return chapterList
     }
 
-    /*Get book start page content. Some books have cover, intro, title page etc before chapter 1*/
-    /*title retrieval has mixed styles, format processing needs optimization*/
+    /*获取书籍起始页内容。部分书籍第一章之前存在封面，引言，扉页等内容*/
+    /*tile获取不同书籍风格杂乱，格式化处理待优化*/
     private var durIndex = 0
     private fun parseFirstPage(
         chapterList: ArrayList<BookChapter>,
@@ -374,8 +377,8 @@ class EpubFile(var book: Book) {
                 continue
             }
             /**
-             * Stop retrieving at first chapter href
-             * completeHref may have fragment(#id) must be removed
+             * 检索到第一章href停止
+             * completeHref可能有fragment(#id) 必须去除
              * fix https://github.com/gedoor/legado/issues/1932
              */
             if (firstRef.completeHref.substringBeforeLast("#") == content.href) break
@@ -433,6 +436,22 @@ class EpubFile(var book: Book) {
 
     protected fun finalize() {
         fileDescriptor?.close()
+    }
+
+    private fun getWordCount(list: ArrayList<BookChapter>, book: Book) {
+        if (!AppConfig.tocCountWords) {
+            return
+        }
+        val chapterList = appDb.bookChapterDao.getChapterList(book.bookUrl)
+        if (chapterList.isNotEmpty()) {
+            val map = chapterList.associateBy({ it.getFileName() }, { it.wordCount })
+            for (bookChapter in list) {
+                val wordCount = map[bookChapter.getFileName()]
+                if (wordCount != null) {
+                    bookChapter.wordCount = wordCount
+                }
+            }
+        }
     }
 
 }

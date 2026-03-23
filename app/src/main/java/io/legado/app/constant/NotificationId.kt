@@ -1,7 +1,7 @@
 package io.legado.app.constant
 
 /**
- * Notification ID cannot repeat, uniform planning of Notification ID
+ * 通知ID不能重复,统一规划通知ID
  */
 @Suppress("ConstPropertyName")
 object NotificationId {
@@ -13,6 +13,7 @@ object NotificationId {
     const val WebService = 105
     const val DownloadService = 106
     const val CheckSourceService = 107
+    const val VideoPlayService = 108
     const val Download = 10000
     const val ExportBook = 201
 

@@ -3,6 +3,7 @@ package io.legado.app.ui.main.bookshelf
 import android.annotation.SuppressLint
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.core.view.indices
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -75,6 +76,7 @@ abstract class BaseBookshelfFragment(layoutId: Int) : VMBaseFragment<BookshelfVi
     }
     abstract val groupId: Long
     abstract val books: List<Book>
+    abstract var onlyUpdateRead: Boolean
     private var groupsLiveData: LiveData<List<BookGroup>>? = null
     private val waitDialog by lazy {
         WaitDialog(requireContext()).apply {
@@ -95,7 +97,7 @@ abstract class BaseBookshelfFragment(layoutId: Int) : VMBaseFragment<BookshelfVi
         when (item.itemId) {
             R.id.menu_remote -> startActivity<RemoteBookActivity>()
             R.id.menu_search -> startActivity<SearchActivity>()
-            R.id.menu_update_toc -> activityViewModel.upToc(books)
+            R.id.menu_update_toc -> activityViewModel.upToc(books, onlyUpdateRead)
             R.id.menu_bookshelf_layout -> configBookshelf()
             R.id.menu_group_manage -> showDialogFragment<GroupManageDialog>()
             R.id.menu_add_local -> startActivity<ImportBookActivity>()
@@ -139,7 +141,7 @@ abstract class BaseBookshelfFragment(layoutId: Int) : VMBaseFragment<BookshelfVi
             if (count < 0) {
                 waitDialog.dismiss()
             } else {
-                waitDialog.setText(getString(R.string.sc_adding_progress, count))
+                waitDialog.setText("添加中... ($count)")
             }
         }
     }
@@ -153,7 +155,7 @@ abstract class BaseBookshelfFragment(layoutId: Int) : VMBaseFragment<BookshelfVi
             customView { alertBinding.root }
             okButton {
                 alertBinding.editView.text?.toString()?.let {
-                    waitDialog.setText(R.string.sc_adding)
+                    waitDialog.setText("添加中...")
                     waitDialog.show()
                     viewModel.addBookByUrl(it)
                 }
@@ -167,6 +169,7 @@ abstract class BaseBookshelfFragment(layoutId: Int) : VMBaseFragment<BookshelfVi
         alert(titleResource = R.string.bookshelf_layout) {
             var bookshelfLayout = AppConfig.bookshelfLayout
             var bookshelfSort = AppConfig.bookshelfSort
+            var showBookname = AppConfig.showBookname
             val alertBinding =
                 DialogBookshelfConfigBinding.inflate(layoutInflater)
                     .apply {
@@ -181,13 +184,26 @@ abstract class BaseBookshelfFragment(layoutId: Int) : VMBaseFragment<BookshelfVi
                             bookshelfSort = 0
                             AppConfig.bookshelfSort = 0
                         }
+                        if (showBookname !in rgbLayout.indices) {
+                            showBookname = 0
+                            AppConfig.showBookname = 0
+                        }
                         spGroupStyle.setSelection(AppConfig.bookGroupStyle)
                         swShowUnread.isChecked = AppConfig.showUnread
                         swShowLastUpdateTime.isChecked = AppConfig.showLastUpdateTime
                         swShowWaitUpBooks.isChecked = AppConfig.showWaitUpCount
                         swShowBookshelfFastScroller.isChecked = AppConfig.showBookshelfFastScroller
                         rgLayout.checkByIndex(bookshelfLayout)
+                        rgbLayout.checkByIndex(showBookname)
+                        if (bookshelfLayout < 2) {
+                            bookNameChoice.visibility = View.GONE
+                        }
+                        rgLayout.setOnCheckedChangeListener { group, checkedId ->
+                            val index = group.getCheckedIndex()
+                            bookNameChoice.visibility = if (index > 1) View.VISIBLE else View.GONE
+                        }
                         rgSort.checkByIndex(bookshelfSort)
+                        margin.progress = AppConfig.bookshelfMargin
                     }
             customView { alertBinding.root }
             okButton {
@@ -197,6 +213,14 @@ abstract class BaseBookshelfFragment(layoutId: Int) : VMBaseFragment<BookshelfVi
                     if (AppConfig.bookGroupStyle != spGroupStyle.selectedItemPosition) {
                         AppConfig.bookGroupStyle = spGroupStyle.selectedItemPosition
                         notifyMain = true
+                    }
+                    if (showBookname != rgbLayout.getCheckedIndex()) {
+                        AppConfig.showBookname = rgbLayout.getCheckedIndex()
+                        recreate = true
+                    }
+                    if (AppConfig.bookshelfMargin != margin.progress) {
+                        AppConfig.bookshelfMargin = margin.progress
+                        recreate = true
                     }
                     if (AppConfig.showUnread != swShowUnread.isChecked) {
                         AppConfig.showUnread = swShowUnread.isChecked
@@ -220,7 +244,7 @@ abstract class BaseBookshelfFragment(layoutId: Int) : VMBaseFragment<BookshelfVi
                     }
                     if (bookshelfLayout != rgLayout.getCheckedIndex()) {
                         AppConfig.bookshelfLayout = rgLayout.getCheckedIndex()
-                        if (AppConfig.bookshelfLayout == 0) {
+                        if (AppConfig.bookshelfLayout < 2) {
                             activityViewModel.booksGridRecycledViewPool.clear()
                         } else {
                             activityViewModel.booksListRecycledViewPool.clear()

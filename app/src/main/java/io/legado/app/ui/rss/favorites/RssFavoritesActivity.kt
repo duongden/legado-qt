@@ -45,15 +45,15 @@ class RssFavoritesActivity : BaseActivity<ActivityRssFavoritesBinding>() {
 
     override fun onResume() {
         super.onResume()
-        //When exiting ReadRssActivity, check if tabLayout selection needs repositioning
-        if (currentGroup.isNotEmpty() && groupList.isNotEmpty()){
+        //从ReadRssActivity退出时，判断是否需要重新定位tabLayout选中项
+        if (currentGroup.isNotEmpty() && groupList.isNotEmpty()) {
             var item = groupList.indexOf(currentGroup)
             val currentItem = binding.viewPager.currentItem
-            //End if coordinates unchanged
-            if(item == currentItem){
+            //如果坐标没有变化，则结束
+            if (item == currentItem) {
                 return
             }
-            if (item == -1){
+            if (item == -1) {
                 item = currentItem
             }
             lifecycleScope.launch {
@@ -113,7 +113,7 @@ class RssFavoritesActivity : BaseActivity<ActivityRssFavoritesBinding>() {
     private fun upFragments() {
         lifecycleScope.launch {
             appDb.rssStarDao.flowGroups().catch {
-                AppLog.put(getString(R.string.error_get_sub_group_data, it.localizedMessage), it)
+                AppLog.put("订阅分组数据获取失败\n${it.localizedMessage}", it)
             }.distinctUntilChanged().flowOn(IO).collect {
                 groupList.clear()
                 groupList.addAll(it)
@@ -131,10 +131,15 @@ class RssFavoritesActivity : BaseActivity<ActivityRssFavoritesBinding>() {
     }
 
     private fun deleteGroup() {
+        if (groupList.isEmpty()) {
+            return
+        }
         alert(R.string.draw) {
             val item = binding.viewPager.currentItem
             val group = groupList[item]
-            setMessage(getString(R.string.sure_del) + "\n<" + group + ">" + getString(R.string.group))
+            setMessage(
+                getString(R.string.sure_del) + "\n<" + group + ">" + getString(R.string.group)
+            )
             noButton()
             yesButton {
                 appDb.rssStarDao.deleteByGroup(group)
@@ -144,7 +149,10 @@ class RssFavoritesActivity : BaseActivity<ActivityRssFavoritesBinding>() {
 
     private fun deleteAll() {
         alert(R.string.draw) {
-            setMessage(getString(R.string.sure_del) + "\n<" + getString(R.string.all) + ">" + getString(R.string.favorite))
+            setMessage(
+                getString(R.string.sure_del) + "\n<" + getString(R.string.all) + ">"
+                        + getString(R.string.favorite)
+            )
             noButton()
             yesButton {
                 appDb.rssStarDao.deleteAll()

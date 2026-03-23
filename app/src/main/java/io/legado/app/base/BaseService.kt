@@ -18,6 +18,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Semaphore
 import kotlin.coroutines.CoroutineContext
+import android.provider.Settings
+import androidx.annotation.RequiresApi
 
 abstract class BaseService : LifecycleService() {
 
@@ -78,14 +80,14 @@ abstract class BaseService : LifecycleService() {
     }
 
     /**
-     * Start foreground service and send notification
+     * 开启前台服务并发送通知
      */
     open fun startForegroundNotification() {
 
     }
 
     /**
-     * Check notification and background permissions
+     * 检测通知权限和后台权限
      */
     private fun checkPermission() {
         PermissionsCompat.Builder()
@@ -103,5 +105,14 @@ abstract class BaseService : LifecycleService() {
                 .rationale(R.string.ignore_battery_permission_rationale)
                 .request()
         }
+    }
+    /**
+     * 检测悬浮窗权限
+     */
+    fun checkFloatPermission() {
+        PermissionsCompat.Builder()
+            .addPermissions(Permissions.SYSTEM_ALERT_WINDOW)
+            .rationale(R.string.float_permission_rationale)
+            .request()
     }
 }

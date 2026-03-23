@@ -27,6 +27,7 @@ import io.legado.app.help.coroutine.Coroutine
 import io.legado.app.model.ImageProvider
 import io.legado.app.model.ReadAloud
 import io.legado.app.model.ReadBook
+import io.legado.app.model.SourceCallBack
 import io.legado.app.model.localBook.LocalBook
 import io.legado.app.model.webBook.WebBook
 import io.legado.app.service.BaseReadAloudService
@@ -39,6 +40,7 @@ import io.legado.app.utils.mapParallelSafe
 import io.legado.app.utils.postEvent
 import io.legado.app.utils.toStringArray
 import io.legado.app.utils.toastOnUi
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
@@ -52,10 +54,9 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
-import kotlin.coroutines.coroutineContext
 
 /**
- * Reading interface data processing
+ * 阅读界面数据处理
  */
 class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     val permissionDenialLiveData = MutableLiveData<Int>()
@@ -79,7 +80,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * Initialize
+     * 初始化
      */
     fun initData(intent: Intent, success: (() -> Unit)? = null) {
         execute {
@@ -96,6 +97,12 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
                     ReadBook.upMsg(context.getString(R.string.no_book))
                     AppLog.put("未找到书籍\nbookUrl:$bookUrl")
                 }
+            }
+            val index = intent.getIntExtra("index", -1)
+            val chapterPos = intent.getIntExtra("chapterPos", -1)
+            if (index >= 0 && chapterPos >= 0) { //从书签打开的正文，有进度传递
+                ReadBook.saveCurrentBookProgress() //启用恢复进度提示
+                openChapter(index, chapterPos)
             }
         }.onSuccess {
             success?.invoke()
@@ -127,14 +134,22 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
         }
         ReadBook.upMsg(null)
         if (!isSameBook) {
-            ReadBook.loadContent(resetPageOffset = true)
+            ReadBook.loadContent(resetPageOffset = true) {
+                ReadBook.bookSource?.let {
+                    SourceCallBack.callBackBook(SourceCallBack.START_READ, it, book, ReadBook.curTextChapter?.chapter)
+                }
+            }
         } else {
-            ReadBook.loadOrUpContent()
+            ReadBook.loadOrUpContent {
+                ReadBook.bookSource?.let {
+                    SourceCallBack.callBackBook(SourceCallBack.START_READ, it, book, ReadBook.curTextChapter?.chapter)
+                }
+            }
         }
         if (ReadBook.chapterChanged) {
-            // Chapter jump does not sync reading progress
+            // 有章节跳转不同步阅读进度
             ReadBook.chapterChanged = false
-        } else if (!isSameBook || !BaseReadAloudService.isRun) {
+        } else if (!(isSameBook && BaseReadAloudService.isRun) && ReadBook.inBookshelf) {
             if (AppConfig.syncBookProgressPlus) {
                 ReadBook.syncProgress({ progress -> ReadBook.callBack?.sureNewProgress(progress) })
             } else {
@@ -161,7 +176,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * Load detail page
+     * 加载详情页
      */
     private suspend fun loadBookInfo(book: Book): Boolean {
         val source = ReadBook.bookSource ?: return true
@@ -169,14 +184,14 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
             WebBook.getBookInfoAwait(source, book, canReName = false)
             return true
         } catch (e: Throwable) {
-            coroutineContext.ensureActive()
+            currentCoroutineContext().ensureActive()
             ReadBook.upMsg("详情页出错: ${e.localizedMessage}")
             return false
         }
     }
 
     /**
-     * Load catalog
+     * 加载目录
      */
     fun loadChapterList(book: Book) {
         execute {
@@ -225,7 +240,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
                         ReadBook.onChapterListUpdated(book)
                         return true
                     }.onFailure {
-                        coroutineContext.ensureActive()
+                        currentCoroutineContext().ensureActive()
                         ReadBook.upMsg(context.getString(R.string.error_load_toc))
                         return false
                     }
@@ -235,7 +250,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * Sync progress
+     * 同步进度
      */
     fun syncBookProgress(
         book: Book,
@@ -248,6 +263,9 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
             AppLog.put("拉取阅读进度失败《${book.name}》\n${it.localizedMessage}", it)
         }.onSuccess { progress ->
             progress ?: return@onSuccess
+            if (progress.durChapterIndex == book.durChapterIndex && progress.durChapterPos == book.durChapterPos) {
+                return@onSuccess
+            }
             if (progress.durChapterIndex < book.durChapterIndex ||
                 (progress.durChapterIndex == book.durChapterIndex
                         && progress.durChapterPos < book.durChapterPos)
@@ -256,12 +274,13 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
             } else if (progress.durChapterIndex < book.simulatedTotalChapterNum()) {
                 ReadBook.setProgress(progress)
                 AppLog.put("自动同步阅读进度成功《${book.name}》 ${progress.durChapterTitle}")
+                context.toastOnUi("已同步最新阅读进度")
             }
         }
     }
 
     /**
-     * Change source
+     * 换源
      */
     fun changeTo(book: Book, toc: List<BookChapter>) {
         changeSourceCoroutine?.cancel()
@@ -284,7 +303,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * Auto change source
+     * 自动换源
      */
     private fun autoChangeSource(name: String, author: String) {
         if (!AppConfig.autoChangeSource) return
@@ -384,7 +403,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * Save content
+     * 保存内容
      */
     fun saveContent(book: Book, content: String) {
         execute {
@@ -397,7 +416,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * Reverse content
+     * 反转内容
      */
     fun reverseContent(book: Book) {
         execute {
@@ -414,7 +433,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * Content search jump
+     * 内容搜索跳转
      */
     fun searchResultPositions(
         textChapter: TextChapter,
@@ -423,13 +442,22 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
         // calculate search result's pageIndex
         val pages = textChapter.pages
         val content = textChapter.getContent()
-        val queryLength = searchContentQuery.length
+        var queryLength = searchContentQuery.length
 
-        var count = 0
-        var index = content.indexOf(searchContentQuery)
-        while (count != searchResult.resultCountWithinChapter) {
-            index = content.indexOf(searchContentQuery, index + queryLength)
-            count += 1
+        var index: Int
+        if (searchResult.isRegex) {
+            val regex = Regex(searchContentQuery)
+            val matches = regex.findAll(content)
+            val match = matches.elementAtOrNull(searchResult.resultCountWithinChapter)
+            queryLength = match?.value?.length ?: 0
+            index = match?.range?.first ?: -1
+        } else {
+            var count = 0
+            index = content.indexOf(searchContentQuery)
+            while (count != searchResult.resultCountWithinChapter) {
+                index = content.indexOf(searchContentQuery, index + queryLength)
+                count += 1
+            }
         }
         val contentPosition = index
         var pageIndex = 0
@@ -472,11 +500,11 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
             addLine = -1
             charIndex2 = charIndex + queryLength - curLineLength - 1
         }
-        return arrayOf(pageIndex, lineIndex, charIndex, addLine, charIndex2)
+        return arrayOf(pageIndex, lineIndex, charIndex, addLine, charIndex2, queryLength)
     }
 
     /**
-     * Reverse delete duplicate titles
+     * 翻转删除重复标题
      */
     fun reverseRemoveSameTitle() {
         execute {
@@ -490,7 +518,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * Refresh image
+     * 刷新图片
      */
     fun refreshImage(src: String) {
         execute {
@@ -505,7 +533,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * Save image
+     * 保存图片
      */
     fun saveImage(src: String?, uri: Uri) {
         src ?: return
@@ -535,7 +563,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     /**
-     * Replace rule change
+     * 替换规则变化
      */
     fun replaceRuleChanged() {
         execute {

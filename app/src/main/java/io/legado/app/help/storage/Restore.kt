@@ -32,6 +32,7 @@ import io.legado.app.help.book.upType
 import io.legado.app.help.config.LocalConfig
 import io.legado.app.help.config.ReadBookConfig
 import io.legado.app.help.config.ThemeConfig
+import io.legado.app.model.VideoPlay.VIDEO_PREF_NAME
 import io.legado.app.model.BookCover
 import io.legado.app.model.localBook.LocalBook
 import io.legado.app.utils.ACache
@@ -79,15 +80,15 @@ object Restore {
                 ZipUtils.unZipToPath(File(uri.path!!), Backup.backupPath)
             }
         }.onFailure {
-            AppLog.put(appCtx.getString(R.string.copy_unzip_file_error, it.localizedMessage), it)
+            AppLog.put("复制解压文件出错\n${it.localizedMessage}", it)
             return
         }
         kotlin.runCatching {
             restoreLocked(Backup.backupPath)
             LocalConfig.lastBackup = System.currentTimeMillis()
         }.onFailure {
-            appCtx.toastOnUi(appCtx.getString(R.string.restore_backup_error, it.localizedMessage))
-            AppLog.put(appCtx.getString(R.string.restore_backup_error, it.localizedMessage), it)
+            appCtx.toastOnUi("恢复备份出错\n${it.localizedMessage}")
+            AppLog.put("恢复备份出错\n${it.localizedMessage}", it)
         }
     }
 
@@ -165,11 +166,12 @@ object Restore {
             appDb.dictRuleDao.insert(*it.toTypedArray())
         }
         fileToListT<KeyboardAssist>(path, "keyboardAssists.json")?.let {
+            appDb.keyboardAssistsDao.deleteAll() //先删除所有,保证和备份数据一样
             appDb.keyboardAssistsDao.insert(*it.toTypedArray())
         }
         fileToListT<ReadRecord>(path, "readRecord.json")?.let {
             it.forEach { readRecord ->
-                //Check if local record
+                //判断是不是本机记录
                 if (readRecord.deviceId != androidId) {
                     appDb.readRecordDao.insert(readRecord)
                 } else {
@@ -192,7 +194,7 @@ object Restore {
                 appDb.serverDao.insert(*it.toTypedArray())
             }
         }?.onFailure {
-            AppLog.put(appCtx.getString(R.string.restore_server_config_error, it.localizedMessage), it)
+            AppLog.put("恢复服务器配置出错\n${it.localizedMessage}", it)
         }
         File(path, DirectLinkUpload.ruleFileName).takeIf {
             it.exists()
@@ -200,9 +202,9 @@ object Restore {
             val json = readText()
             ACache.get(cacheDir = false).put(DirectLinkUpload.ruleFileName, json)
         }?.onFailure {
-            AppLog.put(appCtx.getString(R.string.restore_direct_link_upload_error, it.localizedMessage), it)
+            AppLog.put("恢复直链上传出错\n${it.localizedMessage}", it)
         }
-        //Restore theme config
+        //恢复主题配置
         File(path, ThemeConfig.configFileName).takeIf {
             it.exists()
         }?.runCatching {
@@ -210,7 +212,7 @@ object Restore {
             copyTo(File(ThemeConfig.configFilePath))
             ThemeConfig.upConfig()
         }?.onFailure {
-            AppLog.put(appCtx.getString(R.string.restore_theme_error, it.localizedMessage), it)
+            AppLog.put("恢复主题出错\n${it.localizedMessage}", it)
         }
         File(path, BookCover.configFileName).takeIf {
             it.exists()
@@ -218,10 +220,10 @@ object Restore {
             val json = readText()
             BookCover.saveCoverRule(json)
         }?.onFailure {
-            AppLog.put(appCtx.getString(R.string.restore_cover_rule_error, it.localizedMessage), it)
+            AppLog.put("恢复封面规则出错\n${it.localizedMessage}", it)
         }
         if (!BackupConfig.ignoreReadConfig) {
-            //Restore reading UI config
+            //恢复阅读界面配置
             File(path, ReadBookConfig.configFileName).takeIf {
                 it.exists()
             }?.runCatching {
@@ -229,7 +231,7 @@ object Restore {
                 copyTo(File(ReadBookConfig.configFilePath))
                 ReadBookConfig.initConfigs()
             }?.onFailure {
-                AppLog.put(appCtx.getString(R.string.restore_read_interface_error, it.localizedMessage), it)
+                AppLog.put("恢复阅读界面出错\n${it.localizedMessage}", it)
             }
             File(path, ReadBookConfig.shareConfigFileName).takeIf {
                 it.exists()
@@ -238,7 +240,7 @@ object Restore {
                 copyTo(File(ReadBookConfig.shareConfigFilePath))
                 ReadBookConfig.initShareConfig()
             }?.onFailure {
-                AppLog.put(appCtx.getString(R.string.restore_read_interface_error, it.localizedMessage), it)
+                AppLog.put("恢复阅读界面出错\n${it.localizedMessage}", it)
             }
         }
         //AppWebDav.downBgs()
@@ -274,6 +276,20 @@ object Restore {
             }
             edit.apply()
         }
+        appCtx.getSharedPreferences(path, "videoConfig")?.all?.let { map ->
+            appCtx.getSharedPreferences(VIDEO_PREF_NAME, Context.MODE_PRIVATE).edit().apply {
+                map.forEach { (key, value) ->
+                    when (value) {
+                        is Int -> putInt(key, value)
+                        is Boolean -> putBoolean(key, value)
+                        is Long -> putLong(key, value)
+                        is Float -> putFloat(key, value)
+                        is String -> putString(key, value)
+                    }
+                }
+                apply()
+            }
+        }
         ReadBookConfig.apply {
             comicStyleSelect = appCtx.getPrefInt(PreferKey.comicStyleSelect)
             readStyleSelect = appCtx.getPrefInt(PreferKey.readStyleSelect)
@@ -306,8 +322,8 @@ object Restore {
                 LogUtils.d(TAG, "阅读恢复备份 $fileName 文件不存在")
             }
         } catch (e: Exception) {
-            AppLog.put(appCtx.getString(R.string.read_parse_error, fileName, e.localizedMessage), e)
-            appCtx.toastOnUi(appCtx.getString(R.string.read_file_error, fileName, e.localizedMessage))
+            AppLog.put("$fileName\n读取解析出错\n${e.localizedMessage}", e)
+            appCtx.toastOnUi("$fileName\n读取文件出错\n${e.localizedMessage}")
         }
         return null
     }

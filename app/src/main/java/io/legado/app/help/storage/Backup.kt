@@ -37,7 +37,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import splitties.init.appCtx
-import io.legado.app.R
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -45,6 +44,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import androidx.core.content.edit
+import io.legado.app.model.VideoPlay.VIDEO_PREF_NAME
+import kotlinx.coroutines.currentCoroutineContext
 
 /**
  * 备份
@@ -82,7 +84,8 @@ object Backup {
             ReadBookConfig.shareConfigFileName,
             ThemeConfig.configFileName,
             BookCover.configFileName,
-            "config.xml"
+            "config.xml",
+            "videoConfig.xml"
         )
     }
 
@@ -116,7 +119,7 @@ object Backup {
                     }
                 }
             }.onError {
-                AppLog.put(appCtx.getString(R.string.auto_backup_failed, it.localizedMessage))
+                AppLog.put("自动备份失败\n${it.localizedMessage}")
             }
         }
     }
@@ -202,6 +205,20 @@ object Backup {
             edit.commit()
         }
         currentCoroutineContext().ensureActive()
+        appCtx.getSharedPreferences(backupPath, "videoConfig")?.let { sp ->
+            sp.edit(commit = true) {
+                appCtx.getSharedPreferences(VIDEO_PREF_NAME, Context.MODE_PRIVATE).all.forEach { (key, value) ->
+                    when (value) {
+                        is Int -> putInt(key, value)
+                        is Boolean -> putBoolean(key, value)
+                        is Long -> putLong(key, value)
+                        is Float -> putFloat(key, value)
+                        is String -> putString(key, value)
+                    }
+                }
+            }
+        }
+        currentCoroutineContext().ensureActive()
         val zipFileName = getNowZipFileName()
         val paths = arrayListOf(*backupFileNames)
         for (i in 0 until paths.size) {
@@ -231,7 +248,7 @@ object Backup {
             try {
                 AppWebDav.backUpWebDav(zipFileName)
             } catch (e: Exception) {
-                AppLog.put(appCtx.getString(R.string.upload_backup_webdav_failed, e.toString()), e)
+                AppLog.put("上传备份至webdav失败\n$e", e)
             }
         }
         FileUtils.delete(backupPath)
@@ -270,9 +287,9 @@ object Backup {
         val treeDoc = DocumentFile.fromTreeUri(context, uri)!!
         treeDoc.findFile(fileName)?.delete()
         val fileDoc = treeDoc.createFile("", fileName)
-            ?: throw NoStackTraceException(appCtx.getString(R.string.create_file_failed))
+            ?: throw NoStackTraceException("创建文件失败")
         val outputS = fileDoc.openOutputStream()
-            ?: throw NoStackTraceException(appCtx.getString(R.string.open_output_stream_failed))
+            ?: throw NoStackTraceException("打开OutputStream失败")
         outputS.use {
             FileInputStream(zipFilePath).use { inputS ->
                 inputS.copyTo(outputS)

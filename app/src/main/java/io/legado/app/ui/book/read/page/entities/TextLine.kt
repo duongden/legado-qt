@@ -2,14 +2,15 @@ package io.legado.app.ui.book.read.page.entities
 
 import android.annotation.SuppressLint
 import android.graphics.Canvas
+import android.graphics.DashPathEffect
 import android.graphics.Paint.FontMetrics
 import android.os.Build
+import android.text.TextPaint
 import androidx.annotation.Keep
 import io.legado.app.help.PaintPool
 import io.legado.app.help.book.isImage
 import io.legado.app.help.config.AppConfig
 import io.legado.app.help.config.ReadBookConfig
-import io.legado.app.lib.theme.ThemeStore
 import io.legado.app.model.ReadBook
 import io.legado.app.ui.book.read.page.ContentTextView
 import io.legado.app.ui.book.read.page.entities.TextPage.Companion.emptyTextPage
@@ -38,6 +39,7 @@ data class TextLine(
     val isTitle: Boolean = false,
     var isParagraphEnd: Boolean = false,
     var isImage: Boolean = false,
+    var isHtml: Boolean = false,
     var startX: Float = 0f,
     var indentSize: Int = 0,
     var extraLetterSpacing: Float = 0f,
@@ -76,6 +78,14 @@ data class TextLine(
         textColumns.add(column)
     }
 
+    fun addColumns(columns: Collection<BaseColumn>) {
+        onlyTextColumn = false
+        columns.forEach { column ->
+            column.textLine = this
+        }
+        textColumns.addAll(columns)
+    }
+
     fun getColumn(index: Int): BaseColumn {
         return textColumns.getOrElse(index) {
             textColumns.last()
@@ -100,7 +110,7 @@ data class TextLine(
         return y > lineTop + relativeOffset
                 && y < lineBottom + relativeOffset
                 && x >= lineStart
-                && x <= lineEnd
+                && x <= lineEnd + 20.dpToPx()
     }
 
     fun isTouchY(y: Float, relativeOffset: Float): Boolean {
@@ -115,10 +125,10 @@ data class TextLine(
         val visibleTop = ChapterProvider.paddingTop
         val visibleBottom = ChapterProvider.visibleBottom
         val visible = when {
-            // Fully visible
+            // 完全可视
             top >= visibleTop && bottom <= visibleBottom -> true
             top <= visibleTop && bottom >= visibleBottom -> true
-            // Top first line partially visible
+            // 上方第一行部分可视
             top < visibleTop && bottom > visibleTop && bottom < visibleBottom -> {
                 if (isImage) {
                     true
@@ -127,7 +137,7 @@ data class TextLine(
                     visibleRate > 0.6
                 }
             }
-            // Bottom first line partially visible
+            // 下方第一行部分可视
             top > visibleTop && top < visibleBottom && bottom > visibleBottom -> {
                 if (isImage) {
                     true
@@ -136,7 +146,7 @@ data class TextLine(
                     visibleRate > 0.6
                 }
             }
-            // Invisible
+            // 不可视
             else -> false
         }
         return visible
@@ -161,7 +171,7 @@ data class TextLine(
             }
         }
 
-        // Read aloud and search underline in E-ink mode
+        // 墨水屏模式下的朗读和搜索下划线
         if (AppConfig.isEInkMode && (isReadAloud || searchResultColumnCount > 0)) {
             val underlinePaint = PaintPool.obtain()
             underlinePaint.set(ChapterProvider.contentPaint)
@@ -170,9 +180,11 @@ data class TextLine(
             canvas.drawLine(lineStart + indentWidth, lineY, lineEnd, lineY, underlinePaint)
             PaintPool.recycle(underlinePaint)
         }
-        
-        if (ReadBookConfig.underline && !isImage && ReadBook.book?.isImage != true) {
-            drawUnderline(canvas)
+
+        val underlineMode = ReadBookConfig.underlineMode
+        if (underlineMode == 0) return
+        if (!isImage && !isHtml && ReadBook.book?.isImage != true) {
+            drawUnderline(canvas, underlineMode)
         }
     }
 
@@ -184,7 +196,7 @@ data class TextLine(
             ChapterProvider.contentPaint
         }
         val textColor = if (isReadAloud) {
-            ThemeStore.accentColor
+            ReadBookConfig.textAccentColor
         } else {
             ReadBookConfig.textColor
         }
@@ -213,17 +225,32 @@ data class TextLine(
     }
 
     /**
-     * Draw underline
+     * 绘制下划线
      */
-    private fun drawUnderline(canvas: Canvas) {
-        val lineY = height - 1.dpToPx()
-        canvas.drawLine(
-            lineStart + indentWidth,
-            lineY,
-            lineEnd,
-            lineY,
-            ChapterProvider.contentPaint
-        )
+    private fun drawUnderline(canvas: Canvas, underlineMode: Int) {
+        val paint = ChapterProvider.contentPaint
+        val distance = (ChapterProvider.lineSpacingExtra * 10 - 11).coerceIn(-1f, 10f)
+        val lineY = height + distance.dpToPx()
+        if (underlineMode == 1) {
+            canvas.drawLine(
+                lineStart + indentWidth,
+                lineY,
+                lineEnd,
+                lineY,
+                paint
+            )
+        } else if (underlineMode == 2) { // 虚线
+            val dashPathEffect = DashPathEffect(floatArrayOf(10f, 10f), 0f)
+            val dashPath = TextPaint(paint)
+            dashPath.pathEffect = dashPathEffect
+            canvas.drawLine(
+                lineStart + indentWidth,
+                lineY,
+                lineEnd,
+                lineY,
+                dashPath
+            )
+        }
     }
 
     fun checkFastDraw(): Boolean {
@@ -253,6 +280,7 @@ data class TextLine(
     companion object {
         val emptyTextLine = TextLine()
         private val atLeastApi26 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+        val atLeastApi28 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
         private val atLeastApi35 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM
         private val wordSpacingWorking by lazy {
             // issue 3785 3846

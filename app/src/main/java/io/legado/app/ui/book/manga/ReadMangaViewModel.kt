@@ -26,6 +26,8 @@ import io.legado.app.model.webBook.WebBook
 import io.legado.app.utils.mapParallelSafe
 import io.legado.app.utils.postEvent
 import io.legado.app.utils.toastOnUi
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
@@ -41,7 +43,7 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
     private var changeSourceCoroutine: Coroutine<*>? = null
 
     /**
-     * Initialize
+     * 初始化
      */
     fun initData(intent: Intent, success: (() -> Unit)? = null) {
         execute {
@@ -88,7 +90,7 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
             return
         }
 
-        //Start loading content
+        //开始加载内容
         if (!isSameBook) {
             ReadManga.loadContent()
         } else {
@@ -96,9 +98,9 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
         }
 
         if (ReadManga.chapterChanged) {
-            // Chapter jump does not sync reading progress
+            // 有章节跳转不同步阅读进度
             ReadManga.chapterChanged = false
-        } else {
+        } else if (ReadManga.inBookshelf) {
             if (AppConfig.syncBookProgressPlus) {
                 ReadManga.syncProgress(
                     { progress -> ReadManga.mCallback?.sureNewProgress(progress) })
@@ -107,7 +109,7 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
             }
         }
 
-        //Auto change source
+        //自动换源
         if (!book.isLocal && ReadManga.bookSource == null) {
             autoChangeSource(book.name, book.author)
             return
@@ -129,7 +131,8 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
             ReadManga.onChapterListUpdated(book)
             return true
         }.onFailure {
-            //Load chapter error
+            currentCoroutineContext().ensureActive()
+            //加载章节出错
             ReadManga.mCallback?.loadFail(appCtx.getString(R.string.error_load_toc))
             return false
         }
@@ -137,7 +140,7 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
     }
 
     /**
-     * Load detail page
+     * 加载详情页
      */
     private suspend fun loadBookInfo(book: Book): Boolean {
         val source = ReadManga.bookSource ?: return true
@@ -145,13 +148,14 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
             WebBook.getBookInfoAwait(source, book, canReName = false)
             return true
         } catch (e: Throwable) {
+            currentCoroutineContext().ensureActive()
             ReadManga.mCallback?.loadFail("详情页出错: ${e.localizedMessage}")
             return false
         }
     }
 
     /**
-     * Auto change source
+     * 自动换源
      */
     private fun autoChangeSource(name: String, author: String) {
         if (!AppConfig.autoChangeSource) return
@@ -164,7 +168,7 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
                     }
                 }
             }.onStart {
-                // Auto change source
+                // 自动换源
 
             }.mapParallelSafe(AppConfig.threadCount) { source ->
                 val book = WebBook.preciseSearchAwait(source, name, author).getOrThrow()
@@ -190,7 +194,7 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
             }.onEmpty {
                 throw NoStackTraceException("没有合适书源")
             }.onCompletion {
-                // Change source complete
+                // 换源完成
             }.catch {
                 AppLog.put("自动换源失败\n${it.localizedMessage}", it)
                 context.toastOnUi("自动换源失败\n${it.localizedMessage}")
@@ -199,7 +203,7 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
     }
 
     /**
-     * Sync progress
+     * 同步进度
      */
     fun syncBookProgress(
         book: Book,
@@ -212,6 +216,9 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
             AppLog.put("拉取阅读进度失败《${book.name}》\n${it.localizedMessage}", it)
         }.onSuccess { progress ->
             progress ?: return@onSuccess
+            if (progress.durChapterIndex == book.durChapterIndex && progress.durChapterPos == book.durChapterPos) {
+                return@onSuccess
+            }
             if (progress.durChapterIndex < book.durChapterIndex ||
                 (progress.durChapterIndex == book.durChapterIndex
                         && progress.durChapterPos < book.durChapterPos)
@@ -220,17 +227,18 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
             } else if (progress.durChapterIndex < book.simulatedTotalChapterNum()) {
                 ReadManga.setProgress(progress)
                 AppLog.put("自动同步阅读进度成功《${book.name}》 ${progress.durChapterTitle}")
+                context.toastOnUi("已同步最新漫画阅读进度")
             }
         }
     }
 
     /**
-     * Change source
+     * 换源
      */
     fun changeTo(book: Book, toc: List<BookChapter>) {
         changeSourceCoroutine?.cancel()
         changeSourceCoroutine = execute {
-            //Values source changing
+            //换源中
             ReadManga.book?.migrateTo(book, toc)
             book.removeType(BookType.updateError)
             ReadManga.book?.delete()

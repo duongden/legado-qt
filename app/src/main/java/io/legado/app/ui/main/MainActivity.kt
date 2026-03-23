@@ -8,6 +8,7 @@ import android.view.MenuItem
 import android.view.ViewGroup
 import androidx.activity.addCallback
 import androidx.activity.viewModels
+import androidx.core.view.get
 import androidx.core.view.postDelayed
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -30,10 +31,12 @@ import io.legado.app.help.config.LocalConfig
 import io.legado.app.help.coroutine.Coroutine
 import io.legado.app.help.storage.Backup
 import io.legado.app.lib.dialogs.alert
-import io.legado.app.lib.theme.elevation
 import io.legado.app.lib.theme.primaryColor
 import io.legado.app.service.BaseReadAloudService
 import io.legado.app.ui.about.CrashLogsDialog
+import io.legado.app.ui.association.ImportBookSourceDialog
+import io.legado.app.ui.association.ImportReplaceRuleDialog
+import io.legado.app.ui.association.ImportRssSourceDialog
 import io.legado.app.ui.main.bookshelf.BaseBookshelfFragment
 import io.legado.app.ui.main.bookshelf.style1.BookshelfFragment1
 import io.legado.app.ui.main.bookshelf.style2.BookshelfFragment2
@@ -41,6 +44,7 @@ import io.legado.app.ui.main.explore.ExploreFragment
 import io.legado.app.ui.main.my.MyFragment
 import io.legado.app.ui.main.rss.RssFragment
 import io.legado.app.ui.widget.dialog.TextDialog
+import io.legado.app.ui.widget.text.BadgeView
 import io.legado.app.utils.isCreated
 import io.legado.app.utils.navigationBarHeight
 import io.legado.app.utils.observeEvent
@@ -51,17 +55,23 @@ import io.legado.app.utils.toastOnUi
 import io.legado.app.utils.viewbindingdelegate.viewBinding
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import splitties.views.bottomPadding
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
+import androidx.core.view.get
+import io.legado.app.help.update.AppUpdate
+import io.legado.app.ui.about.UpdateDialog
+import kotlin.time.Duration.Companion.hours
 
 /**
  * 主界面
  */
+@Suppress("PrivatePropertyName")
 class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
     BottomNavigationView.OnNavigationItemSelectedListener,
-    BottomNavigationView.OnNavigationItemReselectedListener {
+    BottomNavigationView.OnNavigationItemReselectedListener,
+    MainViewModel.CallBack {
 
     override val binding by viewBinding(ActivityMainBinding::inflate)
     override val viewModel by viewModels<MainViewModel>()
@@ -82,9 +92,7 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
     private val adapter by lazy {
         TabFragmentPageAdapter(supportFragmentManager)
     }
-    private val onUpBooksBadgeView by lazy {
-        binding.bottomNavigationView.addBadgeView(0)
-    }
+    private var onUpBooksBadgeView: BadgeView? = null
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         upBottomMenu()
@@ -116,19 +124,25 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
         lifecycleScope.launch {
-            //Privacy policy
+            //隐私协议
             if (!privacyPolicy()) return@launch
-            //Version update
+            //版本更新
             upVersion()
-            //Set local password
+            //设置本地密码
             setLocalPassword()
             notifyAppCrash()
-            //Backup sync
+            //备份同步
             backupSync()
-            //Auto update book
+            //设置回调
+            viewModel.setActivityCallback(this@MainActivity)
+            //自动更新书源
+            binding.viewPagerMain.postDelayed(1000) {
+                viewModel.ruleSubsUp()
+            }
+            //自动更新书籍
             val isAutoRefreshedBook = savedInstanceState?.getBoolean("isAutoRefreshedBook") ?: false
             if (AppConfig.autoRefreshBook && !isAutoRefreshedBook) {
-                binding.viewPagerMain.postDelayed(1000) {
+                binding.viewPagerMain.postDelayed(2000) {
                     viewModel.upAllBookToc()
                 }
             }
@@ -180,7 +194,6 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
         viewPagerMain.offscreenPageLimit = 3
         viewPagerMain.adapter = adapter
         viewPagerMain.addOnPageChangeListener(PageChangeCallback())
-        bottomNavigationView.elevation = elevation
         bottomNavigationView.setOnNavigationItemSelectedListener(this@MainActivity)
         bottomNavigationView.setOnNavigationItemReselectedListener(this@MainActivity)
         if (AppConfig.isEInkMode) {
@@ -194,12 +207,12 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
     }
 
     /**
-     * Privacy and Protocol
+     * 用户隐私与协议
      */
-    private suspend fun privacyPolicy(): Boolean = suspendCoroutine { block ->
+    private suspend fun privacyPolicy(): Boolean = suspendCancellableCoroutine sc@{ block ->
         if (LocalConfig.privacyPolicyOk) {
             block.resume(true)
-            return@suspendCoroutine
+            return@sc
         }
         val privacyPolicy = String(assets.open("privacyPolicy.md").readBytes())
         alert(getString(R.string.privacy_policy), privacyPolicy) {
@@ -215,12 +228,23 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
     }
 
     /**
-     * Version update log
+     * 版本更新日志
      */
-    private suspend fun upVersion() = suspendCoroutine { block ->
+    private suspend fun upVersion() = suspendCancellableCoroutine sc@{ block ->
         if (LocalConfig.versionCode == appInfo.versionCode) {
+            if (AppConfig.autoUpdateVariant) {
+                if (LocalConfig.lastCheckUpdate + 24.hours.inWholeMilliseconds < System.currentTimeMillis()) {
+                    AppUpdate.giteeUpdate.check(lifecycleScope)
+                        .onSuccess {
+                            showDialogFragment(
+                                UpdateDialog(it)
+                            )
+                        }
+                    LocalConfig.lastCheckUpdate = System.currentTimeMillis()
+                }
+            }
             block.resume(null)
-            return@suspendCoroutine
+            return@sc
         }
         LocalConfig.versionCode = appInfo.versionCode
         if (LocalConfig.isFirstOpenApp) {
@@ -245,10 +269,10 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
     /**
      * 设置本地密码
      */
-    private suspend fun setLocalPassword() = suspendCoroutine { block ->
+    private suspend fun setLocalPassword() = suspendCancellableCoroutine sc@{ block ->
         if (LocalConfig.password != null) {
             block.resume(null)
-            return@suspendCoroutine
+            return@sc
         }
         alert(R.string.set_local_password, R.string.set_local_password_summary) {
             val editTextBinding = DialogEditTextBinding.inflate(layoutInflater).apply {
@@ -274,7 +298,7 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
             return
         }
         LocalConfig.appCrash = false
-        alert(getString(R.string.draw), getString(R.string.crash_detected_message)) {
+        alert(getString(R.string.draw), "检测到阅读发生了崩溃，是否打开崩溃日志以便报告问题？") {
             yesButton {
                 showDialogFragment<CrashLogsDialog>()
             }
@@ -283,7 +307,7 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
     }
 
     /**
-     * Backup sync
+     * 备份同步
      */
     private fun backupSync() {
         if (!AppConfig.autoCheckNewBackup) {
@@ -322,7 +346,7 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
     }
 
     /**
-     * If restart too fast fragment won't recreate, update bookshelf sort here
+     * 如果重启太快fragment不会重建,这里更新一下书架的排序
      */
     override fun recreate() {
         (fragmentMap[getFragmentId(0)] as? BaseBookshelfFragment)?.run {
@@ -333,13 +357,21 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
 
     override fun observeLiveBus() {
         viewModel.onUpBooksLiveData.observe(this) {
-            onUpBooksBadgeView.setBadgeCount(it)
+            if (onUpBooksBadgeView == null) {
+                onUpBooksBadgeView = binding.bottomNavigationView.addBadgeView(0)
+            }
+            onUpBooksBadgeView!!.setBadgeCount(it)
         }
         observeEvent<String>(EventBus.RECREATE) {
             recreate()
         }
         observeEvent<Boolean>(EventBus.NOTIFY_MAIN) {
             binding.apply {
+                if (it) {
+                    bottomNavigationView.menu.clear()
+                    bottomNavigationView.inflateMenu(R.menu.main_bnv)
+                    onUpBooksBadgeView = null
+                }
                 upBottomMenu()
                 if (it) {
                     viewPagerMain.setCurrentItem(bottomMenuCount - 1, false)
@@ -348,11 +380,6 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
         }
         observeEvent<String>(PreferKey.threadCount) {
             viewModel.upPool()
-        }
-        observeEvent<Boolean>(PreferKey.translateEnable) {
-            if (it) {
-                viewModel.checkSourceTranslation()
-            }
         }
     }
 
@@ -405,8 +432,7 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
 
         override fun onPageSelected(position: Int) {
             pagePosition = position
-            binding.bottomNavigationView.menu
-                .getItem(realPositions[position]).isChecked = true
+            binding.bottomNavigationView.menu[realPositions[position]].isChecked = true
         }
 
     }
@@ -458,6 +484,20 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
             return fragment
         }
 
+    }
+
+    override fun openImportUi(type:Int, source: String) {
+        when (type) {
+            0 -> showDialogFragment(
+                ImportBookSourceDialog(source)
+            )
+            1 -> showDialogFragment(
+                ImportRssSourceDialog(source)
+            )
+            2 -> showDialogFragment(
+                ImportReplaceRuleDialog(source)
+            )
+        }
     }
 
 }

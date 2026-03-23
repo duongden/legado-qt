@@ -30,7 +30,7 @@ fun Uri.isContentScheme() = this.scheme == "content"
 fun Uri.isFileScheme() = this.scheme == "file"
 
 /**
- * Read URI
+ * 读取URI
  */
 fun AppCompatActivity.readUri(
     uri: Uri?,
@@ -40,7 +40,7 @@ fun AppCompatActivity.readUri(
     try {
         if (uri.isContentScheme()) {
             val doc = DocumentFile.fromSingleUri(this, uri)
-            doc ?: throw NoStackTraceException(getString(R.string.sc_file_not_found))
+            doc ?: throw NoStackTraceException("未获取到文件")
             val fileDoc = FileDoc.fromDocumentFile(doc)
             contentResolver.openInputStream(uri)!!.use { inputStream ->
                 success.invoke(fileDoc, inputStream)
@@ -62,7 +62,7 @@ fun AppCompatActivity.readUri(
         }
     } catch (e: Exception) {
         e.printOnDebug()
-        AppLog.put("${getString(R.string.sc_open_file_failed)}\n$uri\n$e", e, true)
+        AppLog.put("读取Uri出错\n$uri\n$e", e, true)
         if (e is SecurityException) {
             throw e
         }
@@ -70,14 +70,14 @@ fun AppCompatActivity.readUri(
 }
 
 /**
- * Read URI
+ * 读取URI
  */
 fun Fragment.readUri(uri: Uri?, success: (fileDoc: FileDoc, inputStream: InputStream) -> Unit) {
     uri ?: return
     try {
         if (uri.isContentScheme()) {
             val doc = DocumentFile.fromSingleUri(requireContext(), uri)
-            doc ?: throw NoStackTraceException(getString(R.string.sc_file_not_found))
+            doc ?: throw NoStackTraceException("未获取到文件")
             val fileDoc = FileDoc.fromDocumentFile(doc)
             requireContext().contentResolver.openInputStream(uri)!!.use { inputStream ->
                 success.invoke(fileDoc, inputStream)
@@ -99,26 +99,25 @@ fun Fragment.readUri(uri: Uri?, success: (fileDoc: FileDoc, inputStream: InputSt
         }
     } catch (e: Exception) {
         e.printOnDebug()
-        AppLog.put("${getString(R.string.sc_open_file_failed)}\n$uri\n$e", e, true)
+        AppLog.put("读取Uri出错\n$uri\n$e", e, true)
     }
 }
 
 @Throws(Exception::class)
 fun Uri.readBytes(context: Context): ByteArray {
     return if (this.isContentScheme()) {
-        context.contentResolver.openInputStream(this)?.let {
+        context.contentResolver.openInputStream(this)?.use {
             val len: Int = it.available()
             val buffer = ByteArray(len)
             it.read(buffer)
-            it.close()
-            return buffer
-        } ?: throw NoStackTraceException("${context.getString(R.string.sc_open_file_failed)}\n${this}")
+            buffer
+        } ?: throw NoStackTraceException("打开文件失败\n${this}")
     } else {
         val path = RealPathUtil.getPath(context, this)
         if (path?.isNotEmpty() == true) {
             File(path).readBytes()
         } else {
-            throw NoStackTraceException("${context.getString(R.string.sc_get_real_path_failed)}\n${this.path}")
+            throw NoStackTraceException("获取文件真实地址失败\n${this.path}")
         }
     }
 }
@@ -182,21 +181,21 @@ fun Uri.inputStream(context: Context): Result<InputStream> {
         try {
             if (isContentScheme()) {
                 DocumentFile.fromSingleUri(context, uri)
-                    ?: throw NoStackTraceException(context.getString(R.string.sc_file_not_found))
+                    ?: throw NoStackTraceException("未获取到文件")
                 return@runCatching context.contentResolver.openInputStream(uri)!!
             } else {
                 val path = RealPathUtil.getPath(context, uri)
-                    ?: throw NoStackTraceException(context.getString(R.string.sc_file_not_found))
+                    ?: throw NoStackTraceException("未获取到文件")
                 val file = File(path)
                 if (file.exists()) {
                     return@runCatching FileInputStream(file)
                 } else {
-                    throw NoStackTraceException(context.getString(R.string.sc_file_not_found))
+                    throw NoStackTraceException("文件不存在")
                 }
             }
         } catch (e: Exception) {
             e.printOnDebug()
-            AppLog.put(context.getString(R.string.sc_read_input_stream_failed, e.localizedMessage), e)
+            AppLog.put("读取inputStream失败：${e.localizedMessage}", e)
             throw e
         }
     }
@@ -208,21 +207,21 @@ fun Uri.outputStream(context: Context): Result<OutputStream> {
         try {
             if (isContentScheme()) {
                 DocumentFile.fromSingleUri(context, uri)
-                    ?: throw NoStackTraceException(context.getString(R.string.sc_file_not_found))
+                    ?: throw NoStackTraceException("未获取到文件")
                 return@runCatching context.contentResolver.openOutputStream(uri)!!
             } else {
                 val path = RealPathUtil.getPath(context, uri)
-                    ?: throw NoStackTraceException(context.getString(R.string.sc_file_not_found))
+                    ?: throw NoStackTraceException("未获取到文件")
                 val file = File(path)
                 if (file.exists()) {
                     return@runCatching FileOutputStream(file)
                 } else {
-                    throw NoStackTraceException(context.getString(R.string.sc_file_not_found))
+                    throw NoStackTraceException("文件不存在")
                 }
             }
         } catch (e: Exception) {
             e.printOnDebug()
-            AppLog.put(context.getString(R.string.sc_read_input_stream_failed, e.localizedMessage), e)
+            AppLog.put("读取inputStream失败：${e.localizedMessage}", e)
             throw e
         }
     }
@@ -234,11 +233,11 @@ fun Uri.toReadPfd(context: Context): Result<ParcelFileDescriptor> {
         try {
             if (isContentScheme()) {
                 DocumentFile.fromSingleUri(context, uri)
-                    ?: throw NoStackTraceException(context.getString(R.string.sc_file_not_found))
+                    ?: throw NoStackTraceException("未获取到文件")
                 return@runCatching context.contentResolver.openFileDescriptor(uri, "r")!!
             } else {
                 val path = RealPathUtil.getPath(context, uri)
-                    ?: throw NoStackTraceException(context.getString(R.string.sc_file_not_found))
+                    ?: throw NoStackTraceException("未获取到文件")
                 val file = File(path)
                 if (file.exists()) {
                     return@runCatching ParcelFileDescriptor.open(
@@ -246,14 +245,14 @@ fun Uri.toReadPfd(context: Context): Result<ParcelFileDescriptor> {
                         ParcelFileDescriptor.MODE_READ_ONLY
                     )
                 } else {
-                    throw NoStackTraceException(context.getString(R.string.sc_file_not_found))
+                    throw NoStackTraceException("文件不存在")
                 }
             }
 
 
         } catch (e: Exception) {
             e.printOnDebug()
-            AppLog.put(context.getString(R.string.sc_read_input_stream_failed, e.localizedMessage), e)
+            AppLog.put("读取inputStream失败：${e.localizedMessage}", e)
             throw e
         }
     }
@@ -265,11 +264,11 @@ fun Uri.toWritePfd(context: Context): Result<ParcelFileDescriptor> {
         try {
             if (isContentScheme()) {
                 DocumentFile.fromSingleUri(context, uri)
-                    ?: throw NoStackTraceException(context.getString(R.string.sc_file_not_found))
+                    ?: throw NoStackTraceException("未获取到文件")
                 return@runCatching context.contentResolver.openFileDescriptor(uri, "w")!!
             } else {
                 val path = RealPathUtil.getPath(context, uri)
-                    ?: throw NoStackTraceException(context.getString(R.string.sc_file_not_found))
+                    ?: throw NoStackTraceException("未获取到文件")
                 val file = File(path)
                 if (file.exists()) {
                     return@runCatching ParcelFileDescriptor.open(
@@ -277,14 +276,14 @@ fun Uri.toWritePfd(context: Context): Result<ParcelFileDescriptor> {
                         ParcelFileDescriptor.MODE_WRITE_ONLY
                     )
                 } else {
-                    throw NoStackTraceException(context.getString(R.string.sc_file_not_found))
+                    throw NoStackTraceException("文件不存在")
                 }
             }
 
 
         } catch (e: Exception) {
             e.printOnDebug()
-            AppLog.put(context.getString(R.string.sc_read_input_stream_failed, e.localizedMessage), e)
+            AppLog.put("读取inputStream失败：${e.localizedMessage}", e)
             throw e
         }
     }

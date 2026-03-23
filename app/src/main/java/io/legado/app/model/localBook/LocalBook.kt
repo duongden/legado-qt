@@ -59,11 +59,12 @@ import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.util.regex.Pattern
-import kotlin.coroutines.coroutineContext
+import androidx.core.net.toUri
+import kotlinx.coroutines.currentCoroutineContext
 
 /**
  * 书籍文件导入 目录正文解析
- * 支持在线文件txt epub umd 压缩文件 本地文件
+ * 支持在线文件(txt epub umd 压缩文件 本地文件
  */
 object LocalBook {
 
@@ -83,14 +84,14 @@ object LocalBook {
                 val localArchiveUri = book.getArchiveUri()
                 val webDavUrl = book.getRemoteUrl()
                 if (localArchiveUri != null) {
-                    // Re-import corresponding archive
+                    // 重新导入对应的压缩包
                     importArchiveFile(localArchiveUri, book.originName) {
                         it.contains(book.originName)
                     }.firstOrNull()?.let {
                         getBookInputStream(it)
                     }
                 } else if (webDavUrl != null && downloadRemoteBook(book)) {
-                    // Download remote link
+                    // 下载远程链接
                     getBookInputStream(book)
                 } else {
                     null
@@ -103,7 +104,7 @@ object LocalBook {
 
     fun getLastModified(book: Book): Result<Long> {
         return kotlin.runCatching {
-            val uri = Uri.parse(book.bookUrl)
+            val uri = book.bookUrl.toUri()
             if (uri.isContentScheme()) {
                 return@runCatching DocumentFile.fromSingleUri(appCtx, uri)!!.lastModified()
             }
@@ -149,11 +150,20 @@ object LocalBook {
             }
         }
         val replaceRules = ContentProcessor.get(book).getTitleReplaceRules()
+        val replaceBook = book.toReplaceBook()
         book.durChapterTitle = list.getOrElse(book.durChapterIndex) { list.last() }
-            .getDisplayTitle(replaceRules, book.getUseReplaceRule())
+            .getDisplayTitle(
+                replaceRules,
+                book.getUseReplaceRule(),
+                replaceBook = replaceBook
+            )
         book.latestChapterTitle =
             list.getOrElse(book.simulatedTotalChapterNum() - 1) { list.last() }
-                .getDisplayTitle(replaceRules, book.getUseReplaceRule())
+                .getDisplayTitle(
+                    replaceRules,
+                    book.getUseReplaceRule(),
+                    replaceBook = replaceBook
+                )
         book.totalChapterNum = list.size
         book.latestChapterTime = System.currentTimeMillis()
         return list
@@ -195,7 +205,7 @@ object LocalBook {
             }
         }
 
-        if (content.isNullOrEmpty()) {
+        if (content.isNullOrEmpty() && !chapter.isVolume) {
             return null
         }
 
@@ -215,7 +225,7 @@ object LocalBook {
     }
 
     /**
-     * Download online file and auto import to reading (txt umd epub)
+     * 下载在线的文件并自动导入到阅读（txt umd epub)
      */
     suspend fun importFileOnLine(
         str: String,
@@ -226,11 +236,11 @@ object LocalBook {
     }
 
     /**
-     * Import local file
+     * 导入本地文件
      */
     fun importFile(uri: Uri): Book {
         val bookUrl: String
-        //Do not modify updateTime variable, or cache won't read
+        //updateTime变量不要修改,否则会导致读取不到缓存
         val (fileName, _, _, updateTime, _) = FileDoc.fromUri(uri, false).apply {
             if (size == 0L) throw EmptyFileException("Unexpected empty File")
 
@@ -253,9 +263,9 @@ object LocalBook {
         } else {
             deleteBook(book, false)
             upBookInfo(book)
-            // Trigger isLocalModified
+            // 触发 isLocalModified
             book.latestChapterTime = 0
-            //Existing book means update, delete old catalog
+            //已有书籍说明是更新,删除原有目录
             appDb.bookChapterDao.delByBook(bookUrl)
         }
         return book
@@ -270,7 +280,7 @@ object LocalBook {
         }
     }
 
-    /* Import books from archive */
+    /* 导入压缩包内的书籍 */
     fun importArchiveFile(
         archiveFileUri: Uri,
         saveFileName: String? = null,
@@ -284,7 +294,7 @@ object LocalBook {
         return files.map {
             saveBookFile(FileInputStream(it), saveFileName ?: it.name).let { uri ->
                 importFile(uri).apply {
-                    //Append archive name, re-unzip if file deleted
+                    //附加压缩包名称 以便解压文件被删后再解压
                     origin = "${BookType.localTag}::${archiveFileDoc.name}"
                     addType(BookType.archive)
                     save()
@@ -293,7 +303,7 @@ object LocalBook {
         }
     }
 
-    /* Batch import supports automatic import of supported books in archives */
+    /* 批量导入 支持自动导入压缩包的支持书籍 */
     fun importFiles(uri: Uri): List<Book> {
         val books = mutableListOf<Book>()
         val fileDoc = FileDoc.fromUri(uri, false)
@@ -332,7 +342,7 @@ object LocalBook {
     }
 
     /**
-     * Analyze book info from file (title, author...)
+     * 从文件分析书籍必要信息（书名 作者等）
      */
     private fun analyzeNameAuthor(fileName: String): Pair<String, String> {
         val tempFileName = fileName.substringBeforeLast(".")
@@ -340,10 +350,10 @@ object LocalBook {
         var author = ""
         if (!AppConfig.bookImportFileName.isNullOrBlank()) {
             try {
-                //Add code capturing author/name after user script, captured if values exist
+                //在用户脚本后添加捕获author、name的代码，只要脚本中author、name有值就会被捕获
                 val js =
                     AppConfig.bookImportFileName + "\nJSON.stringify({author:author,name:name})"
-                //Define how to split filename into title/author in script
+                //在脚本中定义如何分解文件名成书名、作者名
                 val jsonStr = RhinoScriptEngine.run {
                     val bindings = ScriptBindings()
                     bindings["src"] = tempFileName
@@ -382,7 +392,7 @@ object LocalBook {
             }
             if (deleteOriginal) {
                 if (book.bookUrl.isContentScheme()) {
-                    val uri = Uri.parse(book.bookUrl)
+                    val uri = book.bookUrl.toUri()
                     DocumentFile.fromSingleUri(appCtx, uri)?.delete()
                 } else {
                     FileUtils.delete(book.bookUrl)
@@ -392,7 +402,7 @@ object LocalBook {
     }
 
     /**
-     * Download online file
+     * 下载在线的文件
      */
     suspend fun saveBookFile(
         str: String,
@@ -404,7 +414,7 @@ object LocalBook {
         val inputStream = when {
             str.isAbsUrl() -> AnalyzeUrl(
                 str, source = source, callTimeout = 0,
-                coroutineContext = coroutineContext
+                coroutineContext = currentCoroutineContext()
             ).getInputStreamAwait()
 
             str.isDataUrl() -> ByteArrayInputStream(
@@ -427,7 +437,7 @@ object LocalBook {
         inputStream.use {
             val defaultBookTreeUri = AppConfig.defaultBookTreeUri
             if (defaultBookTreeUri.isNullOrBlank()) throw NoBooksDirException()
-            val treeUri = Uri.parse(defaultBookTreeUri)
+            val treeUri = defaultBookTreeUri.toUri()
             return if (treeUri.isContentScheme()) {
                 val treeDoc = DocumentFile.fromTreeUri(appCtx, treeUri)
                 var doc = treeDoc!!.findFile(fileName)
@@ -459,10 +469,10 @@ object LocalBook {
     fun isOnBookShelf(
         fileName: String
     ): Boolean {
-        return appDb.bookDao.hasFile(fileName) == true
+        return appDb.bookDao.hasFile(fileName)
     }
 
-    //File source merge online book info Online > Local
+    //文件类书源 合并在线书籍信息 在线 > 本地
     fun mergeBook(localBook: Book, onLineBook: Book?): Book {
         onLineBook ?: return localBook
         localBook.name = onLineBook.name.ifBlank { localBook.name }
@@ -474,14 +484,14 @@ object LocalBook {
         return localBook
     }
 
-    //Download remote file for book and update Book
+    //下载book对应的远程文件 并更新Book
     private fun downloadRemoteBook(localBook: Book): Boolean {
         val webDavUrl = localBook.getRemoteUrl()
         if (webDavUrl.isNullOrBlank()) throw NoStackTraceException("Book file is not webDav File")
         try {
             AppConfig.defaultBookTreeUri
                 ?: throw NoBooksDirException()
-            // Compatible with old links
+            // 兼容旧版链接
             val webdav: WebDav = kotlin.runCatching {
                 WebDav.fromPath(webDavUrl)
             }.getOrElse {
@@ -493,7 +503,7 @@ object LocalBook {
             }
             inputStream.use {
                 if (localBook.isArchive) {
-                    // Archive
+                    // 压缩包
                     val archiveUri = saveBookFile(it, localBook.archiveName)
                     val newBook = importArchiveFile(archiveUri, localBook.originName) { name ->
                         name.contains(localBook.originName)

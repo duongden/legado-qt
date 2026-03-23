@@ -32,22 +32,6 @@
         android:title="@string/dict_rule"
         app:iconSpaceReserved="false" />
 
-    <io.legado.app.lib.prefs.SwitchPreference
-        android:icon="@drawable/ic_translate"
-        android:key="translateEnable"
-        android:summary="@string/translate_enable_summary"
-        android:title="@string/translate_setting"
-        app:iconSpaceReserved="false"
-        android:defaultValue="false" />
-
-    <io.legado.app.lib.prefs.Preference
-    android:icon="@drawable/ic_translate"
-        android:key="custom_dict_manage"
-        android:title="@string/custom_dict_manage"
-        android:summary="@string/custom_dict_manage_summary"
-        app:dependency="translateEnable"
-        app:iconSpaceReserved="true" />
-
     <io.legado.app.lib.prefs.NameListPreference
         android:defaultValue="0"
         android:entries="@array/theme_mode"
@@ -69,7 +53,7 @@
 
     <io.legado.app.lib.prefs.PreferenceCategory
         android:title="@string/setting"
-        app:allowDividerAbove="true"
+        app:allowDividerAbove="false"
         app:allowDividerBelow="false"
         app:iconSpaceReserved="false">
 
@@ -100,7 +84,7 @@
     <io.legado.app.lib.prefs.PreferenceCategory
         android:key="aboutCategory"
         android:title="@string/other"
-        app:allowDividerAbove="true"
+        app:allowDividerAbove="false"
         app:allowDividerBelow="false"
         app:iconSpaceReserved="false"
         app:layout="@layout/view_preference_category">

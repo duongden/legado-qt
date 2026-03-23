@@ -1,8 +1,6 @@
 package io.legado.app.api.controller
 
 import io.legado.app.api.ReturnData
-import io.legado.app.R
-import splitties.init.appCtx
 import io.legado.app.data.appDb
 import io.legado.app.data.entities.ReplaceRule
 import io.legado.app.utils.GSON
@@ -23,10 +21,10 @@ object ReplaceRuleController {
 
     fun saveRule(postData: String?): ReturnData {
         val returnData = ReturnData()
-        postData ?: return returnData.setErrorMsg(appCtx.getString(R.string.data_not_empty))
+        postData ?: return returnData.setErrorMsg("数据不能为空")
         val rule = GSON.fromJsonObject<ReplaceRule>(postData).getOrNull()
         if (rule == null) {
-            returnData.setErrorMsg(appCtx.getString(R.string.invalid_format))
+            returnData.setErrorMsg("格式不对")
         } else {
             if (rule.order == Int.MIN_VALUE) {
                 rule.order = appDb.replaceRuleDao.maxOrder + 1
@@ -39,10 +37,10 @@ object ReplaceRuleController {
 
     fun delete(postData: String?): ReturnData {
         val returnData = ReturnData()
-        postData ?: return returnData.setErrorMsg(appCtx.getString(R.string.data_not_empty))
+        postData ?: return returnData.setErrorMsg("数据不能为空")
         val rule = GSON.fromJsonObject<ReplaceRule>(postData).getOrNull()
         if (rule == null) {
-            returnData.setErrorMsg(appCtx.getString(R.string.invalid_format))
+            returnData.setErrorMsg("格式不对")
         } else {
             appDb.replaceRuleDao.delete(rule)
         }
@@ -50,7 +48,7 @@ object ReplaceRuleController {
     }
 
     /**
-     * Pass in test data format
+     * 传入测试数据格式
      * {
      *  rule: Replace,
      *  text: "xxx"
@@ -58,10 +56,10 @@ object ReplaceRuleController {
      */
     fun testRule(postData: String?): ReturnData {
         val returnData = ReturnData()
-        postData ?: return returnData.setErrorMsg(appCtx.getString(R.string.data_not_empty))
+        postData ?: return returnData.setErrorMsg("数据不能为空")
         val map = GSON.fromJsonObject<Map<String, *>>(postData).getOrNull()
         if (map == null) {
-            returnData.setErrorMsg(appCtx.getString(R.string.invalid_format))
+            returnData.setErrorMsg("格式不对")
         } else {
             val rule = map["rule"]?.let {
                 if (it is String) {
@@ -71,16 +69,17 @@ object ReplaceRuleController {
                 }
             }
             if (rule == null) {
-                returnData.setErrorMsg(appCtx.getString(R.string.invalid_format))
+                returnData.setErrorMsg("格式不对")
                 return returnData
             }
             if (rule.pattern.isEmpty()) {
-                returnData.setErrorMsg(appCtx.getString(R.string.replace_rule_not_empty))
+                returnData.setErrorMsg("替换规则不能为空")
             }
             val text = map["text"] as String
             val content = try {
                 if (rule.isRegex) {
                     text.replace(
+                        rule.name,
                         rule.pattern.toRegex(),
                         rule.replacement,
                         rule.getValidTimeoutMillisecond()

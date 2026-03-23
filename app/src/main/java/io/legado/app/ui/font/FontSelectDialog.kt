@@ -34,7 +34,6 @@ import io.legado.app.utils.putPrefString
 import io.legado.app.utils.setLayout
 import io.legado.app.utils.toastOnUi
 import io.legado.app.utils.viewbindingdelegate.viewBinding
-import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -160,7 +159,7 @@ class FontSelectDialog : BaseDialogFragment(R.layout.dialog_font_select),
         }.onSuccess {
             adapter.setItems(it)
         }.onError {
-            AppLog.put(getString(R.string.error_load_font_files, it.localizedMessage), it)
+            AppLog.put("加载字体文件失败\n${it.localizedMessage}", it)
             toastOnUi("getFontFiles:${it.localizedMessage}")
         }
     }

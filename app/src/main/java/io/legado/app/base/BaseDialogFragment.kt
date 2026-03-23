@@ -7,12 +7,14 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
+import android.widget.EditText
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.textfield.TextInputLayout
 import io.legado.app.R
 import io.legado.app.constant.AppLog
 import io.legado.app.help.config.AppConfig
@@ -49,7 +51,7 @@ abstract class BaseDialogFragment(
                 it.attributes = attr
                 it.decorView.setBackgroundKeepPadding(R.color.transparent)
             }
-            // Modify gravity timing usually in subclass onStart, so execute after onStart.
+            // 修改gravity的时机一般在子类的onStart方法中, 因此需要在onStart之后执行.
             lifecycle.addObserver(LifecycleEventObserver { _, event ->
                 if (event == Lifecycle.Event.ON_START) {
                     when (dialog?.window?.attributes?.gravity) {
@@ -69,7 +71,7 @@ abstract class BaseDialogFragment(
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            //Without this android 5.0 dialog top has whitespace
+            //不加这个android 5.0对话框顶部会有空白
             setStyle(STYLE_NO_TITLE, 0)
         }
     }
@@ -90,7 +92,7 @@ abstract class BaseDialogFragment(
 
     override fun show(manager: FragmentManager, tag: String?) {
         kotlin.runCatching {
-            //Add remove transaction before each add, prevent continuous add
+            //在每个add事务前增加一个remove事务，防止连续的add
             manager.beginTransaction().remove(this).commit()
             super.show(manager, tag)
         }.onFailure {
@@ -110,5 +112,13 @@ abstract class BaseDialogFragment(
     ) = Coroutine.async(scope, context) { block() }
 
     open fun observeLiveBus() {
+    }
+
+    fun findParentTextInputLayout(view: View): TextInputLayout? {
+        var parent = view.parent
+        while (parent != null && parent !is TextInputLayout) {
+            parent = parent.parent
+        }
+        return parent
     }
 }

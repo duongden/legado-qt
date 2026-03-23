@@ -20,7 +20,8 @@ object LauncherIconHelp {
         ComponentName(appCtx, Launcher3::class.java.name),
         ComponentName(appCtx, Launcher4::class.java.name),
         ComponentName(appCtx, Launcher5::class.java.name),
-        ComponentName(appCtx, Launcher6::class.java.name)
+        ComponentName(appCtx, Launcher6::class.java.name),
+        ComponentName(appCtx, Launcher7::class.java.name)
     )
 
     fun changeIcon(icon: String?) {
@@ -33,14 +34,14 @@ object LauncherIconHelp {
         componentNames.forEach {
             if (icon.equals(it.className.substringAfterLast("."), true)) {
                 hasEnabled = true
-                //Enable
+                //启用
                 packageManager.setComponentEnabledSetting(
                     it,
                     PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                     PackageManager.DONT_KILL_APP
                 )
             } else {
-                //Disable
+                //禁用
                 packageManager.setComponentEnabledSetting(
                     it,
                     PackageManager.COMPONENT_ENABLED_STATE_DISABLED,

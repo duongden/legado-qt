@@ -1,5 +1,6 @@
 package io.legado.app.data.entities
 
+import android.webkit.JavascriptInterface
 import cn.hutool.crypto.symmetric.AES
 import com.script.ScriptBindings
 import com.script.buildScriptBindings
@@ -8,17 +9,21 @@ import io.legado.app.constant.AppConst
 import io.legado.app.constant.AppLog
 import io.legado.app.data.entities.rule.RowUi
 import io.legado.app.help.CacheManager
+import io.legado.app.help.ConcurrentRateLimiter.Companion.updateConcurrentRate
 import io.legado.app.help.JsExtensions
 import io.legado.app.help.config.AppConfig
 import io.legado.app.help.crypto.SymmetricCryptoAndroid
 import io.legado.app.help.http.CookieStore
+import io.legado.app.help.source.clearExploreKindsCache
 import io.legado.app.help.source.getShareScope
+import io.legado.app.model.SharedJsScope.remove
 import io.legado.app.utils.GSON
 import io.legado.app.utils.GSONStrict
 import io.legado.app.utils.fromJsonArray
 import io.legado.app.utils.fromJsonObject
 import io.legado.app.utils.has
-import io.legado.app.utils.printOnDebug
+import io.legado.app.utils.isMainThread
+import kotlinx.coroutines.runBlocking
 import org.intellij.lang.annotations.Language
 
 /**
@@ -27,17 +32,17 @@ import org.intellij.lang.annotations.Language
 @Suppress("unused")
 interface BaseSource : JsExtensions {
     /**
-     * Concurrency rate
+     * 并发率
      */
     var concurrentRate: String?
 
     /**
-     * Login URL
+     * 登录地址
      */
     var loginUrl: String?
 
     /**
-     * Login UI
+     * 登录UI
      */
     var loginUi: String?
 
@@ -47,27 +52,21 @@ interface BaseSource : JsExtensions {
     var header: String?
 
     /**
-     * Enable cookieJar
+     * 启用cookieJar
      */
     var enabledCookieJar: Boolean?
 
     /**
-     * js library
+     * js库
      */
     var jsLib: String?
 
-    fun getTag(): String
+    override fun getTag(): String
 
     fun getKey(): String
 
     override fun getSource(): BaseSource? {
         return this
-    }
-
-    fun loginUi(): List<RowUi>? {
-        return GSON.fromJsonArray<RowUi>(loginUi).onFailure {
-            it.printOnDebug()
-        }.getOrNull()
     }
 
     fun getLoginJs(): String? {
@@ -83,6 +82,7 @@ interface BaseSource : JsExtensions {
     /**
      * 调用login函数 实现登录请求
      */
+    @JavascriptInterface
     fun login() {
         val loginJs = getLoginJs()
         if (!loginJs.isNullOrBlank()) {
@@ -99,7 +99,7 @@ interface BaseSource : JsExtensions {
     }
 
     /**
-     * Parse header rule
+     * 解析header规则
      */
     fun getHeaderMap(hasLoginHeader: Boolean = false) = HashMap<String, String>().apply {
         header?.let {
@@ -133,8 +133,9 @@ interface BaseSource : JsExtensions {
     }
 
     /**
-     * Get login header info
+     * 获取用于登录的头部信息
      */
+    @JavascriptInterface
     fun getLoginHeader(): String? {
         return CacheManager.get("loginHeader_${getKey()}")
     }
@@ -145,7 +146,7 @@ interface BaseSource : JsExtensions {
     }
 
     /**
-     * Save login headers, map format, auto added on access
+     * 保存登录头部信息,map格式,访问时自动添加
      */
     fun putLoginHeader(header: String) {
         val headerMap = GSON.fromJsonObject<Map<String, String>>(header).getOrNull()
@@ -162,9 +163,10 @@ interface BaseSource : JsExtensions {
     }
 
     /**
-     * Get user info, for login
-     * User info stored under AES encryption
+     * 获取用户信息,可以用来登录
+     * 用户信息采用aes加密存储
      */
+    @JavascriptInterface
     fun getLoginInfo(): String? {
         try {
             val key = AppConst.androidId.encodeToByteArray(0, 16)
@@ -176,13 +178,46 @@ interface BaseSource : JsExtensions {
         }
     }
 
-    fun getLoginInfoMap(): Map<String, String>? {
-        return GSON.fromJsonObject<Map<String, String>>(getLoginInfo()).getOrNull()
+    private fun configureScriptBindings(): ScriptBindings.() -> Unit = {
+        put("result", mutableMapOf<String, String>())
+        put("book", null)
+        put("chapter", null)
+    }
+
+    fun getLoginInfoMap(): MutableMap<String, String> {
+        val json = getLoginInfo() ?: if (loginUi.isNullOrBlank()) {
+            return mutableMapOf()
+        } else {
+            val loginUiJson = loginUi?.let {
+                when {
+                    it.startsWith("@js:") -> evalJS(
+                        "${getLoginJs() ?: ""}\n${it.substring(4)}",
+                        configureScriptBindings()
+                    ).toString()
+
+                    it.startsWith("<js>") -> evalJS(
+                        "${getLoginJs() ?: ""}\n${it.substring(4, it.lastIndexOf("<"))}",
+                        configureScriptBindings()
+                    ).toString()
+
+                    else -> it
+                }
+            }
+            val longinInfo = GSON.fromJsonArray<RowUi>(loginUiJson).getOrNull()
+                ?.filter { it.type != "button" }
+                ?.associate { it.name to (it.default ?: "") }
+                ?.takeIf { it.isNotEmpty() }?.also {
+                    putLoginInfo(GSON.toJson(it))
+                }
+            return longinInfo?.toMutableMap() ?: mutableMapOf()
+        }
+        return GSON.fromJsonObject<MutableMap<String, String>>(json).getOrNull() ?: mutableMapOf()
     }
 
     /**
-     * Save user info, aes encrypted
+     * 保存用户信息,aes加密
      */
+    @JavascriptInterface
     fun putLoginInfo(info: String): Boolean {
         return try {
             val key = (AppConst.androidId).encodeToByteArray(0, 16)
@@ -195,6 +230,7 @@ interface BaseSource : JsExtensions {
         }
     }
 
+    @JavascriptInterface
     fun removeLoginInfo() {
         CacheManager.delete("userInfo_${getKey()}")
     }
@@ -212,29 +248,78 @@ interface BaseSource : JsExtensions {
     }
 
     /**
-     * Get custom variable
+     * 设置自定义变量
+     * 新,统一为put名称存变量
      */
+    @JavascriptInterface
+    fun putVariable(variable: String?) {
+        if (variable != null) {
+            CacheManager.put("sourceVariable_${getKey()}", variable)
+        } else {
+            CacheManager.delete("sourceVariable_${getKey()}")
+        }
+    }
+
+    /**
+     * 获取自定义变量
+     */
+    @JavascriptInterface
     fun getVariable(): String {
         return CacheManager.get("sourceVariable_${getKey()}") ?: ""
     }
 
     /**
-     * Save data
+     * 保存数据
      */
+    @JavascriptInterface
     fun put(key: String, value: String): String {
         CacheManager.put("v_${getKey()}_${key}", value)
         return value
     }
 
     /**
-     * Get saved data
+     * 获取保存的数据
      */
+    @JavascriptInterface
     fun get(key: String): String {
         return CacheManager.get("v_${getKey()}_${key}") ?: ""
     }
 
     /**
-     * Execute JS
+     * 刷新发现
+     */
+    fun refreshExplore() {
+        if (isMainThread) {
+            error("refreshExplore must be called on a background thread")
+        }
+        runBlocking {
+            if (this@BaseSource is BookSource) {
+                this@BaseSource.clearExploreKindsCache()
+            }
+        }
+    }
+
+    /**
+     * 刷新JSLib
+     */
+    fun refreshJSLib() {
+        if (isMainThread) {
+            error("refreshJSLib must be called on a background thread")
+        }
+        runBlocking {
+            remove(jsLib)
+        }
+    }
+
+    /**
+     * 设置并发率
+     */
+    fun putConcurrent(value: String) {
+        updateConcurrentRate(getKey(),value)
+    }
+
+    /**
+     * 执行JS
      */
     @Throws(Exception::class)
     fun evalJS(jsStr: String, bindingsConfig: ScriptBindings.() -> Unit = {}): Any? {

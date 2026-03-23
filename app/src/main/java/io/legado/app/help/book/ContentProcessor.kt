@@ -2,6 +2,7 @@ package io.legado.app.help.book
 
 import android.os.Build
 import io.legado.app.constant.AppLog
+import io.legado.app.constant.AppPattern
 import io.legado.app.constant.AppPattern.spaceRegex
 import io.legado.app.data.appDb
 import io.legado.app.data.entities.Book
@@ -95,14 +96,14 @@ class ContentProcessor private constructor(
         includeTitle: Boolean = true,
         useReplace: Boolean = true,
         chineseConvert: Boolean = true,
-        reSegment: Boolean = true,
-        translate: Boolean = io.legado.app.utils.TranslateUtils.isTranslateEnabled()
+        reSegment: Boolean = true
     ): BookContent {
         var mContent = content
         var sameTitleRemoved = false
         var effectiveReplaceRules: ArrayList<ReplaceRule>? = null
+        val replaceBook by lazy { book.toReplaceBook() }
         if (content != "null") {
-            //Remove duplicate titles
+            //去除重复标题
             val fileName = chapter.getFileName("nr")
             if (!removeSameTitleCache.contains(fileName)) try {
                 val name = Pattern.quote(book.name)
@@ -115,8 +116,9 @@ class ContentProcessor private constructor(
                 } else if (useReplace && book.getUseReplaceRule()) {
                     title = Pattern.quote(
                         chapter.getDisplayTitle(
-                            contentReplaceRules,
-                            chineseConvert = false
+                            titleReplaceRules,
+                            chineseConvert = false,
+                            replaceBook = replaceBook
                         )
                     )
                     matcher = Pattern.compile("^(\\s|\\p{P}|${name})*${title}(\\s)*")
@@ -127,25 +129,33 @@ class ContentProcessor private constructor(
                     }
                 }
             } catch (e: Exception) {
-                AppLog.put(appCtx.getString(io.legado.app.R.string.remove_same_title_error, e.localizedMessage), e)
+                AppLog.put("去除重复标题出错\n${e.localizedMessage}", e)
             }
             if (reSegment && book.getReSegment()) {
-                //Re-segment
+                //重新分段
                 mContent = ContentHelp.reSegment(mContent, chapter.title)
             }
             if (chineseConvert) {
-                //Simplified-Traditional conversion
+                //简繁转换
                 try {
                     when (AppConfig.chineseConverterType) {
                         1 -> mContent = ChineseUtils.t2s(mContent)
                         2 -> mContent = ChineseUtils.s2t(mContent)
                     }
-                } catch (e: Exception) {
-                    appCtx.toastOnUi(io.legado.app.R.string.convert_cc_error)
+                } catch (_: Exception) {
+                    appCtx.toastOnUi("简繁转换出错")
+                }
+            }
+            val useHtmlMap = mutableMapOf<String, String>()
+            if (AppConfig.adaptSpecialStyle) { //html处理
+                mContent = AppPattern.useHtmlRegex.replace(mContent) { matchResult ->
+                    val placeholder = "特殊格式的占位不应该被看见${useHtmlMap.size}。"
+                    useHtmlMap[placeholder] = "\n${matchResult.value.replace("\n","")}\n"
+                    placeholder
                 }
             }
             if (useReplace && book.getUseReplaceRule()) {
-                //Replace
+                //替换
                 effectiveReplaceRules = arrayListOf()
                 mContent = mContent.lines().joinToString("\n") { it.trim() }
                 getContentReplaceRules().forEach { item ->
@@ -155,9 +165,12 @@ class ContentProcessor private constructor(
                     try {
                         val tmp = if (item.isRegex) {
                             mContent.replace(
+                                item.name,
                                 item.regex,
                                 item.replacement,
-                                item.getValidTimeoutMillisecond()
+                                item.getValidTimeoutMillisecond(),
+                                chapter,
+                                replaceBook
                             )
                         } else {
                             mContent.replace(item.pattern, item.replacement)
@@ -172,27 +185,22 @@ class ContentProcessor private constructor(
                         mContent = item.name + e.stackTraceStr
                     } catch (_: CancellationException) {
                     } catch (e: Exception) {
-                        AppLog.put(appCtx.getString(io.legado.app.R.string.replace_rule_error_msg, item.name, mContent), e)
-                        appCtx.toastOnUi(appCtx.getString(io.legado.app.R.string.replace_rule_error, item.name))
+                        AppLog.put("替换净化: 规则 ${item.name}替换出错.\n${mContent}", e)
+                        appCtx.toastOnUi("替换净化: 规则 ${item.name}替换出错")
                     }
                 }
             }
+            useHtmlMap.forEach { (placeholder, originalContent) ->
+                mContent = mContent.replace(placeholder, originalContent)
+            }
         }
         if (includeTitle) {
-            //Re-add title
-            var displayTitle = chapter.getDisplayTitle(
+            //重新添加标题
+            mContent = chapter.getDisplayTitle(
                 getTitleReplaceRules(),
-                useReplace = useReplace && book.getUseReplaceRule()
-            )
-            if (translate) {
-                displayTitle = kotlinx.coroutines.runBlocking { io.legado.app.utils.TranslateUtils.translateChapterTitle(displayTitle) }
-                mContent = kotlinx.coroutines.runBlocking { io.legado.app.utils.TranslateUtils.translateContent(mContent) }
-                mContent = displayTitle + "\n" + mContent
-            } else {
-                 mContent = displayTitle + "\n" + mContent
-            }
-        } else if (translate) {
-             mContent = kotlinx.coroutines.runBlocking { io.legado.app.utils.TranslateUtils.translateContent(mContent) }
+                useReplace = useReplace && book.getUseReplaceRule(),
+                replaceBook = replaceBook
+            ) + "\n" + mContent
         }
         if (isAndroid8) {
             mContent = mContent.replace('\u00A0', ' ')

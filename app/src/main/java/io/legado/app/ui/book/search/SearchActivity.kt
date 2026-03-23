@@ -24,6 +24,8 @@ import io.legado.app.constant.AppLog
 import io.legado.app.constant.PreferKey
 import io.legado.app.data.appDb
 import io.legado.app.data.entities.Book
+import io.legado.app.data.entities.BookSource
+import io.legado.app.data.entities.BookSourcePart
 import io.legado.app.data.entities.SearchBook
 import io.legado.app.data.entities.SearchKeyword
 import io.legado.app.databinding.ActivityBookSearchBinding
@@ -50,7 +52,6 @@ import io.legado.app.utils.startActivity
 import io.legado.app.utils.transaction
 import io.legado.app.utils.viewbindingdelegate.viewBinding
 import io.legado.app.utils.visible
-import io.legado.app.service.AITranslationService
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
@@ -90,7 +91,6 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     private var historyFlowJob: Job? = null
     private var booksFlowJob: Job? = null
     private var precisionSearchMenuItem: MenuItem? = null
-    private var aiTranslationMenuItem: MenuItem? = null
     private var isManualStopSearch = false
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -100,11 +100,6 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
         initOtherView()
         initData()
         receiptIntent(intent)
-        
-        // Start AI service if enabled
-        if (getPrefBoolean(PreferKey.aiModelEnabled, false)) {
-            AITranslationService.start(this)
-        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -117,8 +112,6 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
         this.menu = menu
         precisionSearchMenuItem = menu.findItem(R.id.menu_precision_search)
         precisionSearchMenuItem?.isChecked = getPrefBoolean(PreferKey.precisionSearch)
-        aiTranslationMenuItem = menu.findItem(R.id.menu_ai_translation)
-        aiTranslationMenuItem?.isChecked = getPrefBoolean(PreferKey.aiModelEnabled)
         return super.onCompatCreateOptionsMenu(menu)
     }
 
@@ -175,23 +168,6 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
                 }
             }
 
-            R.id.menu_ai_translation -> {
-                val newState = !getPrefBoolean(PreferKey.aiModelEnabled)
-                putPrefBoolean(PreferKey.aiModelEnabled, newState)
-                aiTranslationMenuItem?.isChecked = newState
-                
-                // Start or stop AI service based on toggle
-                if (newState) {
-                    AITranslationService.start(this)
-                } else {
-                    AITranslationService.stop(this)
-                }
-                
-                searchView.query?.toString()?.trim()?.let {
-                    searchView.setQuery(it, true)
-                }
-            }
-
             R.id.menu_search_scope -> alertSearchScope()
             R.id.menu_source_manage -> startActivity<BookSourceActivity>()
             R.id.menu_log -> showDialogFragment(AppLogDialog())
@@ -218,29 +194,7 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
                     isManualStopSearch = false
                     viewModel.saveSearchKey(searchKey)
                     viewModel.searchKey = ""
-                    
-                    // Check if AI translation is enabled
-                    if (getPrefBoolean(PreferKey.aiModelEnabled, false)) {
-                        // Use AI translation
-                        lifecycleScope.launch {
-                            try {
-                                val aiService = AITranslationService.getInstance()
-                                if (aiService?.isModelReady() == true) {
-                                    val translatedQuery = aiService.translateVietnameseToChinese(searchKey)
-                                    viewModel.search(translatedQuery)
-                                } else {
-                                    // Fallback to original query if AI model is not ready
-                                    viewModel.search(searchKey)
-                                }
-                            } catch (e: Exception) {
-                                // Fallback to original query on error
-                                viewModel.search(searchKey)
-                            }
-                        }
-                    } else {
-                        // Use original query
-                        viewModel.search(searchKey)
-                    }
+                    viewModel.search(searchKey)
                 }
                 visibleInputHelp(false)
                 return true
@@ -371,12 +325,12 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     }
 
     /**
-     * Process input data
+     * 处理传入数据
      */
     private fun receiptIntent(intent: Intent? = null) {
         val searchScope = intent?.getStringExtra("searchScope")
         searchScope?.let {
-            viewModel.searchScope.update(searchScope, false)
+            viewModel.searchScope.update(searchScope, postValue = false, save = false)
         }
         val key = intent?.getStringExtra("key")
         if (key.isNullOrBlank()) {
@@ -388,7 +342,7 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     }
 
     /**
-     * Scroll to bottom event
+     * 滚动到底部事件
      */
     private fun scrollToBottom() {
         if (isManualStopSearch) {
@@ -403,7 +357,7 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     }
 
     /**
-     * Open/Close input help
+     * 打开关闭输入帮助
      */
     private fun visibleInputHelp(visible: Boolean) {
         if (visible) {
@@ -415,7 +369,7 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     }
 
     /**
-     * Update search history
+     * 更新搜索历史
      */
     private fun upHistory(key: String? = null) {
         booksFlowJob?.cancel()
@@ -455,7 +409,7 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     }
 
     /**
-     * Start search
+     * 开始搜索
      */
     private fun startSearch() {
         binding.refreshProgressBar.visible()
@@ -465,7 +419,7 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     }
 
     /**
-     * Search ended
+     * 搜索结束
      */
     private fun searchFinally() {
         binding.refreshProgressBar.isAutoLoading = false
@@ -506,7 +460,7 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     }
 
     /**
-     * Show book details
+     * 显示书籍详情
      */
     override fun showBookInfo(name: String, author: String, bookUrl: String) {
         startActivity<BookInfoActivity> {
@@ -517,21 +471,21 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     }
 
     /**
-     * Is in bookshelf
+     * 是否已经加入书架
      */
     override fun isInBookshelf(book: SearchBook): Boolean {
         return viewModel.isInBookShelf(book)
     }
 
     /**
-     * Show book details
+     * 显示书籍详情
      */
     override fun showBookInfo(book: Book) {
         showBookInfo(book.name, book.author, book.bookUrl)
     }
 
     /**
-     * Click history keyword
+     * 点击历史关键字
      */
     override fun searchHistory(key: String) {
         lifecycleScope.launch {
@@ -552,7 +506,7 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     }
 
     /**
-     * Delete search history
+     * 删除搜索记录
      */
     override fun deleteHistory(searchKeyword: SearchKeyword) {
         viewModel.deleteHistory(searchKeyword)
@@ -587,9 +541,24 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
 
     companion object {
 
-        fun start(context: Context, key: String?) {
+        fun start(context: Context, key: String?, searchScope: String? = null) {
             context.startActivity<SearchActivity> {
                 putExtra("key", key)
+                putExtra("searchScope", searchScope)
+            }
+        }
+
+        fun start(context: Context, source: BookSource, key: String? = null) {
+            context.startActivity<SearchActivity> {
+                putExtra("key", key)
+                putExtra("searchScope", SearchScope(source).toString())
+            }
+        }
+
+        fun start(context: Context, source: BookSourcePart, key: String? = null) {
+            context.startActivity<SearchActivity> {
+                putExtra("key", key)
+                putExtra("searchScope", SearchScope(source).toString())
             }
         }
 

@@ -39,6 +39,9 @@ import kotlin.math.min
 val Book.isAudio: Boolean
     get() = isType(BookType.audio)
 
+val Book.isVideo: Boolean
+    get() = isType(BookType.video)
+
 val Book.isImage: Boolean
     get() = isType(BookType.image)
 
@@ -119,17 +122,17 @@ fun Book.getLocalUri(): Uri {
     } else {
         Uri.fromFile(File(bookUrl))
     }
-    //Check uri validity first, is faster
+    //先检测uri是否有效,这个比较快
     uri.inputStream(appCtx).getOrNull()?.use {
         localUriCache[bookUrl] = uri
     }?.let {
         return uri
     }
-    //Different devices book save path may differ, try finding file in current save path if uri invalid
+    //不同的设备书籍保存路径可能不一样, uri无效时尝试寻找当前保存路径下的文件
     val defaultBookDir = AppConfig.defaultBookTreeUri
     val importBookDir = AppConfig.importBookPath
 
-    // Find book save directory
+    // 查找书籍保存目录
     if (!defaultBookDir.isNullOrBlank()) {
         val treeUri = defaultBookDir.toUri()
         val treeFileDoc = FileDoc.fromUri(treeUri, true)
@@ -139,7 +142,7 @@ fun Book.getLocalUri(): Uri {
             val fileDoc = treeFileDoc.find(originName, 5, 100)
             if (fileDoc != null) {
                 localUriCache[bookUrl] = fileDoc.uri
-                //Update bookUrl restart no need search again
+                //更新bookUrl 重启不用再找一遍
                 bookUrl = fileDoc.toString()
                 save()
                 return fileDoc.uri
@@ -147,7 +150,7 @@ fun Book.getLocalUri(): Uri {
         }
     }
 
-    // Find add locally selected directory
+    // 查找添加本地选择的目录
     if (!importBookDir.isNullOrBlank() && defaultBookDir != importBookDir) {
         val treeUri = if (importBookDir.isUri()) {
             importBookDir.toUri()
@@ -222,7 +225,7 @@ fun Book.clearType() {
 fun Book.isType(@BookType.Type bookType: Int): Boolean = type and bookType > 0
 
 fun Book.upType() {
-    if (type < 8) {
+    if (type < 4) {
         type = when (type) {
             BookSourceType.image -> BookType.image
             BookSourceType.audio -> BookType.audio
@@ -243,7 +246,11 @@ fun Book.sync(oldBook: Book) {
         durChapterIndex = curBook.durChapterIndex
         val replaceRules = ContentProcessor.get(this).getTitleReplaceRules()
         appDb.bookChapterDao.getChapter(bookUrl, durChapterIndex)?.let {
-            durChapterTitle = it.getDisplayTitle(replaceRules, getUseReplaceRule())
+            durChapterTitle = it.getDisplayTitle(
+                replaceRules,
+                getUseReplaceRule(),
+                replaceBook = toReplaceBook()
+            )
         }
     }
     canUpdate = curBook.canUpdate
@@ -315,7 +322,7 @@ fun Book.getExportFileName(suffix: String): String {
         return "$name 作者：${getRealAuthor()}.$suffix"
     }
     val bindings = buildScriptBindings { bindings ->
-        bindings["epubIndex"] = ""// Compatible with old version, fix potential errors
+        bindings["epubIndex"] = ""// 兼容老版本,修复可能存在的错误
         bindings["name"] = name
         bindings["author"] = getRealAuthor()
     }
@@ -334,7 +341,7 @@ fun Book.getExportFileName(
     epubIndex: Int,
     jsStr: String? = AppConfig.episodeExportFileName
 ): String {
-    // Default rule
+    // 默认规则
     val default = "$name 作者：${getRealAuthor()} [${epubIndex}].$suffix"
     if (jsStr.isNullOrBlank()) {
         return default
@@ -351,12 +358,12 @@ fun Book.getExportFileName(
     }.getOrDefault(default).normalizeFileName()
 }
 
-// Calculate total chapters based on current date
+// 根据当前日期计算章节总数
 fun Book.simulatedTotalChapterNum(): Int {
     return if (readSimulating()) {
         val currentDate = LocalDate.now()
         val daysPassed = between(config.startDate, currentDate).days + 1
-        // Calculate which chapter to unlock to
+        // 计算当前应该解锁到哪一章
         val chaptersToUnlock =
             max(0, (config.startChapter ?: 0) + (daysPassed * config.dailyChapters))
         min(totalChapterNum, chaptersToUnlock)

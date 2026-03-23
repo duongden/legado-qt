@@ -1,6 +1,7 @@
 package io.legado.app.ui.widget
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.PorterDuff
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -17,6 +18,7 @@ import io.legado.app.lib.theme.bottomBackground
 import io.legado.app.lib.theme.elevation
 import io.legado.app.lib.theme.getPrimaryTextColor
 import io.legado.app.lib.theme.getSecondaryDisabledTextColor
+import io.legado.app.lib.theme.transparentNavBar
 import io.legado.app.utils.ColorUtils
 import io.legado.app.utils.applyNavigationBarPadding
 import io.legado.app.utils.visible
@@ -39,15 +41,18 @@ class SelectActionBar @JvmOverloads constructor(
 
     init {
         if (!isInEditMode) {
-            setBackgroundColor(context.bottomBackground)
-            elevation = context.elevation
+            val transparentNavBar = context.transparentNavBar
+            if (transparentNavBar) {
+                setBackgroundColor(Color.TRANSPARENT)
+            } else {
+                setBackgroundColor(context.bottomBackground)
+                elevation = context.elevation
+            }
             binding.cbSelectedAll.setTextColor(primaryTextColor)
             TintHelper.setTint(binding.cbSelectedAll, context.accentColor, !bgIsLight)
             binding.ivMenuMore.setColorFilter(disabledColor, PorterDuff.Mode.SRC_IN)
-            binding.cbSelectedAll.setOnCheckedChangeListener { buttonView, isChecked ->
-                if (buttonView.isPressed) {
-                    callBack?.selectAll(isChecked)
-                }
+            binding.cbSelectedAll.setOnUserCheckedChangeListener { isChecked ->
+                callBack?.selectAll(isChecked)
             }
             binding.btnRevertSelection.setOnClickListener { callBack?.revertSelection() }
             binding.btnSelectActionMain.setOnClickListener { callBack?.onClickSelectBarMainAction() }
@@ -88,7 +93,7 @@ class SelectActionBar @JvmOverloads constructor(
             cbSelectedAll.isChecked = selectCount >= allCount
         }
 
-        //Reset select all text
+        //重置全选的文字
         if (cbSelectedAll.isChecked) {
             cbSelectedAll.text = context.getString(
                 R.string.select_cancel_count,

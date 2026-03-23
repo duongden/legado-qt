@@ -13,9 +13,9 @@ import io.legado.app.utils.createFileReplace
 import io.legado.app.utils.externalCache
 import io.legado.app.utils.fromJsonArray
 import io.legado.app.utils.fromJsonObject
+import kotlinx.coroutines.currentCoroutineContext
 import splitties.init.appCtx
 import java.io.File
-import kotlin.coroutines.coroutineContext
 
 @Suppress("MemberVisibilityCanBePrivate")
 object DirectLinkUpload {
@@ -31,11 +31,11 @@ object DirectLinkUpload {
     ): String {
         val url = rule.uploadUrl
         if (url.isBlank()) {
-            throw NoStackTraceException(appCtx.getString(io.legado.app.R.string.upload_url_not_configured))
+            throw NoStackTraceException("上传url未配置")
         }
         val downloadUrlRule = rule.downloadUrlRule
         if (downloadUrlRule.isBlank()) {
-            throw NoStackTraceException(appCtx.getString(io.legado.app.R.string.download_url_rule_not_configured))
+            throw NoStackTraceException("下载地址规则未配置")
         }
         var mFileName = fileName
         var mFile = file
@@ -62,10 +62,10 @@ object DirectLinkUpload {
             mFile.delete()
         }
         val analyzeRule = AnalyzeRule().setContent(res.body, res.url)
-            .setCoroutineContext(coroutineContext)
+            .setCoroutineContext(currentCoroutineContext())
         val downloadUrl = analyzeRule.getString(downloadUrlRule)
         if (downloadUrl.isBlank()) {
-            throw NoStackTraceException(appCtx.getString(io.legado.app.R.string.upload_failed, res.body))
+            throw NoStackTraceException("上传失败,${res.body}")
         }
         return downloadUrl
     }
@@ -101,10 +101,10 @@ object DirectLinkUpload {
 
     @Keep
     data class Rule(
-        var uploadUrl: String, //Create share link
-        var downloadUrlRule: String, //Download link rule
-        var summary: String, //Comment
-        var compress: Boolean = false, //Is compressed
+        var uploadUrl: String, //创建分享链接
+        var downloadUrlRule: String, //下载链接规则
+        var summary: String, //注释
+        var compress: Boolean = false, //是否压缩
     ) {
 
         override fun toString(): String {

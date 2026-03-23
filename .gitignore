@@ -16,5 +16,5 @@ package-lock.json
 .idea/
 # Kotlin 2.0
 .kotlin/
-key_base64.txt
-/.agent
+.cxx
+.vscode

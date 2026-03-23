@@ -1,6 +1,5 @@
 package io.legado.app.help.config
 
-import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
@@ -33,9 +32,10 @@ import io.legado.app.utils.putPrefInt
 import io.legado.app.utils.resizeAndRecycle
 import splitties.init.appCtx
 import java.io.File
+import androidx.core.graphics.drawable.toDrawable
 
 /**
- * Reading interface configuration
+ * 阅读界面配置
  */
 @Suppress("ConstPropertyName")
 @Keep
@@ -59,6 +59,8 @@ object ReadBookConfig {
     var bg: Drawable? = null
     var bgMeanColor: Int = 0
     val textColor: Int get() = durConfig.curTextColor()
+    val textAccentColor: Int get() = durConfig.curTextAccentColor()
+    var isNineBgImg = false
 
     init {
         initConfigs()
@@ -113,7 +115,11 @@ object ReadBookConfig {
         }
         val tmp = bg
         bg = drawable
-        (tmp as? BitmapDrawable)?.bitmap?.recycle()
+        if (tmp is BitmapDrawable) { //太快执行，可能还正在被使用，延时防崩溃
+            android.os.Handler(android.os.Looper.getMainLooper()).post {
+                tmp.bitmap?.recycle()
+            }
+        }
     }
 
     fun save() {
@@ -189,7 +195,7 @@ object ReadBookConfig {
         }
     }
 
-    //Config R/W
+    //配置写入读取
     var readBodyToLh = appCtx.getPrefBoolean(PreferKey.readBodyToLh, true)
     var autoReadSpeed = appCtx.getPrefInt(PreferKey.autoReadSpeed, 10)
         set(value) {
@@ -228,14 +234,15 @@ object ReadBookConfig {
         }
 
     /**
-     * Justify
+     * 两端对齐
      */
     val textFullJustify get() = appCtx.getPrefBoolean(PreferKey.textFullJustify, true)
 
     /**
-     * Align bottom
+     * 底部对齐
      */
     val textBottomJustify get() = appCtx.getPrefBoolean(PreferKey.textBottomJustify, true)
+
     var hideStatusBar = appCtx.getPrefBoolean(PreferKey.hideStatusBar)
     var hideNavigationBar = appCtx.getPrefBoolean(PreferKey.hideNavigationBar)
     var useZhLayout = appCtx.getPrefBoolean(PreferKey.useZhLayout)
@@ -291,7 +298,7 @@ object ReadBookConfig {
         }
 
     /**
-     * Title pos 0:Left 1:Center 2:Hide
+     * 标题位置 0:居左 1:居中 2:隐藏
      */
     var titleMode: Int
         get() = config.titleMode
@@ -305,7 +312,7 @@ object ReadBookConfig {
         }
 
     /**
-     * Is title centered
+     * 是否标题居中
      */
     val isMiddleTitle get() = titleMode == 1
 
@@ -327,10 +334,10 @@ object ReadBookConfig {
             config.paragraphIndent = value
         }
 
-    var underline: Boolean
-        get() = config.underline
+    var underlineMode: Int
+        get() = config.underlineMode
         set(value) {
-            config.underline = value
+            config.underlineMode = value
         }
 
     var paddingBottom: Int
@@ -524,39 +531,43 @@ object ReadBookConfig {
             config.bgStrEInk.toColorInt()
         }
         config.curTextColor()
+        config.curTextAccentColor()
         return config
     }
 
     @Keep
     data class Config(
         var name: String = "",
-        var bgStr: String = "#EEEEEE",//Day background
-        var bgStrNight: String = "#000000",//Night background
-        var bgStrEInk: String = "#FFFFFF",//EInk background
-        var bgAlpha: Int = 100,//Background opacity
-        var bgType: Int = 0,//Day background type 0:Color, 1:Assets Img, 2:Other Img
-        var bgTypeNight: Int = 0,//Night background type
-        var bgTypeEInk: Int = 0,//EInk background type
-        private var darkStatusIcon: Boolean = true,//Day dark status bar?
-        private var darkStatusIconNight: Boolean = false,//Night dark status bar?
+        var bgStr: String = "#EEEEEE",//白天背景
+        var bgStrNight: String = "#000000",//夜间背景
+        var bgStrEInk: String = "#FFFFFF",//EInk背景
+        var bgAlpha: Int = 100,//背景透明度
+        var bgType: Int = 0,//白天背景类型 0:颜色, 1:assets图片, 2其它图片
+        var bgTypeNight: Int = 0,//夜间背景类型
+        var bgTypeEInk: Int = 0,//EInk背景类型
+        private var darkStatusIcon: Boolean = true,//白天是否暗色状态栏
+        private var darkStatusIconNight: Boolean = false,//晚上是否暗色状态栏
         private var darkStatusIconEInk: Boolean = true,
-        private var textColor: String = "#3E3D3B",//Day text color
-        private var textColorNight: String = "#ADADAD",//Night text color
+        private var textColor: String = "#3E3D3B",//白天文字颜色
+        private var textColorNight: String = "#ADADAD",//夜间文字颜色
         private var textColorEInk: String = "#000000",
-        private var pageAnim: Int = 3,//Page turn animation
+        private var textAccentColor: String = "#E53935",//白天强调文字颜色
+        private var textAccentColorNight: String = "#FE4D55",//夜间强调文字颜色
+        private var textAccentColorEInk: String = "#000000",
+        private var pageAnim: Int = 0,//翻页动画
         private var pageAnimEInk: Int = 4,
-        var textFont: String = "",//Font
-        var textBold: Int = 0,//Is bold 0:Normal, 1:Bold, 2:Thin
-        var textSize: Int = 20,//Text size
-        var letterSpacing: Float = 0.1f,//Letter spacing
-        var lineSpacingExtra: Int = 12,//Line spacing
-        var paragraphSpacing: Int = 2,//Paragraph spacing
-        var titleMode: Int = 0,//Title position 0:Left 1:Center 2:Hidden
+        var textFont: String = "",//字体
+        var textBold: Int = 0,//是否粗体字 0:正常, 1:粗体, 2:细体
+        var textSize: Int = 20,//文字大小
+        var letterSpacing: Float = 0.1f,//字间距
+        var lineSpacingExtra: Int = 12,//行间距
+        var paragraphSpacing: Int = 2,//段距
+        var titleMode: Int = 0,//标题位置 0:居左 1:居中 2:隐藏
         var titleSize: Int = 0,
         var titleTopSpacing: Int = 0,
         var titleBottomSpacing: Int = 0,
-        var paragraphIndent: String = "　　",//Paragraph indent
-        var underline: Boolean = false, //Underline
+        var paragraphIndent: String = "　　",//段落缩进
+        var underlineMode: Int = 0, //下划线
         var paddingBottom: Int = 6,
         var paddingLeft: Int = 16,
         var paddingRight: Int = 16,
@@ -596,10 +607,29 @@ object ReadBookConfig {
         private var initColorInt = false
 
         private fun initColorInt() {
-            textColorIntEInk = Color.parseColor(textColorEInk)
-            textColorIntNight = Color.parseColor(textColorNight)
-            textColorInt = Color.parseColor(textColor)
+            textColorIntEInk = textColorEInk.toColorInt()
+            textColorIntNight = textColorNight.toColorInt()
+            textColorInt = textColor.toColorInt()
             initColorInt = true
+        }
+
+        @Transient
+        private var textAccentColorIntEInk = -1
+
+        @Transient
+        private var textAccentColorIntNight = -1
+
+        @Transient
+        private var textAccentColorInt = -1
+
+        @Transient
+        private var initAccentColorInt = false
+
+        private fun initAccentColorInt() {
+            textAccentColorIntEInk = textAccentColorEInk.toColorInt()
+            textAccentColorIntNight = textAccentColorNight.toColorInt()
+            textAccentColorInt = textAccentColor.toColorInt()
+            initAccentColorInt = true
         }
 
         fun setCurTextColor(color: Int) {
@@ -629,6 +659,36 @@ object ReadBookConfig {
                 AppConfig.isEInkMode -> textColorIntEInk
                 AppConfig.isNightTheme -> textColorIntNight
                 else -> textColorInt
+            }
+        }
+
+        fun setCurTextAccentColor(color: Int) {
+            when {
+                AppConfig.isEInkMode -> {
+                    textAccentColorEInk = "#${color.hexString}"
+                    textAccentColorIntEInk = color
+                }
+
+                AppConfig.isNightTheme -> {
+                    textAccentColorNight = "#${color.hexString}"
+                    textAccentColorIntNight = color
+                }
+
+                else -> {
+                    textAccentColor = "#${color.hexString}"
+                    textAccentColorInt = color
+                }
+            }
+        }
+
+        fun curTextAccentColor(): Int {
+            if (!initAccentColorInt) {
+                initAccentColorInt()
+            }
+            return when {
+                AppConfig.isEInkMode -> textAccentColorIntEInk
+                AppConfig.isNightTheme -> textAccentColorIntNight
+                else -> textAccentColorInt
             }
         }
 
@@ -698,27 +758,33 @@ object ReadBookConfig {
         }
 
         fun curBgDrawable(width: Int, height: Int): Drawable {
+            val curBgStr = curBgStr()
+            isNineBgImg = curBgStr.endsWith(".9.png")
             if (width == 0 || height == 0) {
-                return ColorDrawable(appCtx.getCompatColor(R.color.background))
+                return appCtx.getCompatColor(R.color.background).toDrawable()
             }
             var bgDrawable: Drawable? = null
             val resources = appCtx.resources
             try {
                 bgDrawable = when (curBgType()) {
-                    0 -> ColorDrawable(Color.parseColor(curBgStr()))
+                    0 -> curBgStr.toColorInt().toDrawable()
                     1 -> {
-                        val path = "bg" + File.separator + curBgStr()
+                        val path = "bg" + File.separator + curBgStr
                         val bitmap = BitmapUtils.decodeAssetsBitmap(appCtx, path, width, height)
-                        BitmapDrawable(resources, bitmap?.resizeAndRecycle(width, height))
+                        bitmap?.resizeAndRecycle(width, height)?.toDrawable(resources)
                     }
 
                     else -> {
-                        val path = curBgStr().let {
+                        val path = curBgStr.let {
                             if (it.contains(File.separator)) it
-                            else FileUtils.getPath(appCtx.externalFiles, "bg", curBgStr())
+                            else FileUtils.getPath(appCtx.externalFiles, "bg", it)
                         }
-                        val bitmap = BitmapUtils.decodeBitmap(path, width, height)
-                        BitmapDrawable(resources, bitmap?.resizeAndRecycle(width, height))
+                        if (isNineBgImg) {
+                            BitmapUtils.decodeNinePatchDrawable(path)
+                        } else {
+                            val bitmap = BitmapUtils.decodeBitmap(path, width, height)
+                            bitmap?.resizeAndRecycle(width, height)?.toDrawable(resources)
+                        }
                     }
                 }
             } catch (e: OutOfMemoryError) {
@@ -726,7 +792,7 @@ object ReadBookConfig {
             } catch (e: Exception) {
                 e.printOnDebug()
             }
-            return bgDrawable ?: ColorDrawable(appCtx.getCompatColor(R.color.background))
+            return bgDrawable ?: appCtx.getCompatColor(R.color.background).toDrawable()
         }
 
         fun getBgPath(bgIndex: Int): String? {
@@ -752,5 +818,71 @@ object ReadBookConfig {
             }
             return path
         }
+
+        fun toMap() = mapOf(
+            "name" to name,
+            "bgStr" to bgStr,
+            "bgStrNight" to bgStrNight,
+            "bgStrEInk" to bgStrEInk,
+            "bgAlpha" to bgAlpha,
+            "bgType" to bgType,
+            "bgTypeNight" to bgTypeNight,
+            "bgTypeEInk" to bgTypeEInk,
+            "darkStatusIcon" to darkStatusIcon,
+            "darkStatusIconNight" to darkStatusIconNight,
+            "darkStatusIconEInk" to darkStatusIconEInk,
+            "textColor" to textColor,
+            "textColorNight" to textColorNight,
+            "textColorEInk" to textColorEInk,
+            "textColorInt" to textColorInt,
+            "textColorIntNight" to textColorIntNight,
+            "textColorIntEInk" to textColorIntEInk,
+            "textAccentColor" to textAccentColor,
+            "textAccentColorNight" to textAccentColorNight,
+            "textAccentColorEInk" to textAccentColorEInk,
+            "textAccentColorInt" to textAccentColorInt,
+            "textAccentColorIntNight" to textAccentColorIntNight,
+            "textAccentColorIntEInk" to textAccentColorIntEInk,
+            "pageAnim" to pageAnim,
+            "pageAnimEInk" to pageAnimEInk,
+            "textFont" to textFont,
+            "textBold" to textBold,
+            "textSize" to textSize,
+            "letterSpacing" to letterSpacing,
+            "lineSpacingExtra" to lineSpacingExtra,
+            "paragraphSpacing" to paragraphSpacing,
+            "titleMode" to titleMode,
+            "titleSize" to titleSize,
+            "titleTopSpacing" to titleTopSpacing,
+            "titleBottomSpacing" to titleBottomSpacing,
+            "paragraphIndent" to paragraphIndent,
+            "underlineMode" to underlineMode,
+            "paddingBottom" to paddingBottom,
+            "paddingLeft" to paddingLeft,
+            "paddingRight" to paddingRight,
+            "paddingTop" to paddingTop,
+            "headerPaddingBottom" to headerPaddingBottom,
+            "headerPaddingLeft" to headerPaddingLeft,
+            "headerPaddingRight" to headerPaddingRight,
+            "headerPaddingTop" to headerPaddingTop,
+            "footerPaddingBottom" to footerPaddingBottom,
+            "footerPaddingLeft" to footerPaddingLeft,
+            "footerPaddingRight" to footerPaddingRight,
+            "footerPaddingTop" to footerPaddingTop,
+            "showHeaderLine" to showHeaderLine,
+            "showFooterLine" to showFooterLine,
+            "tipHeaderLeft" to tipHeaderLeft,
+            "tipHeaderMiddle" to tipHeaderMiddle,
+            "tipHeaderRight" to tipHeaderRight,
+            "tipFooterLeft" to tipFooterLeft,
+            "tipFooterMiddle" to tipFooterMiddle,
+            "tipFooterRight" to tipFooterRight,
+            "tipColor" to tipColor,
+            "tipDividerColor" to tipDividerColor,
+            "headerMode" to headerMode,
+            "footerMode" to footerMode
+        )
+
     }
+
 }

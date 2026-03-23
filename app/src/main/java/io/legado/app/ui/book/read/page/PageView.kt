@@ -36,7 +36,7 @@ import splitties.views.backgroundColor
 import java.util.Date
 
 /**
- * Page view
+ * 页面视图
  */
 class PageView(context: Context) : FrameLayout(context) {
 
@@ -62,6 +62,10 @@ class PageView(context: Context) : FrameLayout(context) {
             val h1 = if (binding.vwStatusBar.isGone) 0 else binding.vwStatusBar.height
             val h2 = if (binding.llHeader.isGone) 0 else binding.llHeader.height
             return h1 + h2 + binding.vwRoot.paddingTop
+        }
+    val imgBgPaddingStart: Int
+        get() {
+            return binding.vwRoot.paddingStart
         }
 
     init {
@@ -122,7 +126,7 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     /**
-     * Hide header when showing status bar
+     * 显示状态栏时隐藏header
      */
     fun upStatusBar() = with(binding.vwStatusBar) {
 //        setPadding(paddingLeft, context.statusBarHeight, paddingRight, paddingBottom)
@@ -134,6 +138,10 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     fun upPaddingDisplayCutouts() {
+        if (ReadBookConfig.isNineBgImg) {
+            ViewCompat.setOnApplyWindowInsetsListener(binding.vwRoot, null)
+            return
+        }
         if (AppConfig.paddingDisplayCutouts) {
             binding.vwRoot.setOnApplyWindowInsetsListenerCompat { _, windowInsets ->
                 val insets = windowInsets.getInsets(WindowInsetsCompat.Type.displayCutout())
@@ -152,7 +160,7 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     /**
-     * Update reading info
+     * 更新阅读信息
      */
     private fun upTipStyle() = binding.run {
         tvHeaderLeft.tag = null
@@ -246,8 +254,8 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     /**
-     * Get info view
-     * @param tip Info type
+     * 获取信息视图
+     * @param tip 信息类型
      */
     private fun getTipView(tip: Int): BatteryView? = binding.run {
         return when (tip) {
@@ -262,7 +270,7 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     /**
-     * Update background
+     * 更新背景
      */
     fun upBg() {
         binding.vwRoot.background = LayerDrawable(
@@ -275,7 +283,7 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     /**
-     * Update background opacity
+     * 更新背景透明度
      */
     fun upBgAlpha() {
         ReadBookConfig.bg?.alpha = (ReadBookConfig.bgAlpha / 100f * 255).toInt()
@@ -283,7 +291,7 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     /**
-     * Update time info
+     * 更新时间信息
      */
     fun upTime() {
         tvTime?.text = timeFormat.format(Date(System.currentTimeMillis()))
@@ -291,7 +299,7 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     /**
-     * Update battery info
+     * 更新电池信息
      */
     @SuppressLint("SetTextI18n")
     fun upBattery(battery: Int) {
@@ -302,7 +310,7 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     /**
-     * Update battery info
+     * 更新电池信息
      */
     @SuppressLint("SetTextI18n")
     private fun upTimeBattery() {
@@ -381,25 +389,25 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     /**
-     * Scroll event
+     * 滚动事件
      */
     fun scroll(offset: Int) {
         binding.contentTextView.scroll(offset)
     }
 
     /**
-     * Update selection enabled status
+     * 更新是否开启选择功能
      */
     fun upSelectAble(selectAble: Boolean) {
         binding.contentTextView.selectAble = selectAble
     }
 
     /**
-     * Prioritize in-page click
-     * @return true: handled, false: unhandled
+     * 优先处理页面内单击
+     * @return true:已处理, false:未处理
      */
     fun onClick(x: Float, y: Float): Boolean {
-        return binding.contentTextView.click(x, y - headerHeight)
+        return binding.contentTextView.click(x - imgBgPaddingStart, y - headerHeight)
     }
 
     /**
@@ -409,7 +417,7 @@ class PageView(context: Context) : FrameLayout(context) {
         x: Float, y: Float,
         select: (textPos: TextPos) -> Unit,
     ) {
-        return binding.contentTextView.longPress(x, y - headerHeight, select)
+        return binding.contentTextView.longPress(x - imgBgPaddingStart, y - headerHeight, select)
     }
 
     /**
@@ -419,7 +427,7 @@ class PageView(context: Context) : FrameLayout(context) {
         x: Float, y: Float,
         select: (textPos: TextPos) -> Unit,
     ) {
-        return binding.contentTextView.selectText(x, y - headerHeight, select)
+        return binding.contentTextView.selectText(x - imgBgPaddingStart, y - headerHeight, select)
     }
 
     fun getCurVisiblePage(): TextPage {
@@ -436,7 +444,7 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     fun selectStartMove(x: Float, y: Float) {
-        binding.contentTextView.selectStartMove(x, y - headerHeight)
+        binding.contentTextView.selectStartMove(x - imgBgPaddingStart, y - headerHeight)
     }
 
     fun selectStartMoveIndex(
@@ -452,7 +460,7 @@ class PageView(context: Context) : FrameLayout(context) {
     }
 
     fun selectEndMove(x: Float, y: Float) {
-        binding.contentTextView.selectEndMove(x, y - headerHeight)
+        binding.contentTextView.selectEndMove(x - imgBgPaddingStart, y - headerHeight)
     }
 
     fun selectEndMoveIndex(

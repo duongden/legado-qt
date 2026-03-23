@@ -134,7 +134,8 @@ class MoreConfigDialog : BasePrefDialogFragment() {
 
                 PreferKey.textFullJustify,
                 PreferKey.textBottomJustify,
-                PreferKey.useZhLayout -> {
+                PreferKey.useZhLayout,
+                PreferKey.adaptSpecialStyle-> {
                     postEvent(EventBus.UP_CONFIG, arrayListOf(5))
                 }
 
@@ -192,6 +193,18 @@ class MoreConfigDialog : BasePrefDialogFragment() {
                         .show {
                             AppConfig.pageTouchSlop = it
                             postEvent(EventBus.UP_CONFIG, arrayListOf(4))
+                        }
+                }
+
+                PreferKey.pageTouchClick -> {
+                    NumberPickerDialog(requireContext())
+                        .setTitle(getString(R.string.page_touch_click_dialog_title))
+                        .setMaxValue(399)
+                        .setMinValue(0)
+                        .setValue(AppConfig.pageTouchClick)
+                        .show {
+                            AppConfig.pageTouchClick = it
+                            postEvent(EventBus.UP_CONFIG, arrayListOf(12))
                         }
                 }
             }

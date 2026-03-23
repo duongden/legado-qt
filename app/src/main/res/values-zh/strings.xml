@@ -2,6 +2,7 @@
     <!--App-->
     <string name="app_name">阅读</string>
     <string name="app_name_a">阅读·A</string>
+    <string name="app_name_s">阅读Plus</string>
     <string name="receiving_shared_label">阅读·搜索</string>
     <string name="tip_perm_request_storage">阅读需要访问存储卡权限，请前往“设置”—“应用权限”，打开所需权限</string>
 
@@ -57,6 +58,7 @@
     <string name="action_search">搜索</string>
     <string name="action_download">下载</string>
     <string name="layout_list">列表</string>
+    <string name="layout_grid2">网格二列</string>
     <string name="layout_grid3">网格三列</string>
     <string name="layout_grid4">网格四列</string>
     <string name="layout_grid5">网格五列</string>
@@ -100,7 +102,7 @@
         \u3000\u3000这是一款使用 Kotlin 全新开发的开源的阅读软件，欢迎您的加入。
     </string>
     <string name="app_share_description">
-        阅读 3.0 下载地址：\nhttps://github.com/dat-bi/legado-qt/releases
+        阅读 3.0 下载地址：\nhttps://github.com/gedoor/legado/releases
     </string>
     <string name="version_name">版本 %s</string>
     <string name="pt_background_verification">后台校验书源</string>
@@ -429,7 +431,7 @@
     <string name="rule_chapter_url">章节 URL 规则（chapterUrl）</string>
     <string name="rule_is_volume">Volume 标识（isVolume）</string>
     <string name="rule_is_vip">VIP 标识（isVip）</string>
-    <string name="rule_update_time">更新时间（ChapterInfo）</string>
+    <string name="rule_update_time">章节信息（ChapterInfo）</string>
     <string name="pre_update_js">更新之前 JS（preUpdateJs）</string>
     <string name="rule_book_content">正文规则（content）</string>
     <string name="rule_next_content">正文下一页 URL 规则（nextContentUrl）</string>
@@ -827,7 +829,7 @@
     <string name="sync_book_progress_t">同步阅读进度</string>
     <string name="sync_book_progress_s">进入退出阅读界面时同步阅读进度</string>
     <string name="sync_book_progress_plus_t">同步增强</string>
-    <string name="sync_book_progress_plus_s">重新进入页面（息屏、后台返回等）或者网络变为可用时同步云端进度</string>
+    <string name="sync_book_progress_plus_s">重新进入页面（息屏、后台返回等）或者网络变为可用时同步云端进度，同步新进度会询问</string>
     <string name="create_bookmark_error">创建书签失败</string>
     <string name="single_url">单 URL</string>
     <string name="export_bookshelf">导出书单</string>
@@ -839,7 +841,7 @@
     <string name="background_image">背景图片</string>
     <string name="background_image_blurring">背景图片虚化</string>
     <string name="background_image_blurring_radius">虚化半径</string>
-    <string name="background_image_hint">0 为停用，启用范围 1~25\n半径数值越大，虚化效果越高</string>
+    <string name="background_image_hint">0 为停用，启用范围 1~25\n半径数值越大，虚化效果越高\n.9.png背景图时此设置无效</string>
     <string name="export_folder">导出文件夹</string>
     <string name="export_charset">导出编码</string>
     <string name="export_no_chapter_name">TXT 不导出章节名</string>
@@ -902,6 +904,7 @@
     <string name="direct_link_upload_rule_summary">用于导出书源书单时生成直链 URL</string>
     <string name="direct_link_upload_config">直链上传配置</string>
     <string name="copy_play_url">拷贝播放 URL</string>
+    <string name="skip_book_credits">跳过片头片尾</string>
     <string name="set_source_variable">设置源变量</string>
     <string name="set_book_variable">设置书籍变量</string>
     <string name="summary">注释</string>
@@ -973,7 +976,7 @@
     <string name="auto_complete">自动补全</string>
     <string name="sort_by_size">大小排序</string>
     <string name="welcome_style">启动界面样式</string>
-    <string name="welcome_style_summary">启动界面图片和是否显示文字等</string>
+    <string name="welcome_style_summary">设定显示时间，更改背景图片，是否显示文字等</string>
     <string name="show_welcome_text">显示文字</string>
     <string name="welcome_text">阅读|享受美好时光</string>
     <string name="custom_welcome">自定义欢迎页</string>
@@ -1156,6 +1159,7 @@
     <string name="keep_enable">保留启用状态</string>
     <string name="preview_image_by_click">点击预览图片</string>
     <string name="screen_portrait_reversed">反向竖屏</string>
+    <string name="screen_landscape_reversed">反向横屏</string>
     <string name="del_ruby_tag">删除ruby标签</string>
     <string name="del_h_tag">删除h标签</string>
     <string name="adjust_chapter_page">调整本章页数</string>
@@ -1176,7 +1180,7 @@
     <string name="daily_chapters">日更章数</string>
     <string name="start_chapter">起始章节</string>
     <string name="update_to_variant_title">检查更新查找版本</string>
-    <string name="update_to_variant_summary">检查更新时查找其他签名版本</string>
+    <string name="update_to_variant_summary">切换正式版/测试版</string>
     <string name="default_version">当前</string>
     <string name="official_version">正式版</string>
     <string name="beta_release_version">测试版</string>
@@ -1219,14 +1223,15 @@
     <string name="hide_manga_title">隐藏漫画列表标题</string>
     <string name="refresh_explore">刷新发现</string>
     <string name="padding_display_cutouts">填充刘海区域</string>
-    <string name="system_media_control_compatibility_change">系统媒体控件兼容性更改</string>
-    <string name="system_media_control_compatibility_change_summary">当锁屏不显示系统媒体控件时可以尝试开启，比如oneui7.0或vivo等</string>
     <string name="read_aloud_pause_resume">朗读暂停/继续</string>
     <string name="manga_epaper">墨水屏</string>
     <string name="manga_epaper_stting">墨水屏设置</string>
     <string name="manga_epaper_value">阈值</string>
     <string name="disable_horizontal_page_snap">禁用水平翻页效果</string>
     <string name="enable_manga_gray">开启图片灰色</string>
+    <string name="custom_hosts">自定义Hosts</string>
+    <string name="custom_hosts_summary">域名到IP的映射</string>
+    <string name="show_bookname">显示书名</string>
     <string name="sure_cache_book">是否确认开始缓存？</string>
     <string name="auto_check_new_backup_t">自动检查新备份</string>
     <string name="auto_check_new_backup_s">打开软件时检查是否有新备份，有新备份时提示是否更新</string>
