@@ -305,6 +305,7 @@ class SourceLoginDialog : BaseDialogFragment(R.layout.dialog_login, true),
                     it.root.id = index + 1000
                     if (viewName == null) {
                         it.textInputLayout.hint = name
+                        io.legado.app.utils.TranslateUtils.translateView(it.editText, name, null) { translated -> it.textInputLayout.hint = translated }
                     } else if (viewName.length in 3..19 && viewName.first() == '\'' && viewName.last() == '\'') {
                         it.textInputLayout.hint = viewName.substring(1, viewName.length - 1)
                     } else {
@@ -363,6 +364,7 @@ class SourceLoginDialog : BaseDialogFragment(R.layout.dialog_login, true),
                     it.root.id = index + 1000
                     if (viewName == null) {
                         it.textInputLayout.hint = name
+                        io.legado.app.utils.TranslateUtils.translateView(it.editText, name, null) { translated -> it.textInputLayout.hint = translated }
                     } else if (viewName.length in 3..19 && viewName.first() == '\'' && viewName.last() == '\'') {
                         it.textInputLayout.hint = viewName.substring(1, viewName.length - 1)
                     } else {
@@ -491,6 +493,7 @@ class SourceLoginDialog : BaseDialogFragment(R.layout.dialog_login, true),
                     it.root.id = index + 1000
                     if (viewName == null) {
                         it.textView.text = name
+                        io.legado.app.utils.TranslateUtils.translateView(it.textView, name)
                     } else if (viewName.length in 3..19 && viewName.first() == '\'' && viewName.last() == '\'') {
                         val n = viewName.substring(1, viewName.length - 1)
                         rowUi.viewName = n

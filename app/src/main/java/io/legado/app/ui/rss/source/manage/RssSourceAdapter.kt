@@ -17,6 +17,7 @@ import io.legado.app.lib.theme.backgroundColor
 import io.legado.app.ui.widget.recycler.DragSelectTouchHelper
 import io.legado.app.ui.widget.recycler.ItemTouchCallback
 import io.legado.app.utils.ColorUtils
+import io.legado.app.utils.setTranslatedText
 import java.util.Collections
 
 
@@ -75,7 +76,7 @@ class RssSourceAdapter(context: Context, val callBack: CallBack) :
         binding.run {
             if (payloads.isEmpty()) {
                 root.setBackgroundColor(ColorUtils.withAlpha(context.backgroundColor, 0.5f))
-                cbSource.text = item.getDisplayNameGroup()
+                cbSource.setTranslatedText(item.getDisplayNameGroup())
                 swtEnabled.isChecked = item.enabled
                 cbSource.isChecked = selected.contains(item)
             } else {
@@ -83,7 +84,7 @@ class RssSourceAdapter(context: Context, val callBack: CallBack) :
                     val bundle = payloads[i] as Bundle
                     bundle.keySet().forEach {
                         when (it) {
-                            "upName" -> cbSource.text = item.getDisplayNameGroup()
+                            "upName" -> cbSource.setTranslatedText(item.getDisplayNameGroup())
                             "enabled" -> swtEnabled.isChecked = bundle.getBoolean("enabled")
                             "selected" -> cbSource.isChecked = selected.contains(item)
                         }

@@ -407,9 +407,14 @@ class RssSortActivity : VMBaseActivity<ActivityRssArtivlesBinding, RssSortViewMo
                 toastOnUi("源不存在")
                 return@launch
             }
-            val comment =
-                source.getDisplayVariableComment("源变量可在js中通过source.getVariable()获取")
+            var comment =
+                source.getDisplayVariableComment(getString(R.string.source_variable_help))
             val variable = withContext(Dispatchers.IO) { source.getVariable() }
+            if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+                comment = withContext(Dispatchers.IO) {
+                    io.legado.app.utils.TranslateUtils.translateContent(comment) ?: ""
+                }
+            }
             showDialogFragment(
                 VariableDialog(
                     getString(R.string.set_source_variable),

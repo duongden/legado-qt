@@ -43,6 +43,11 @@ object PreferKey {
     const val showDiscovery = "showDiscovery"
     const val enableReview = "enableReview"
     const val showRss = "showRss"
+    const val showLocal = "showLocal"
+    
+    // Translation
+    const val translateEnable = "translateEnable"
+    const val tag_translate_key = "tag_translate_key"
     const val bookshelfLayout = "bookshelfLayout"
     const val bookshelfSort = "bookshelfSort"
     const val bookExportFileName = "bookExportFileName"

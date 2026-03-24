@@ -35,6 +35,7 @@ import io.legado.app.utils.setEdgeEffectColor
 import io.legado.app.utils.startActivity
 import io.legado.app.utils.startActivityForBook
 import io.legado.app.utils.viewbindingdelegate.viewBinding
+import io.legado.app.utils.TranslateUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -310,6 +311,16 @@ class BooksFragment() : BaseFragment(R.layout.fragment_books),
 
     override fun isUpdate(bookUrl: String): Boolean {
         return activityViewModel.isUpdate(bookUrl)
+    }
+
+    private var lastTranslateEnabled = false
+
+    override fun onResume() {
+        super.onResume()
+        if (lastTranslateEnabled != TranslateUtils.isTranslateEnabled()) {
+            lastTranslateEnabled = TranslateUtils.isTranslateEnabled()
+            booksAdapter.notifyDataSetChanged()
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")

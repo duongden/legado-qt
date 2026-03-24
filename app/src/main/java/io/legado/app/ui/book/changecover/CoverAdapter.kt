@@ -7,6 +7,7 @@ import io.legado.app.base.adapter.DiffRecyclerAdapter
 import io.legado.app.base.adapter.ItemViewHolder
 import io.legado.app.data.entities.SearchBook
 import io.legado.app.databinding.ItemCoverBinding
+import io.legado.app.utils.setTranslatedText
 
 
 class CoverAdapter(context: Context, val callBack: CallBack) :
@@ -36,7 +37,7 @@ class CoverAdapter(context: Context, val callBack: CallBack) :
         payloads: MutableList<Any>
     ) = binding.run {
         ivCover.load(item, false)
-        tvSource.text = item.originName
+        tvSource.setTranslatedText(item.originName)
     }
 
     override fun registerListener(holder: ItemViewHolder, binding: ItemCoverBinding) {

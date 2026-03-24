@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets
  *   - value offset (4 bytes) -> Offset in String Pool (-1 if none)
  * - String Pool (Blob)
  */
-class BinaryDictionary(private val buffer: ByteBuffer) : AutoCloseable {
+class BinaryDictionary(private val buffer: ByteBuffer) : AutoCloseable, ITrieDictionary {
 
     companion object {
         const val MAGIC = 0x54434944 // "DICT" LE
@@ -64,7 +64,7 @@ class BinaryDictionary(private val buffer: ByteBuffer) : AutoCloseable {
     /**
      * Find the longest prefix match for [text] starting at [startIndex].
      */
-    fun findLongestMatch(text: String, startIndex: Int): Pair<Int, String>? {
+    override fun findLongestMatch(text: String, startIndex: Int): Pair<Int, String>? {
         // android.util.Log.v("BinaryDictionary", "findLongestMatch: $startIndex / ${text.length}")
         var currentNode = 0 // Root node index (0)
         var lastMatch: Pair<Int, String>? = null
@@ -142,7 +142,7 @@ class BinaryDictionary(private val buffer: ByteBuffer) : AutoCloseable {
     /**
      * Exact match lookup (acts like Map.get)
      */
-    operator fun get(key: String): String? {
+    override operator fun get(key: String): String? {
         val match = findLongestMatch(key, 0) ?: return null
         return if (match.first == key.length) match.second else null
     }

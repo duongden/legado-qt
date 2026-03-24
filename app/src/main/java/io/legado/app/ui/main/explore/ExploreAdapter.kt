@@ -50,6 +50,7 @@ import io.legado.app.utils.removeLastElement
 import io.legado.app.utils.setSelectionSafely
 import io.legado.app.utils.showDialogFragment
 import io.legado.app.utils.startActivity
+import io.legado.app.utils.setTranslatedText
 import io.legado.app.utils.visible
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
@@ -95,7 +96,7 @@ class ExploreAdapter(context: Context, val callBack: CallBack) :
                 root.setPadding(16.dpToPx(), 12.dpToPx(), 16.dpToPx(), 0)
             }
             if (payloads.isEmpty()) {
-                tvName.text = item.bookSourceName
+                tvName.setTranslatedText(item.bookSourceName)
             }
             if (exIndex == holder.layoutPosition) {
                 ivStatus.setImageResource(R.drawable.ic_arrow_down)
@@ -170,12 +171,12 @@ class ExploreAdapter(context: Context, val callBack: CallBack) :
                             apply(tv)
                         }
                         if (viewName == null) {
-                            tv.text = title
+                            tv.setTranslatedText(title)
                         } else if (viewName.length in 3..19 && viewName.first() == '\'' && viewName.last() == '\'') {
                             val n = viewName.substring(1, viewName.length - 1)
                             tv.text = n
                         } else {
-                            tv.text = title
+                            tv.setTranslatedText(title)
                             Coroutine.async(callBack.scope, IO) {
                                 evalUiJs(viewName, source, infoMap)
                             }.onSuccess { n ->
@@ -235,12 +236,12 @@ class ExploreAdapter(context: Context, val callBack: CallBack) :
                             apply(tv)
                         }
                         if (viewName == null) {
-                            tv.text = title
+                            tv.setTranslatedText(title)
                         } else if (viewName.length in 3..19 && viewName.first() == '\'' && viewName.last() == '\'') {
                             val n = viewName.substring(1, viewName.length - 1)
                             tv.text = n
                         } else {
-                            tv.text = title
+                            tv.setTranslatedText(title)
                             Coroutine.async(callBack.scope, IO) {
                                 evalUiJs(viewName, source, infoMap)
                             }.onSuccess { n ->

@@ -290,7 +290,18 @@ class VideoPlayerActivity : VMBaseActivity<ActivityVideoPlayerBinding, VideoPlay
     }
 
     private fun showBookIntro(book: Book) {
-        val intro = book.getDisplayIntro()
+        val rawIntro = book.getDisplayIntro()
+        lifecycleScope.launch {
+            val intro = if (io.legado.app.utils.TranslateUtils.isTranslateEnabled() && !rawIntro.isNullOrBlank()) {
+                withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    io.legado.app.utils.TranslateUtils.translateContent(rawIntro)
+                }
+            } else rawIntro
+            showBookIntroReady(intro)
+        }
+    }
+
+    private fun showBookIntroReady(intro: String?) {
         if (intro?.startsWith("<useweb>") == true) {
             val lastIndex = intro.lastIndexOf("<")
             if (lastIndex < 8) {

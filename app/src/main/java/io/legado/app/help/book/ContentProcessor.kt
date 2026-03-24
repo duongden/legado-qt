@@ -96,7 +96,8 @@ class ContentProcessor private constructor(
         includeTitle: Boolean = true,
         useReplace: Boolean = true,
         chineseConvert: Boolean = true,
-        reSegment: Boolean = true
+        reSegment: Boolean = true,
+        translate: Boolean = io.legado.app.utils.TranslateUtils.isTranslateEnabled()
     ): BookContent {
         var mContent = content
         var sameTitleRemoved = false
@@ -196,11 +197,20 @@ class ContentProcessor private constructor(
         }
         if (includeTitle) {
             //重新添加标题
-            mContent = chapter.getDisplayTitle(
+            var displayTitle = chapter.getDisplayTitle(
                 getTitleReplaceRules(),
                 useReplace = useReplace && book.getUseReplaceRule(),
                 replaceBook = replaceBook
-            ) + "\n" + mContent
+            )
+            if (translate) {
+                displayTitle = kotlinx.coroutines.runBlocking { io.legado.app.utils.TranslateUtils.translateChapterTitle(displayTitle) }
+                mContent = kotlinx.coroutines.runBlocking { io.legado.app.utils.TranslateUtils.translateContent(mContent) }
+                mContent = displayTitle + "\n" + mContent
+            } else {
+                mContent = displayTitle + "\n" + mContent
+            }
+        } else if (translate) {
+            mContent = kotlinx.coroutines.runBlocking { io.legado.app.utils.TranslateUtils.translateContent(mContent) }
         }
         if (isAndroid8) {
             mContent = mContent.replace('\u00A0', ' ')

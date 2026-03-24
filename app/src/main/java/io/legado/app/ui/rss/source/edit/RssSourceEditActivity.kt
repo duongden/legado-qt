@@ -469,9 +469,14 @@ class RssSourceEditActivity :
     private fun setSourceVariable() {
         viewModel.save(getRssSource()) { source ->
             lifecycleScope.launch {
-                val comment =
+                var comment =
                     source.getDisplayVariableComment("源变量可在js中通过source.getVariable()获取")
                 val variable = withContext(Dispatchers.IO) { source.getVariable() }
+                if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+                    comment = withContext(Dispatchers.IO) {
+                        io.legado.app.utils.TranslateUtils.translateContent(comment) ?: ""
+                    }
+                }
                 showDialogFragment(
                     VariableDialog(
                         getString(R.string.set_source_variable),

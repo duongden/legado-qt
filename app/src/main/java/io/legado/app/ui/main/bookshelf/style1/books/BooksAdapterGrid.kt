@@ -13,6 +13,7 @@ import io.legado.app.help.config.AppConfig
 import io.legado.app.utils.gone
 import io.legado.app.utils.invisible
 import io.legado.app.utils.visible
+import io.legado.app.utils.setTranslatedText
 import splitties.views.onLongClick
 
 class BooksAdapterGrid(context: Context, private val callBack: CallBack) :
@@ -36,7 +37,7 @@ class BooksAdapterGrid(context: Context, private val callBack: CallBack) :
                 if (payloads.isEmpty()) {
                     if (showBookname == 0) {
                         tvName.visible()
-                        tvName.text = item.name
+                        tvName.setTranslatedText(item.name)
                     } else {
                         tvName.gone()
                     }
@@ -47,7 +48,7 @@ class BooksAdapterGrid(context: Context, private val callBack: CallBack) :
                         val bundle = payloads[i] as Bundle
                         bundle.keySet().forEach {
                             when (it) {
-                                "name" -> tvName.text = item.name
+                                "name" -> tvName.setTranslatedText(item.name)
                                 "cover" -> ivCover.load(
                                     item,
                                     false
@@ -61,7 +62,7 @@ class BooksAdapterGrid(context: Context, private val callBack: CallBack) :
             }
             is ItemBookshelfGrid2Binding -> binding.run {
                 if (payloads.isEmpty()) {
-                    tvName.text = item.name
+                    tvName.setTranslatedText(item.name)
                     ivCover.load(item, false)
                     upRefresh(binding, item)
                 } else {
@@ -69,7 +70,7 @@ class BooksAdapterGrid(context: Context, private val callBack: CallBack) :
                         val bundle = payloads[i] as Bundle
                         bundle.keySet().forEach {
                             when (it) {
-                                "name" -> tvName.text = item.name
+                                "name" -> tvName.setTranslatedText(item.name)
                                 "cover" -> ivCover.load(
                                     item,
                                     false

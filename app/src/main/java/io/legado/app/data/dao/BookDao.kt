@@ -75,8 +75,11 @@ interface BookDao {
     @Query("SELECT * FROM books WHERE (`group` & :group) > 0")
     fun flowByUserGroup(group: Long): Flow<List<Book>>
 
-    @Query("SELECT * FROM books WHERE name like '%'||:key||'%' or author like '%'||:key||'%'")
+    @Query("SELECT * FROM books WHERE name LIKE '%' || :key || '%' OR author LIKE '%' || :key || '%' ORDER BY latestChapterTime DESC")
     fun flowSearch(key: String): Flow<List<Book>>
+
+    @Query("SELECT * FROM books WHERE name LIKE '%' || :key || '%' OR author LIKE '%' || :key || '%' ORDER BY latestChapterTime DESC")
+    fun search(key: String): List<Book>
 
     @Query("SELECT * FROM books where type & ${BookType.updateError} > 0 order by durChapterTime desc")
     fun flowUpdateError(): Flow<List<Book>>

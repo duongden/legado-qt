@@ -11,7 +11,13 @@ import io.legado.app.data.entities.SearchBook
 import io.legado.app.databinding.ItemSearchBinding
 import io.legado.app.help.config.AppConfig
 import io.legado.app.utils.gone
+import io.legado.app.utils.setTranslatedText
 import io.legado.app.utils.visible
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import io.legado.app.utils.TranslateUtils
 
 
 class ExploreShowAdapter(context: Context, val callBack: CallBack) :
@@ -40,22 +46,35 @@ class ExploreShowAdapter(context: Context, val callBack: CallBack) :
 
     private fun bind(binding: ItemSearchBinding, item: SearchBook) {
         binding.run {
-            tvName.text = item.name
-            tvAuthor.text = context.getString(R.string.author_show, item.author)
+            tvName.setTranslatedText(item.name)
+            tvAuthor.setTranslatedText(item.author) { context.getString(R.string.author_show, it) }
             ivInBookshelf.isVisible = callBack.isInBookshelf(item)
             if (item.latestChapterTitle.isNullOrEmpty()) {
                 tvLasted.gone()
             } else {
-                tvLasted.text = context.getString(R.string.lasted_show, item.latestChapterTitle)
+                tvLasted.setTranslatedText(item.latestChapterTitle) {
+                    context.getString(R.string.lasted_show, it)
+                }
                 tvLasted.visible()
             }
-            tvIntroduce.text = item.trimIntro(context)
+            tvIntroduce.setTranslatedText(item.trimIntro(context))
             val kinds = item.getKindList()
             if (kinds.isEmpty()) {
                 llKind.gone()
             } else {
                 llKind.visible()
-                llKind.setLabels(kinds)
+                if (TranslateUtils.isTranslateEnabled()) {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        val translatedKinds = kinds.map {
+                            withContext(Dispatchers.IO) {
+                                TranslateUtils.translateMeta(it)
+                            }
+                        }
+                        llKind.setLabels(translatedKinds)
+                    }
+                } else {
+                    llKind.setLabels(kinds)
+                }
             }
             ivCover.load(
                 item,

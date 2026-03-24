@@ -28,6 +28,7 @@ import io.legado.app.utils.isAbsUrl
 import io.legado.app.utils.isJsonArray
 import io.legado.app.utils.isJsonObject
 import io.legado.app.utils.isUri
+import io.legado.app.utils.TranslateUtils
 import io.legado.app.utils.splitNotBlank
 
 
@@ -146,6 +147,7 @@ class ImportBookSourceViewModel(app: Application) : BaseViewModel(app) {
                             if (it.bookSourceUrl.isEmpty()) {
                                 throw NoStackTraceException("不是书源")
                             }
+                            translateSource(it)
                             allSources.add(it)
                         }
                     }
@@ -157,6 +159,7 @@ class ImportBookSourceViewModel(app: Application) : BaseViewModel(app) {
                         if (source.bookSourceUrl.isEmpty()) {
                             throw NoStackTraceException("不是书源")
                         }
+                        items.forEach { source -> translateSource(source) }
                         allSources.addAll(items)
                     }
 
@@ -172,6 +175,7 @@ class ImportBookSourceViewModel(app: Application) : BaseViewModel(app) {
                             if (source.bookSourceUrl.isEmpty()) {
                                 throw NoStackTraceException("不是书源")
                             }
+                            it.forEach { source -> translateSource(source) }
                             allSources.addAll(it)
                         }
                     }
@@ -206,6 +210,7 @@ class ImportBookSourceViewModel(app: Application) : BaseViewModel(app) {
                 if (source.bookSourceUrl.isEmpty()) {
                     throw NoStackTraceException("不是书源")
                 }
+                list.forEach { source -> translateSource(source) }
                 allSources.addAll(list)
             }
         }
@@ -214,6 +219,7 @@ class ImportBookSourceViewModel(app: Application) : BaseViewModel(app) {
     private fun comparisonSource() {
         execute {
             allSources.forEach {
+                translateSource(it)
                 val source = appDb.bookSourceDao.getBookSourcePart(it.bookSourceUrl)
                 checkSources.add(source)
                 selectStatus.add(source == null || source.lastUpdateTime < it.lastUpdateTime)
@@ -221,6 +227,18 @@ class ImportBookSourceViewModel(app: Application) : BaseViewModel(app) {
                 updateSourceStatus.add(source != null && source.lastUpdateTime < it.lastUpdateTime)
             }
             successLiveData.postValue(allSources.size)
+        }
+    }
+
+    private suspend fun translateSource(source: BookSource) {
+        if (TranslateUtils.isTranslateEnabled()) {
+            source.bookSourceName = TranslateUtils.translateMeta(source.bookSourceName)
+            source.bookSourceGroup?.let {
+                source.bookSourceGroup = TranslateUtils.translateMeta(it)
+            }
+            source.bookSourceComment?.let {
+                source.bookSourceComment = TranslateUtils.translateMeta(it)
+            }
         }
     }
 

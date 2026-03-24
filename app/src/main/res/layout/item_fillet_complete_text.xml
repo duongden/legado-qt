@@ -8,7 +8,7 @@
     android:background="@drawable/selector_fillet_btn_bg"
     android:ellipsize="end"
     android:gravity="start"
-    android:maxLines="1"
+    android:maxLines="2"
     android:paddingLeft="12dp"
     android:paddingTop="4dp"
     android:paddingRight="12dp"

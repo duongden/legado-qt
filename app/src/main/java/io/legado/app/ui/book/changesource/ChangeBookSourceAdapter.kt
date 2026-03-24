@@ -18,6 +18,7 @@ import io.legado.app.lib.dialogs.alert
 import io.legado.app.utils.getCompatColor
 import io.legado.app.utils.gone
 import io.legado.app.utils.invisible
+import io.legado.app.utils.setTranslatedText
 import io.legado.app.utils.visible
 import splitties.init.appCtx
 import splitties.views.onLongClick
@@ -55,9 +56,9 @@ class ChangeBookSourceAdapter(
     ) {
         binding.apply {
             if (payloads.isEmpty()) {
-                tvOrigin.text = item.originName
-                tvAuthor.text = item.author
-                tvLast.text = item.getDisplayLastChapterTitle()
+                tvOrigin.setTranslatedText(item.originName)
+                tvAuthor.setTranslatedText(item.author)
+                tvLast.setTranslatedText(item.getDisplayLastChapterTitle())
                 tvCurrentChapterWordCount.text = item.chapterWordCountText
                 tvRespondTime.text = context.getString(R.string.respondTime, item.respondTime)
                 if (callBack.oldBookUrl == item.bookUrl) {
@@ -70,8 +71,8 @@ class ChangeBookSourceAdapter(
                     val bundle = payloads[i] as Bundle
                     bundle.keySet().forEach {
                         when (it) {
-                            "name" -> tvOrigin.text = item.originName
-                            "latest" -> tvLast.text = item.getDisplayLastChapterTitle()
+                            "name" -> tvOrigin.setTranslatedText(item.originName)
+                            "latest" -> tvLast.setTranslatedText(item.getDisplayLastChapterTitle())
                             "upCurSource" -> if (callBack.oldBookUrl == item.bookUrl) {
                                 ivChecked.visible()
                             } else {

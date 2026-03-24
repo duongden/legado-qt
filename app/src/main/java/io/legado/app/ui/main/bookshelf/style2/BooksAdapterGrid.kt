@@ -15,6 +15,7 @@ import io.legado.app.help.config.AppConfig
 import io.legado.app.utils.gone
 import io.legado.app.utils.invisible
 import io.legado.app.utils.visible
+import io.legado.app.utils.setTranslatedText
 import splitties.views.onLongClick
 
 @Suppress("UNUSED_PARAMETER")
@@ -78,7 +79,7 @@ class BooksAdapterGrid(context: Context, callBack: CallBack) :
                 tvName.gone()
             } else {
                 tvName.visible()
-                tvName.text = item.name
+                tvName.setTranslatedText(item.name)
             }
             ivCover.load(item, false)
             upRefresh(this, item)
@@ -92,7 +93,7 @@ class BooksAdapterGrid(context: Context, callBack: CallBack) :
                     val bundle = payloads[i] as Bundle
                     bundle.keySet().forEach {
                         when (it) {
-                            "name" -> tvName.text = item.name
+                            "name" -> tvName.setTranslatedText(item.name)
                             "cover" -> ivCover.load(
                                 item,
                                 false
@@ -135,7 +136,7 @@ class BooksAdapterGrid(context: Context, callBack: CallBack) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun onBind(item: Book, position: Int) = binding.run {
-            tvName.text = item.name
+            tvName.setTranslatedText(item.name)
             ivCover.load(item, false)
             upRefresh(this, item)
         }
@@ -148,7 +149,7 @@ class BooksAdapterGrid(context: Context, callBack: CallBack) :
                     val bundle = payloads[i] as Bundle
                     bundle.keySet().forEach {
                         when (it) {
-                            "name" -> tvName.text = item.name
+                            "name" -> tvName.setTranslatedText(item.name)
                             "cover" -> ivCover.load(
                                 item,
                                 false
@@ -195,7 +196,7 @@ class BooksAdapterGrid(context: Context, callBack: CallBack) :
                 tvName.gone()
             } else {
                 tvName.visible()
-                tvName.text = item.groupName
+                tvName.setTranslatedText(item.groupName)
             }
             ivCover.load(item.cover)
         }
@@ -208,7 +209,7 @@ class BooksAdapterGrid(context: Context, callBack: CallBack) :
                     val bundle = payloads[i] as Bundle
                     bundle.keySet().forEach {
                         when (it) {
-                            "groupName" -> tvName.text = item.groupName
+                            "groupName" -> tvName.setTranslatedText(item.groupName)
                             "cover" -> ivCover.load(item.cover)
                         }
                     }
@@ -236,7 +237,7 @@ class BooksAdapterGrid(context: Context, callBack: CallBack) :
                     tvName.gone()
                 } else{
                     tvName.visible()
-                    tvName.text = it
+                    tvName.setTranslatedText(it)
                 }
             }
             ivCover.load(item.cover)
@@ -255,7 +256,7 @@ class BooksAdapterGrid(context: Context, callBack: CallBack) :
                                     tvName.gone()
                                 } else{
                                     tvName.visible()
-                                    tvName.text = it
+                                    tvName.setTranslatedText(it)
                                 }
                             }
                             "cover" -> ivCover.load(item.cover)

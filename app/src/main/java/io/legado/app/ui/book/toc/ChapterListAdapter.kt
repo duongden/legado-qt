@@ -19,6 +19,8 @@ import io.legado.app.lib.theme.accentColor
 import io.legado.app.utils.getCompatColor
 import io.legado.app.utils.gone
 import io.legado.app.utils.longToastOnUi
+import io.legado.app.utils.TranslateUtils
+import io.legado.app.utils.setTranslatedText
 import io.legado.app.utils.visible
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ensureActive
@@ -83,7 +85,10 @@ class ChapterListAdapter(context: Context, val callback: Callback) :
                     val item = items[i]
                     if (displayTitleMap[item.title] == null) {
                         ensureActive()
-                        val displayTitle = item.getDisplayTitle(replaceRules, useReplace, replaceBook = replaceBook)
+                        var displayTitle = item.getDisplayTitle(replaceRules, useReplace, replaceBook = replaceBook)
+                        if (TranslateUtils.isTranslateEnabled()) {
+                            displayTitle = TranslateUtils.translateChapterTitle(displayTitle)
+                        }
                         ensureActive()
                         displayTitleMap[item.title] = displayTitle
                         handler.post {
@@ -97,7 +102,10 @@ class ChapterListAdapter(context: Context, val callback: Callback) :
                     val item = items[i]
                     if (displayTitleMap[item.title] == null) {
                         ensureActive()
-                        val displayTitle = item.getDisplayTitle(replaceRules, useReplace, replaceBook = replaceBook)
+                        var displayTitle = item.getDisplayTitle(replaceRules, useReplace, replaceBook = replaceBook)
+                        if (TranslateUtils.isTranslateEnabled()) {
+                            displayTitle = TranslateUtils.translateChapterTitle(displayTitle)
+                        }
                         ensureActive()
                         displayTitleMap[item.title] = displayTitle
                         handler.post {
@@ -134,7 +142,7 @@ class ChapterListAdapter(context: Context, val callback: Callback) :
                 } else {
                     tvChapterName.setTextColor(context.getCompatColor(R.color.primaryText))
                 }
-                tvChapterName.text = getDisplayTitle(item)
+                tvChapterName.setTranslatedText(getDisplayTitle(item))
                 if (item.isVolume) {
                     //卷名，如第一卷 突出显示
                     tvChapterItem.setBackgroundColor(context.getCompatColor(R.color.btn_bg_press))
@@ -168,7 +176,7 @@ class ChapterListAdapter(context: Context, val callback: Callback) :
 
                 upHasCache(binding, isDur, cached)
             } else {
-                tvChapterName.text = getDisplayTitle(item)
+                tvChapterName.setTranslatedText(getDisplayTitle(item))
                 upHasCache(binding, isDur, cached)
             }
         }

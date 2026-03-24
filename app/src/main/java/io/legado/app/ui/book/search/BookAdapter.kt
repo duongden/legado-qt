@@ -6,6 +6,7 @@ import io.legado.app.base.adapter.ItemViewHolder
 import io.legado.app.base.adapter.RecyclerAdapter
 import io.legado.app.data.entities.Book
 import io.legado.app.databinding.ItemFilletTextBinding
+import io.legado.app.utils.setTranslatedText
 
 
 class BookAdapter(context: Context, val callBack: CallBack) :
@@ -26,7 +27,7 @@ class BookAdapter(context: Context, val callBack: CallBack) :
         payloads: MutableList<Any>
     ) {
         binding.run {
-            textView.text = item.name
+            textView.setTranslatedText(item.name)
         }
     }
 

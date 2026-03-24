@@ -12,7 +12,13 @@ import io.legado.app.data.entities.SearchBook
 import io.legado.app.databinding.ItemSearchBinding
 import io.legado.app.help.config.AppConfig
 import io.legado.app.utils.gone
+import io.legado.app.utils.setTranslatedText
 import io.legado.app.utils.visible
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import io.legado.app.utils.TranslateUtils
 
 
 class SearchAdapter(context: Context, val callBack: CallBack) :
@@ -81,12 +87,12 @@ class SearchAdapter(context: Context, val callBack: CallBack) :
 
     private fun bind(binding: ItemSearchBinding, searchBook: SearchBook) {
         binding.run {
-            tvName.text = searchBook.name
-            tvAuthor.text = context.getString(R.string.author_show, searchBook.author)
+            tvName.setTranslatedText(searchBook.name)
+            tvAuthor.setTranslatedText(searchBook.author) { context.getString(R.string.author_show, it) }
             ivInBookshelf.isVisible = callBack.isInBookshelf(searchBook)
             bvOriginCount.setBadgeCount(searchBook.origins.size)
             upLasted(binding, searchBook.latestChapterTitle)
-            tvIntroduce.text = searchBook.trimIntro(context)
+            tvIntroduce.setTranslatedText(searchBook.trimIntro(context))
             upKind(binding, searchBook.getKindList())
             ivCover.load(
                 searchBook,
@@ -101,7 +107,7 @@ class SearchAdapter(context: Context, val callBack: CallBack) :
                 when (it) {
                     "origins" -> bvOriginCount.setBadgeCount(searchBook.origins.size)
                     "last" -> upLasted(binding, searchBook.latestChapterTitle)
-                    "intro" -> tvIntroduce.text = searchBook.trimIntro(context)
+                    "intro" -> tvIntroduce.setTranslatedText(searchBook.trimIntro(context))
                     "kind" -> upKind(binding, searchBook.getKindList())
                     "isInBookshelf" -> ivInBookshelf.isVisible = callBack.isInBookshelf(searchBook)
                     "cover" -> ivCover.load(
@@ -118,8 +124,9 @@ class SearchAdapter(context: Context, val callBack: CallBack) :
             if (latestChapterTitle.isNullOrEmpty()) {
                 tvLasted.gone()
             } else {
-                tvLasted.text =
-                    context.getString(R.string.lasted_show, latestChapterTitle)
+                tvLasted.setTranslatedText(latestChapterTitle) {
+                    context.getString(R.string.lasted_show, it)
+                }
                 tvLasted.visible()
             }
         }
@@ -130,7 +137,18 @@ class SearchAdapter(context: Context, val callBack: CallBack) :
             llKind.gone()
         } else {
             llKind.visible()
-            llKind.setLabels(kinds)
+            if (TranslateUtils.isTranslateEnabled()) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    val translatedKinds = kinds.map {
+                        withContext(Dispatchers.IO) {
+                            TranslateUtils.translateMeta(it)
+                        }
+                    }
+                    llKind.setLabels(translatedKinds)
+                }
+            } else {
+                llKind.setLabels(kinds)
+            }
         }
     }
 

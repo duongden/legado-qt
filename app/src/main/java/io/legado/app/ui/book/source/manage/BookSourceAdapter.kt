@@ -27,6 +27,7 @@ import io.legado.app.utils.gone
 import io.legado.app.utils.invisible
 import io.legado.app.utils.startActivity
 import io.legado.app.utils.visible
+import io.legado.app.utils.setTranslatedText
 import java.util.Collections
 
 
@@ -99,7 +100,7 @@ class BookSourceAdapter(
         binding.run {
             if (payloads.isEmpty()) {
                 root.setBackgroundColor(ColorUtils.withAlpha(context.backgroundColor, 0.5f))
-                cbBookSource.text = item.getDisPlayNameGroup()
+                cbBookSource.setTranslatedText(item.getDisPlayNameGroup())
                 swtEnabled.isChecked = item.enabled
                 cbBookSource.isChecked = selected.contains(item)
                 upCheckSourceMessage(binding, item)
@@ -111,7 +112,7 @@ class BookSourceAdapter(
                     bundle.keySet().forEach {
                         when (it) {
                             "enabled" -> swtEnabled.isChecked = bundle.getBoolean("enabled")
-                            "upName" -> cbBookSource.text = item.getDisPlayNameGroup()
+                            "upName" -> cbBookSource.setTranslatedText(item.getDisPlayNameGroup())
                             "upExplore" -> upShowExplore(ivExplore, item)
                             "selected" -> cbBookSource.isChecked = selected.contains(item)
                             "checkSourceMessage" -> upCheckSourceMessage(binding, item)

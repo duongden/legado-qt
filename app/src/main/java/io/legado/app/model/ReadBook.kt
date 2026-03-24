@@ -706,11 +706,14 @@ object ReadBook : CoroutineScope by MainScope() {
         chapterLoadingJobs[chapter.index]?.cancel()
         val job = Coroutine.async(this, start = CoroutineStart.LAZY) {
             val contentProcessor = ContentProcessor.get(book.name, book.origin)
-            val displayTitle = chapter.getDisplayTitle(
+            var displayTitle = chapter.getDisplayTitle(
                 contentProcessor.getTitleReplaceRules(),
                 book.getUseReplaceRule(),
                 replaceBook = book.toReplaceBook()
             )
+            if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+                displayTitle = io.legado.app.utils.TranslateUtils.translateChapterTitle(displayTitle)
+            }
             val contents = contentProcessor
                 .getContent(book, chapter, content, includeTitle = false)
             ensureActive()
@@ -795,11 +798,14 @@ object ReadBook : CoroutineScope by MainScope() {
         }
         kotlin.runCatching {
             val contentProcessor = ContentProcessor.get(book.name, book.origin)
-            val displayTitle = chapter.getDisplayTitle(
+            var displayTitle = chapter.getDisplayTitle(
                 contentProcessor.getTitleReplaceRules(),
                 book.getUseReplaceRule(),
                 replaceBook = book.toReplaceBook()
             )
+            if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+                displayTitle = io.legado.app.utils.TranslateUtils.translateChapterTitle(displayTitle)
+            }
             val contents = contentProcessor
                 .getContent(book, chapter, content, includeTitle = false)
             val textChapter = ChapterProvider.getTextChapterAsync(
@@ -917,11 +923,15 @@ object ReadBook : CoroutineScope by MainScope() {
                 book.durChapterPos = durChapterPos
                 if (!pageChanged || chapterChanged) {
                     appDb.bookChapterDao.getChapter(book.bookUrl, durChapterIndex)?.let {
-                        book.durChapterTitle = it.getDisplayTitle(
+                        var chTitle = it.getDisplayTitle(
                             ContentProcessor.get(book.name, book.origin).getTitleReplaceRules(),
                             book.getUseReplaceRule(),
                             replaceBook = book.toReplaceBook()
                         )
+                        if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+                            chTitle = kotlinx.coroutines.runBlocking { io.legado.app.utils.TranslateUtils.translateChapterTitle(chTitle) }
+                        }
+                        book.durChapterTitle = chTitle
                         SourceCallBack.callBackBook(SourceCallBack.SAVE_READ, bookSource, book, it, durTime.toString())
                     }
                 }

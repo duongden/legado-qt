@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.view.ViewGroup
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -71,7 +73,16 @@ class ExploreShowActivity : VMBaseActivity<ActivityExploreShowBinding, ExploreSh
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
-        binding.titleBar.title = intent.getStringExtra("exploreName")
+        val originTitle = intent.getStringExtra("exploreName") ?: ""
+        if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+            binding.titleBar.title = originTitle
+            lifecycleScope.launch {
+                val title = io.legado.app.utils.TranslateUtils.translateMeta(originTitle)
+                binding.titleBar.title = title
+            }
+        } else {
+            binding.titleBar.title = originTitle
+        }
         initRecyclerView()
         viewModel.booksData.observe(this) { upData(it) }
         viewModel.addBooksData.observe(this) { upDataTop(it) }

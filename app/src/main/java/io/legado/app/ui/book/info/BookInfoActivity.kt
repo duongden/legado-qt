@@ -96,6 +96,7 @@ import io.legado.app.utils.gone
 import io.legado.app.utils.longSnackbar
 import io.legado.app.utils.longToastOnUi
 import io.legado.app.utils.observeEvent
+import io.legado.app.utils.setTranslatedText
 import io.legado.app.utils.openFileUri
 import io.legado.app.utils.openUrl
 import io.legado.app.utils.sendToClip
@@ -483,10 +484,10 @@ class BookInfoActivity :
 
     private fun showBook(book: Book) = binding.run {
         showCover(book)
-        tvName.text = book.name
-        tvAuthor.text = getString(R.string.author_show, book.getRealAuthor())
-        tvOrigin.text = getString(R.string.origin_show, book.originName)
-        tvLasted.text = getString(R.string.lasted_show, book.latestChapterTitle)
+        tvName.setTranslatedText(book.name)
+        tvAuthor.setTranslatedText(book.getRealAuthor()) { getString(R.string.author_show, it) }
+        tvOrigin.setTranslatedText(book.originName) { getString(R.string.origin_show, it) }
+        tvLasted.setTranslatedText(book.latestChapterTitle) { getString(R.string.lasted_show, it) }
         showBookIntro(book)
         if (book.isWebFile) {
             llToc.gone()
@@ -540,7 +541,18 @@ class BookInfoActivity :
     }
 
     private fun showBookIntro(book: Book) {
-        val intro = book.getDisplayIntro()
+        val rawIntro = book.getDisplayIntro()
+        lifecycleScope.launch {
+            val intro = if (io.legado.app.utils.TranslateUtils.isTranslateEnabled() && !rawIntro.isNullOrBlank()) {
+                withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    io.legado.app.utils.TranslateUtils.translateContent(rawIntro)
+                }
+            } else rawIntro
+            showBookIntroReady(intro)
+        }
+    }
+
+    private fun showBookIntroReady(intro: String?) {
         if (intro?.startsWith("<useweb>") == true) {
             val lastIndex = intro.lastIndexOf("<")
             if (lastIndex < 8) {
@@ -662,11 +674,15 @@ class BookInfoActivity :
                 lbKind.visible()
                 val source = viewModel.bookSource
                 if (source == null) {
-                    lbKind.setLabels(kinds)
+                    val isTrans = io.legado.app.utils.TranslateUtils.isTranslateEnabled()
+                    val translatedKinds = if (isTrans) kinds.map { kotlinx.coroutines.runBlocking { io.legado.app.utils.TranslateUtils.translateMeta(it) } } else kinds
+                    lbKind.setLabels(translatedKinds)
                     return@launch
                 }
+                val isTrans = io.legado.app.utils.TranslateUtils.isTranslateEnabled()
+                val translatedKinds = if (isTrans) kinds.map { kotlinx.coroutines.runBlocking { io.legado.app.utils.TranslateUtils.translateMeta(it) } } else kinds
                 lbKind.setLabels(
-                    kinds,
+                    translatedKinds,
                     { kind ->
                         SourceCallBack.callBackBtn(
                             this@BookInfoActivity,
@@ -720,8 +736,8 @@ class BookInfoActivity :
 
             else -> {
                 book?.let {
-                    binding.tvToc.text = getString(R.string.toc_s, it.durChapterTitle)
-                    binding.tvLasted.text = getString(R.string.lasted_show, it.latestChapterTitle)
+                    binding.tvToc.setTranslatedText(it.durChapterTitle) { title -> getString(R.string.toc_s, title) }
+                    binding.tvLasted.setTranslatedText(it.latestChapterTitle) { title -> getString(R.string.lasted_show, title) }
                 }
             }
         }
@@ -745,7 +761,7 @@ class BookInfoActivity :
                     getString(R.string.group_s, getString(R.string.no_group))
                 }
             } else {
-                binding.tvGroup.text = getString(R.string.group_s, it)
+                binding.tvGroup.setTranslatedText(it) { text -> getString(R.string.group_s, text) }
             }
         }
     }

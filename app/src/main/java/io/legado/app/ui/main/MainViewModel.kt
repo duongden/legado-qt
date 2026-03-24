@@ -47,6 +47,7 @@ import kotlin.collections.forEach
 import kotlin.math.min
 import io.legado.app.model.RuleUpdate
 import io.legado.app.model.SourceCallBack
+import io.legado.app.utils.TranslateUtils
 
 class MainViewModel(application: Application) : BaseViewModel(application) {
     private var threadCount = AppConfig.threadCount
@@ -71,6 +72,7 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
 
     init {
         deleteNotShelfBook()
+        checkSourceTranslation()
     }
 
     override fun onCleared() {
@@ -295,6 +297,76 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
     private fun deleteNotShelfBook() {
         execute {
             appDb.bookDao.deleteNotShelfBook()
+        }
+    }
+
+    fun checkSourceTranslation() {
+        execute {
+            if (TranslateUtils.isTranslateEnabled()) {
+                val sources = appDb.bookSourceDao.all
+                val updatedSources = arrayListOf<BookSource>()
+                sources.forEach { source ->
+                    var changed = false
+                    val newName = TranslateUtils.translateMeta(source.bookSourceName)
+                    if (newName != source.bookSourceName) {
+                        source.bookSourceName = newName
+                        changed = true
+                    }
+                    val newGroup = TranslateUtils.translateMeta(source.bookSourceGroup)
+                    if (newGroup != source.bookSourceGroup) {
+                        source.bookSourceGroup = newGroup
+                        changed = true
+                    }
+                    val newComment = TranslateUtils.translateMeta(source.bookSourceComment)
+                    if (newComment != source.bookSourceComment) {
+                        source.bookSourceComment = newComment
+                        changed = true
+                    }
+                    if (changed) {
+                        updatedSources.add(source)
+                    }
+                }
+                if (updatedSources.isNotEmpty()) {
+                    appDb.bookSourceDao.update(*updatedSources.toTypedArray())
+                }
+
+                val rssSources = appDb.rssSourceDao.all
+                val updatedRssSources = arrayListOf<io.legado.app.data.entities.RssSource>()
+                rssSources.forEach { source ->
+                    var changed = false
+                    val newName = TranslateUtils.translateMeta(source.sourceName)
+                    if (newName != source.sourceName) {
+                        source.sourceName = newName
+                        changed = true
+                    }
+                    val newGroup = TranslateUtils.translateMeta(source.sourceGroup)
+                    if (newGroup != source.sourceGroup) {
+                        source.sourceGroup = newGroup
+                        changed = true
+                    }
+                    val newComment = TranslateUtils.translateMeta(source.sourceComment)
+                    if (newComment != source.sourceComment) {
+                        source.sourceComment = newComment
+                        changed = true
+                    }
+                    val newSortUrl = TranslateUtils.translateCode(source.sortUrl)
+                    if (newSortUrl != source.sortUrl) {
+                        source.sortUrl = newSortUrl
+                        changed = true
+                    }
+                    val newRuleContent = TranslateUtils.translateCode(source.ruleContent)
+                    if (newRuleContent != source.ruleContent) {
+                        source.ruleContent = newRuleContent
+                        changed = true
+                    }
+                    if (changed) {
+                        updatedRssSources.add(source)
+                    }
+                }
+                if (updatedRssSources.isNotEmpty()) {
+                    appDb.rssSourceDao.update(*updatedRssSources.toTypedArray())
+                }
+            }
         }
     }
 

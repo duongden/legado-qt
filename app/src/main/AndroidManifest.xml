@@ -32,6 +32,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme.Light"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning,UnusedAttribute">
+        <!-- Từ điển tùy chỉnh -->
+        <activity
+            android:name=".ui.dict.manage.DictManageActivity"
+            android:configChanges="orientation|screenSize"
+            android:hardwareAccelerated="true" />
+            
         <!-- 主入口 -->
         <activity
             android:name=".ui.welcome.WelcomeActivity"

@@ -53,11 +53,16 @@ import io.legado.app.utils.openUrl
 import io.legado.app.utils.putPrefBoolean
 import io.legado.app.utils.startActivity
 import io.legado.app.utils.visible
+import io.legado.app.utils.setTranslatedText
 import splitties.views.onClick
 import splitties.views.onLongClick
 import androidx.core.graphics.toColorInt
+import androidx.lifecycle.lifecycleScope
 import io.legado.app.constant.BookType
 import io.legado.app.utils.buildMainHandler
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * 阅读界面菜单
@@ -608,9 +613,17 @@ class ReadMenu @JvmOverloads constructor(
     }
 
     fun upBookView() {
-        binding.titleBar.title = ReadBook.book?.name
+        val bookName = ReadBook.book?.name
+        binding.titleBar.title = bookName
+        if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+            activity?.lifecycleScope?.launch {
+                binding.titleBar.title = withContext(Dispatchers.IO) {
+                    io.legado.app.utils.TranslateUtils.translateMeta(bookName)
+                }
+            }
+        }
         ReadBook.curTextChapter?.let {
-            binding.tvChapterName.text = it.title
+            binding.tvChapterName.setTranslatedText(it.title)
             binding.tvChapterName.visible()
             if (!ReadBook.isLocalBook) {
                 binding.tvChapterUrl.text = it.chapter.getAbsoluteURL()

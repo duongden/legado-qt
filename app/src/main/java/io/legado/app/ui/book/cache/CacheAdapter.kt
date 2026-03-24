@@ -14,6 +14,7 @@ import io.legado.app.databinding.ItemDownloadBinding
 import io.legado.app.help.book.isLocal
 import io.legado.app.model.CacheBook
 import io.legado.app.utils.gone
+import io.legado.app.utils.setTranslatedText
 import io.legado.app.utils.visible
 
 class CacheAdapter(context: Context, private val callBack: CallBack) :
@@ -44,8 +45,8 @@ class CacheAdapter(context: Context, private val callBack: CallBack) :
     ) {
         binding.run {
             if (payloads.isEmpty()) {
-                tvName.text = item.name
-                tvAuthor.text = context.getString(R.string.author_show, item.getRealAuthor())
+                tvName.setTranslatedText(item.name)
+                tvAuthor.setTranslatedText(item.getRealAuthor()) { context.getString(R.string.author_show, it) }
                 if (item.isLocal) {
                     tvDownload.setText(R.string.local_book)
                 } else {

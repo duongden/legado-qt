@@ -14,7 +14,9 @@ import java.util.*
  * Double-Array Trie implementation for memory-efficient dictionary storage
  * Based on the algorithm by Jun-ichi Aoe for compact trie representation
  */
-class DoubleArrayTrie {
+import io.legado.app.model.dictionary.ITrieDictionary
+
+class DoubleArrayTrie : ITrieDictionary {
     
     // Double array structure
     private var base: IntArray = IntArray(0)
@@ -96,7 +98,7 @@ class DoubleArrayTrie {
     /**
      * Find longest matching prefix in text
      */
-    fun findLongestMatch(text: String, startIndex: Int): Pair<Int, String>? {
+    override fun findLongestMatch(text: String, startIndex: Int): Pair<Int, String>? {
         if (base.isEmpty() || startIndex >= text.length) return null
         
         var currentState = 1 // root state
@@ -127,6 +129,11 @@ class DoubleArrayTrie {
         }
         
         return lastMatch
+    }
+
+    override operator fun get(key: String): String? {
+        val match = findLongestMatch(key, 0) ?: return null
+        return if (match.first == key.length) match.second else null
     }
     
     /**

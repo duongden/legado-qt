@@ -1,6 +1,8 @@
 package io.legado.app.model
 
 import io.legado.app.utils.DictManager
+import io.legado.app.model.dictionary.BinaryDictionary
+import io.legado.app.model.dictionary.ITrieDictionary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
@@ -35,6 +37,13 @@ object TranslationLoader {
     private const val PHONETIC_MAGIC = 0x50484D50
     private const val PHONETIC_VERSION = 1
 
+    class MapTrieDictionary(private val map: Map<String, String>) : ITrieDictionary {
+        override fun findLongestMatch(text: String, startIndex: Int): Pair<Int, String>? {
+            return null // PhienAm doesn't use findLongestMatch
+        }
+        override operator fun get(key: String): String? = map[key]
+    }
+
     /**
      * Load translation data (lazy loading, singleton pattern)
      * Priority: Binary files > Custom text files > Default text files
@@ -63,8 +72,7 @@ object TranslationLoader {
                 // Load Names dictionary
                 val namesTrie = try {
                     loadDictionary(
-                        binaryAsset = "translate/vietphrase/Names.dat",
-                        textAsset = "translate/vietphrase/Names.txt",
+                        binaryAsset = "dict/names.bin",
                         customType = DictManager.DictType.NAMES
                     )
                 } catch (e: Exception) {
@@ -75,8 +83,7 @@ object TranslationLoader {
                 // Load VietPhrase dictionary
                 val vietPhraseTrie = try {
                     loadDictionary(
-                        binaryAsset = "translate/vietphrase/VietPhrase.dat",
-                        textAsset = "translate/vietphrase/VietPhrase.txt",
+                        binaryAsset = "dict/vietphrase.bin",
                         customType = DictManager.DictType.VIETPHRASE
                     )
                 } catch (e: Exception) {
@@ -87,7 +94,7 @@ object TranslationLoader {
                 // Load ChinesePhienAm dictionary (always HashMap for phonetic mapping)
                 val chinesePhienAm = try {
                     loadPhoneticDictionary(
-                        textAsset = "translate/vietphrase/ChinesePhienAmWords.txt",
+                        binaryAsset = "dict/phienam.bin",
                         customType = DictManager.DictType.PHIENAM
                     )
                 } catch (e: Exception) {
@@ -114,9 +121,8 @@ object TranslationLoader {
      */
     private suspend fun loadDictionary(
         binaryAsset: String,
-        textAsset: String,
         customType: DictManager.DictType
-    ): DoubleArrayTrie = withContext(Dispatchers.IO) {
+    ): ITrieDictionary = withContext(Dispatchers.IO) {
         val trie = DoubleArrayTrie()
 
         // Try custom dictionary first
@@ -192,57 +198,25 @@ object TranslationLoader {
             android.util.Log.w("TranslationLoader", "Failed to load persistent binary, will fallback", e)
         }
         
-        // Try to load binary file first (pre-built or cached)
+        // Try to load pre-built binary file directly from assets
         try {
             appCtx.assets.open(binaryAsset).use { stream ->
-                trie.load(stream)
-                return@withContext trie
+                val bytes = stream.readBytes()
+                val buffer = java.nio.ByteBuffer.wrap(bytes)
+                return@withContext BinaryDictionary(buffer)
             }
         } catch (e: Exception) {
+            throw IllegalStateException("Binary dictionary $binaryAsset not found or failed to load")
         }
-        
-        // Load default text file and cache it
-        appCtx.assets.open(textAsset).use { stream ->
-            val entries = loadEntriesFromText(stream)
-            
-            // Build trie
-            trie.build(entries)
-            
-            // Try to cache to app's internal storage for future use
-            try {
-                val binDir = File(appCtx.filesDir, DEFAULT_BIN_DIR)
-                binDir.mkdirs()
-                val binFile = File(binDir, File(binaryAsset).name)
-                val tmpFile = File(binDir, binFile.name + ".tmp")
-                try {
-                    FileOutputStream(tmpFile).use { fos ->
-                        BufferedOutputStream(fos, 1024 * 1024).use { bos ->
-                            trie.save(bos)
-                        }
-                    }
-                    if (binFile.exists()) binFile.delete()
-                    if (!tmpFile.renameTo(binFile)) {
-                        throw IllegalStateException("Failed to rename temp cache file to final: ${binFile.name}")
-                    }
-                } catch (e: Exception) {
-                    try { tmpFile.delete() } catch (_: Exception) { }
-                    android.util.Log.w("TranslationLoader", "Failed to cache default trie", e)
-                }
-            } catch (e: Exception) {
-                android.util.Log.w("TranslationLoader", "Failed to cache default trie", e)
-            }
-        }
-        
-        trie
     }
     
     /**
-     * Load phonetic dictionary as HashMap (kept as is for performance)
+     * Load phonetic dictionary
      */
     private suspend fun loadPhoneticDictionary(
-        textAsset: String,
+        binaryAsset: String,
         customType: DictManager.DictType
-    ): Map<String, String> = withContext(Dispatchers.IO) {
+    ): ITrieDictionary = withContext(Dispatchers.IO) {
         if (DictManager.hasCustomDict(customType)) {
             val customFile = DictManager.getCustomDictFile(customType)
             val customBin = File(customFile.parent, "${customFile.nameWithoutExtension}$PHONETIC_BIN_SUFFIX")
@@ -250,7 +224,7 @@ object TranslationLoader {
             if (customBin.exists()) {
                 try {
                     android.util.Log.d("TranslationLoader", "Trying to load custom phonetic binary: ${customBin.path}")
-                    return@withContext loadPhoneticBinary(customBin)
+                    return@withContext MapTrieDictionary(loadPhoneticBinary(customBin))
                 } catch (e: Exception) {
                     try { customBin.delete() } catch (_: Exception) { }
                     android.util.Log.w("TranslationLoader", "Failed to load custom phonetic binary, fallback", e)
@@ -268,36 +242,32 @@ object TranslationLoader {
                     } catch (e: Exception) {
                         android.util.Log.w("TranslationLoader", "Failed to cache custom phonetic", e)
                     }
-                    return@withContext map
+                    return@withContext MapTrieDictionary(map)
                 }
             }
         }
 
         val defaultBinDir = File(appCtx.filesDir, DEFAULT_BIN_DIR)
-        val defaultBin = File(defaultBinDir, File(textAsset).nameWithoutExtension + PHONETIC_BIN_SUFFIX)
+        val defaultBin = File(defaultBinDir, File(binaryAsset).nameWithoutExtension + PHONETIC_BIN_SUFFIX)
         if (defaultBin.exists()) {
             try {
                 android.util.Log.d("TranslationLoader", "Trying to load default phonetic binary: ${defaultBin.path}")
-                return@withContext loadPhoneticBinary(defaultBin)
+                return@withContext MapTrieDictionary(loadPhoneticBinary(defaultBin))
             } catch (e: Exception) {
                 try { defaultBin.delete() } catch (_: Exception) { }
                 android.util.Log.w("TranslationLoader", "Failed to load default phonetic binary, fallback", e)
             }
         }
         
-        // Load default file
-        android.util.Log.d("TranslationLoader", "Loading default phonetic file: $textAsset")
-        appCtx.assets.open(textAsset).use { stream ->
-            val map = loadMapFromStream(stream)
-            android.util.Log.d("TranslationLoader", "Default phonetic entries loaded: ${map.size}")
-            try {
-                defaultBinDir.mkdirs()
-                savePhoneticBinary(map, defaultBin)
-                android.util.Log.d("TranslationLoader", "Default phonetic cached to: ${defaultBin.path}")
-            } catch (e: Exception) {
-                android.util.Log.w("TranslationLoader", "Failed to cache default phonetic", e)
+        // Load pre-compiled binary phonetic dictionary directly from assets
+        try {
+            appCtx.assets.open(binaryAsset).use { stream ->
+                val bytes = stream.readBytes()
+                val buffer = java.nio.ByteBuffer.wrap(bytes)
+                return@withContext BinaryDictionary(buffer)
             }
-            map
+        } catch (e: Exception) {
+            throw IllegalStateException("Binary phonetic dictionary $binaryAsset not found or failed to load", e)
         }
     }
 
@@ -312,21 +282,19 @@ object TranslationLoader {
             when (type) {
                 DictManager.DictType.NAMES -> {
                     loadDictionary(
-                        binaryAsset = "translate/vietphrase/Names.dat",
-                        textAsset = "translate/vietphrase/Names.txt",
+                        binaryAsset = "dict/names.bin",
                         customType = DictManager.DictType.NAMES
                     )
                 }
                 DictManager.DictType.VIETPHRASE -> {
                     loadDictionary(
-                        binaryAsset = "translate/vietphrase/VietPhrase.dat",
-                        textAsset = "translate/vietphrase/VietPhrase.txt",
+                        binaryAsset = "dict/vietphrase.bin",
                         customType = DictManager.DictType.VIETPHRASE
                     )
                 }
                 DictManager.DictType.PHIENAM -> {
                     loadPhoneticDictionary(
-                        textAsset = "translate/vietphrase/ChinesePhienAmWords.txt",
+                        binaryAsset = "dict/phienam.bin",
                         customType = DictManager.DictType.PHIENAM
                     )
                 }
