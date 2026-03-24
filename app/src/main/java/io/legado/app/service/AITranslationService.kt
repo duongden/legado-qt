@@ -130,27 +130,44 @@ class AITranslationService : BaseService() {
     }
     
     /**
-     * Copy model from assets to cache and load from file path
-     * This is more memory efficient for large models
+     * Load models - first try from downloaded directory (AiModelManager),
+     * then fall back to assets if not downloaded
      */
     private fun loadModelsFromCache(): Boolean {
         return try {
-            val cacheDir = java.io.File(cacheDir, "aimodel")
-            if (!cacheDir.exists()) cacheDir.mkdirs()
+            val downloadDir = io.legado.app.utils.AiModelManager.getModelDir(this@AITranslationService)
+            val downloadedEncoder = java.io.File(downloadDir, "encoder_model.onnx")
+            val downloadedDecoder = java.io.File(downloadDir, "decoder_model.onnx")
             
-            // Copy and load encoder model
-            AppLog.put("Copying encoder model to cache...")
-            val encoderFile = copyAssetToCache("aimodel/encoder_model.onnx", "encoder_model.onnx", cacheDir)
-            AppLog.put("Loading encoder from: ${encoderFile.absolutePath}")
-            encoderSession = ortEnv?.createSession(encoderFile.absolutePath)
-            AppLog.put("Encoder model loaded")
-            
-            // Copy and load decoder model (use standard decoder, not with_past)
-            AppLog.put("Copying decoder model to cache...")
-            val decoderFile = copyAssetToCache("aimodel/decoder_model.onnx", "decoder_model.onnx", cacheDir)
-            AppLog.put("Loading decoder from: ${decoderFile.absolutePath}")
-            decoderSession = ortEnv?.createSession(decoderFile.absolutePath)
-            AppLog.put("Decoder model loaded")
+            if (downloadedEncoder.exists() && downloadedEncoder.length() > 0 &&
+                downloadedDecoder.exists() && downloadedDecoder.length() > 0) {
+                // Load from downloaded directory
+                AppLog.put("Loading models from downloaded directory: ${downloadDir.absolutePath}")
+                AppLog.put("Loading encoder from: ${downloadedEncoder.absolutePath}")
+                encoderSession = ortEnv?.createSession(downloadedEncoder.absolutePath)
+                AppLog.put("Encoder model loaded")
+                
+                AppLog.put("Loading decoder from: ${downloadedDecoder.absolutePath}")
+                decoderSession = ortEnv?.createSession(downloadedDecoder.absolutePath)
+                AppLog.put("Decoder model loaded")
+            } else {
+                // Fall back to assets
+                AppLog.put("Downloaded models not found, trying assets...")
+                val cacheDir = java.io.File(cacheDir, "aimodel")
+                if (!cacheDir.exists()) cacheDir.mkdirs()
+                
+                AppLog.put("Copying encoder model to cache...")
+                val encoderFile = copyAssetToCache("aimodel/encoder_model.onnx", "encoder_model.onnx", cacheDir)
+                AppLog.put("Loading encoder from: ${encoderFile.absolutePath}")
+                encoderSession = ortEnv?.createSession(encoderFile.absolutePath)
+                AppLog.put("Encoder model loaded")
+                
+                AppLog.put("Copying decoder model to cache...")
+                val decoderFile = copyAssetToCache("aimodel/decoder_model.onnx", "decoder_model.onnx", cacheDir)
+                AppLog.put("Loading decoder from: ${decoderFile.absolutePath}")
+                decoderSession = ortEnv?.createSession(decoderFile.absolutePath)
+                AppLog.put("Decoder model loaded")
+            }
             
             true
         } catch (e: Exception) {

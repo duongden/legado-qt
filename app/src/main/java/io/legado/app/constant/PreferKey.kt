@@ -48,6 +48,7 @@ object PreferKey {
     // Translation
     const val translateEnable = "translateEnable"
     const val tag_translate_key = "tag_translate_key"
+    const val aiModelEnabled = "aiModelEnabled"
     const val bookshelfLayout = "bookshelfLayout"
     const val bookshelfSort = "bookshelfSort"
     const val bookExportFileName = "bookExportFileName"
