@@ -1372,79 +1372,35 @@
     <string name="content_too_large">Dữ liệu quá lớn, không thể hiển thị hết...</string>
     <string name="error_get_keyboard_data">Lỗi lấy dữ liệu cửa sổ trợ giúp bàn phím\n%s</string>
     <string name="code_view">Xem mã</string>
-    <string name="audio_play_error">Lỗi phát âm thanh\n%1$s %2$d</string>
-    <string name="ignore_audio_focus_audio">Bỏ qua tiêu điểm âm thanh (Audio)</string>
-    <string name="audio_focus_gain_resume">Đã lấy lại tiêu điểm âm thanh, tiếp tục phát</string>
-    <string name="audio_focus_gain">Đã lấy lại tiêu điểm âm thanh</string>
-    <string name="audio_focus_loss_pause">Mất tiêu điểm âm thanh, tạm dừng</string>
-    <string name="audio_focus_loss_transient_pause">Mất tiêu điểm âm thanh tạm thời, sẽ sớm có lại, tạm dừng</string>
-    <string name="audio_focus_loss_transient_can_duck">Mất tiêu điểm âm thanh tạm thời (có thể giảm âm lượng), bỏ qua</string>
-    <string name="create_audio_notification_error">Lỗi tạo thông báo âm thanh, %1$s</string>
     <string name="start_read_aloud_error">Lỗi khởi động đọc to\n%1$s</string>
-    <string name="audio_focus_not_acquired">Chưa lấy được tiêu điểm âm thanh</string>
-    <string name="ignore_audio_focus_tts">Bỏ qua tiêu điểm âm thanh (TTS)</string>
-    <string name="audio_focus_gain_resume_read_aloud">Tiêu điểm âm thanh được lấy lại, tiếp tục đọc</string>
-    <string name="audio_focus_loss_pause_read_aloud">Mất tiêu điểm âm thanh, tạm dừng đọc</string>
-    <string name="audio_focus_loss_transient_pause_read_aloud">Mất tiêu điểm âm thanh tạm thời, tạm dừng đọc</string>
-    <string name="create_read_aloud_notification_error">Lỗi tạo thông báo đọc to, %1$s</string>
-    <string name="read_aloud_next_chapter_msg">%1$s Đọc xong, chuyển sang chương tiếp theo</string>
-    <string name="call_ended_resume_read_aloud">Kết thúc cuộc gọi, tiếp tục đọc</string>
-    <string name="call_ended">Kết thúc cuộc gọi</string>
-    <string name="call_ringing_pause_read_aloud">Có cuộc gọi đến, tạm dừng đọc</string>
-    <string name="call_ringing">Có cuộc gọi đến</string>
-    <string name="call_answered_no_action">Trả lời cuộc gọi, không làm gì</string>
     <string name="toc_empty_load_detail_failed">Mục lục trống cho %1$s, tải chi tiết thất bại\n%2$s</string>
     <string name="toc_empty_load_toc_failed">Mục lục trống cho %1$s, tải mục lục thất bại\n%2$s</string>
     <string name="source_checking_wait">Đang kiểm tra nguồn, vui lòng đợi</string>
-    <string name="check_success">Kiểm tra thành công</string>
-    <string name="check_timeout">Kiểm tra quá giờ</string>
-    <string name="js_invalid">JS không hợp lệ</string>
     <string name="website_invalid">Trang web không hợp lệ</string>
-    <string name="check_failed">Kiểm tra thất bại: %1$s</string>
     <string name="search_url_rule_empty">Quy tắc URL tìm kiếm trống</string>
     <string name="search_invalid">Tìm kiếm không hợp lệ</string>
-    <string name="explore_rule_empty">Quy tắc khám phá trống</string>
-    <string name="explore_invalid">Khám phá không hợp lệ</string>
-
-    <string name="content_invalid">Nội dung %1$s không hợp lệ</string>
     <string name="toc_invalid">Mục lục %1$s không hợp lệ</string>
     <string name="download_incomplete">Chưa hoàn thành, thư mục tải xuống Download</string>
     <string name="download_already_in_list">Đã có trong danh sách tải xuống</string>
     <string name="download_error_no_permission">Lỗi tải xuống, không có quyền lưu trữ</string>
     <string name="download_error_msg">Lỗi tải xuống, %1$s</string>
     <string name="open_download_file_error">Lỗi mở tệp đã tải %1$s</string>
-    <string name="export_finished">Xuất hoàn tất</string>
-    <string name="get_book_error">Lỗi lấy sách %1$s</string>
-    <string name="export_book_error">Lỗi xuất sách &lt;%1$s&gt;</string>
-    <string name="get_cover_error">Lỗi lấy bìa sách\n%1$s</string>
     <string name="split_export_time">Xuất sách chia nhỏ %1$s mất %2$d ms</string>
-    <string name="book_chapter_not_found">Không tìm thấy thông tin chương sách &lt;%1$s&gt;(%2$d)</string>
-    <string name="read_aloud_list_empty">Danh sách đọc trống</string>
-    <string name="read_content_empty_silent">Nội dung đọc trống, sử dụng âm thanh im lặng.\nVăn bản: %1$s</string>
-    <string name="read_aloud_download_error">Lỗi tải xuống đọc to\n%1$s</string>
     <string name="tts_server_error">Lỗi máy chủ TTS: %1$s</string>
-    <string name="js_error">Lỗi JS\n%1$s</string>
     <string name="tts_timeout_error">TTS quá giờ hoặc lỗi kết nối > 5 lần\n%1$s</string>
     <string name="tts_download_error">Lỗi tải xuống TTS\n%1$s</string>
     <string name="tts_server_error_pause">Máy chủ TTS lỗi > 5 lần, đã tạm dừng.</string>
     <string name="tts_download_audio_error_silent">Lỗi tải xuống âm thanh TTS, sử dụng âm thanh im lặng.\nVăn bản: %1$s</string>
-    <string name="read_aloud_error">Lỗi đọc to\n%1$s</string>
-    <string name="read_aloud_error_5_times">Lỗi đọc to > 5 lần, mã lỗi cuối (%1$s)</string>
     <string name="tts_error">Lỗi TTS\n%1$s</string>
     <string name="tts_error_reinit">Lỗi TTS, đang thử khởi tạo lại</string>
     <string name="tts_read_error">Lỗi đọc TTS: %1$s</string>
     <string name="tts_read_error_msg">Lỗi đọc TTS\n%1$s</string>
     <string name="web_service_no_ip">Dịch vụ web không thể khởi động, không có địa chỉ IP</string>
-    <string name="read_aloud_timer_msg">Hẹn giờ đọc: %1$d phút</string>
 
     <string name="service_search">Tìm kiếm</string>
     <string name="service_explore">Khám phá</string>
 
     <!-- Help Module -->
-    <string name="convert_cc_error">Lỗi chuyển đổi Giản/Phồn</string>
-    <string name="remove_same_title_error">Lỗi xóa tiêu đề trùng lặp\n%1$s</string>
-    <string name="replace_rule_error">Quy tắc thay thế: quy tắc %1$s lỗi</string>
-    <string name="replace_rule_error_msg">Quy tắc thay thế: quy tắc %1$s lỗi\n%2$s</string>
     <string name="waiting_verification_result">Đang chờ kết quả xác minh...</string>
     <string name="verification_result_empty">Kết quả xác minh trống</string>
     <string name="import_bookshelf_success">Nhập thành công kệ sách %1$d</string>
@@ -1454,28 +1410,17 @@
     <string name="import_replace_rule_success">Nhập thành công quy tắc thay thế %1$d</string>
     <string name="import_replace_rule_error">Nhập quy tắc thay thế thất bại\n%1$s</string>
     <string name="replace_rule_not_found">Không tìm thấy quy tắc thay thế</string>
-    <string name="menu_area_restored">Chưa cấu hình vùng menu, tự động khôi phục vùng giữa làm menu.</string>
     <string name="upload_url_not_configured">Chưa cấu hình URL tải lên</string>
-    <string name="download_url_rule_not_configured">Chưa cấu hình quy tắc URL tải xuống</string>
     <string name="upload_failed">Tải lên thất bại, %1$s</string>
     <string name="select_browser">Vui lòng chọn trình duyệt</string>
     <string name="cannot_open_settings">Không thể mở cài đặt</string>
-    <string name="get_new_version_error_code">Lỗi lấy phiên bản mới (%1$d)</string>
-    <string name="get_new_version_error">Lỗi lấy phiên bản mới</string>
-    <string name="get_new_version_error_msg">Lỗi lấy phiên bản mới %1$s</string>
-    <string name="already_latest_version">Đã là phiên bản mới nhất</string>
 
     <string name="cannot_open_file">Không thể mở tệp tin</string>
     <string name="import_json_failed">Nhập tệp JSON thất bại</string>
 
     <string name="import_from_clipboard">Nhập từ bộ nhớ tạm</string>
-
-    <string name="sc_add_URL_failed">Thêm URL thất bại</string>
-    <string name="sc_add_URL_error">Lỗi thêm URL\n%s</string>
-    <string name="sc_book_cannot_be_empty">Sách không được để trống</string>
     <string name="sc_export_book_error">Lỗi xuất sách\n%s</string>
     <string name="sc_format_error">Lỗi định dạng</string>
-    <string name="sc_adding_progress">Đang thêm... (%s)</string>
     <string name="sc_clipboard_is_empty">Bộ nhớ tạm trống</string>
     <string name="sc_regex_tutorial">Hướng dẫn Regex</string>
     <string name="sc_no_parameters">Không có tham số</string>
@@ -1524,15 +1469,12 @@
     <string name="sc_cover_decrypt_failed">Giải mã bìa cấp 2 thất bại</string>
     <string name="sc_wait_rate_limit">Đợi %s ms do giới hạn đồng thời</string>
     <string name="sc_read_config_error">Lỗi đọc cấu hình bố cục</string>
-    <string name="sc_app_freeze_detected">Phát hiện ứng dụng bị đóng băng, thời gian: %s ms</string>
     <string name="sc_tts_list_size">Kích thước danh sách TTS %d</string>
     <string name="sc_tts_page_count">Số trang TTS %d</string>
     <string name="sc_tts_add_complete">Thêm nội dung TTS hoàn tất</string>
     <string name="sc_play_error">Lỗi phát\n%s</string>
 
     <string name="sc_get_font_handler_error">Lỗi lấy lớp xử lý phông chữ</string>
-
-    <string name="sc_adding">Đang thêm...</string>
 
 
     <string name="custom_dict_manage">Quản lý từ điển tùy chỉnh</string>
@@ -1542,12 +1484,9 @@
     <string name="delete_success">Khôi phục mặc định</string>
     <string name="import_fail">Nhập thất bại</string>
     <string name="import_names">Names.txt</string>
-    <string name="import_names_summary">Nhập Names.txt tùy chỉnh (Mặc định nếu trống)</string>
     <string name="import_phienam">ChinesePhienAmWords.txt</string>
-    <string name="import_phienam_summary">Nhập ChinesePhienAmWords.txt tùy chỉnh (Mặc định nếu trống)</string>
     <string name="import_success">Nhập thành công</string>
     <string name="import_vietphrase">VietPhrase.txt</string>
-    <string name="import_vietphrase_summary">Nhập VietPhrase.txt tùy chỉnh (Mặc định nếu trống)</string>
     <string name="read_aloud_pause_resume">Tạm dừng/Tiếp tục Đọc</string>
     <string name="system_media_control_compatibility_change">Thay đổi tương thích điều khiển phương tiện hệ thống</string>
     <string name="system_media_control_compatibility_change_summary">Nếu điều khiển phương tiện hệ thống không xuất hiện trên màn hình khóa, bạn có thể thử bật tính năng này, ví dụ trên thiết bị OneUI 7.0 hoặc Vivo.</string>
