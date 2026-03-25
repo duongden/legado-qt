@@ -76,6 +76,10 @@ object RssParserByRule {
                     sourceUrl, item, analyzeRule, variable,rssSource.type, index == 0,
                     ruleTitle, rulePubDate, ruleDescription, ruleImage, ruleLink
                 )?.let {
+                    if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+                        it.title = io.legado.app.utils.TranslateUtils.translateMeta(it.title)
+                        it.pubDate = io.legado.app.utils.TranslateUtils.translateMeta(it.pubDate)
+                    }
                     it.sort = sortName
                     it.origin = sourceUrl
                     articleList.add(it)

@@ -11,6 +11,7 @@ import io.legado.app.utils.ACache
 import io.legado.app.utils.GSON
 import io.legado.app.utils.InfoMap
 import io.legado.app.utils.MD5Utils
+import io.legado.app.utils.TranslateUtils
 import io.legado.app.utils.fromJsonArray
 import io.legado.app.utils.isJsonArray
 import io.legado.app.utils.printOnDebug
@@ -90,9 +91,19 @@ suspend fun BookSource.exploreKinds(): List<ExploreKind> {
                     }
                 } else {
                     ruleStr.split("(&&|\n)+".toRegex()).forEach { kindStr ->
-                        val kindCfg = kindStr.split("::")
-                        kinds.add(ExploreKind(kindCfg.first(), kindCfg.getOrNull(1)))
+                        val name = kindStr.substringBefore("::")
+                        val url = kindStr.substringAfter("::", "")
+                        kinds.add(ExploreKind(name, url))
                     }
+                }
+                // Dịch tiêu đề nếu tính năng dịch được bật
+                if (TranslateUtils.isTranslateEnabled()) {
+                    val translatedKinds = ArrayList<ExploreKind>(kinds.size)
+                    kinds.forEach {
+                        translatedKinds.add(it.copy(title = TranslateUtils.translateMeta(it.title)))
+                    }
+                    kinds.clear()
+                    kinds.addAll(translatedKinds)
                 }
             }.onFailure {
                 kinds.add(ExploreKind("ERROR:${it.localizedMessage}", it.stackTraceToString()))

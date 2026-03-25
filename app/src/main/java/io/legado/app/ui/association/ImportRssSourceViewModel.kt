@@ -206,10 +206,10 @@ class ImportRssSourceViewModel(app: Application) : BaseViewModel(app) {
                 source.sourceGroup = io.legado.app.utils.TranslateUtils.translateMeta(source.sourceGroup)
             }
             if (!source.sourceComment.isNullOrEmpty()) {
-                source.sourceComment = io.legado.app.utils.TranslateUtils.translateMeta(source.sourceComment)
+                source.sourceComment = io.legado.app.utils.TranslateUtils.translateCode(source.sourceComment)
             }
             if (!source.sortUrl.isNullOrEmpty()) {
-                source.sortUrl = io.legado.app.utils.TranslateUtils.translateCode(source.sortUrl)
+                source.sortUrl = io.legado.app.utils.TranslateUtils.translateSortExploreUrl(source.sortUrl)
             }
             if (!source.ruleContent.isNullOrEmpty()) {
                 source.ruleContent = io.legado.app.utils.TranslateUtils.translateCode(source.ruleContent)

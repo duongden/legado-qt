@@ -237,7 +237,10 @@ class ImportBookSourceViewModel(app: Application) : BaseViewModel(app) {
                 source.bookSourceGroup = TranslateUtils.translateMeta(it)
             }
             source.bookSourceComment?.let {
-                source.bookSourceComment = TranslateUtils.translateMeta(it)
+                source.bookSourceComment = TranslateUtils.translateCode(it)
+            }
+            if (!source.exploreUrl.isNullOrEmpty()) {
+                source.exploreUrl = TranslateUtils.translateSortExploreUrl(source.exploreUrl)
             }
         }
     }

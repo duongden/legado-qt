@@ -317,9 +317,14 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
                         source.bookSourceGroup = newGroup
                         changed = true
                     }
-                    val newComment = TranslateUtils.translateMeta(source.bookSourceComment)
+                    val newComment = TranslateUtils.translateCode(source.bookSourceComment)
                     if (newComment != source.bookSourceComment) {
                         source.bookSourceComment = newComment
+                        changed = true
+                    }
+                    val newExploreUrl = TranslateUtils.translateSortExploreUrl(source.exploreUrl)
+                    if (newExploreUrl != source.exploreUrl) {
+                        source.exploreUrl = newExploreUrl
                         changed = true
                     }
                     if (changed) {
@@ -344,12 +349,12 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
                         source.sourceGroup = newGroup
                         changed = true
                     }
-                    val newComment = TranslateUtils.translateMeta(source.sourceComment)
+                    val newComment = TranslateUtils.translateCode(source.sourceComment)
                     if (newComment != source.sourceComment) {
                         source.sourceComment = newComment
                         changed = true
                     }
-                    val newSortUrl = TranslateUtils.translateCode(source.sortUrl)
+                    val newSortUrl = TranslateUtils.translateSortExploreUrl(source.sortUrl)
                     if (newSortUrl != source.sortUrl) {
                         source.sortUrl = newSortUrl
                         changed = true

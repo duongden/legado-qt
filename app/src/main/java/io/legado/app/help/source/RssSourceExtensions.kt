@@ -4,6 +4,7 @@ import io.legado.app.data.entities.RssSource
 import io.legado.app.utils.ACache
 import io.legado.app.utils.MD5Utils
 import io.legado.app.utils.NetworkUtils
+import io.legado.app.utils.TranslateUtils
 import com.script.rhino.runScriptWithContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -42,6 +43,14 @@ suspend fun RssSource.sortUrls(): List<Pair<String, String>> {
                     if (url.isNotEmpty()) {
                         add(Pair(name, url))
                     }
+                }
+                if (TranslateUtils.isTranslateEnabled()) {
+                    val translatedList = ArrayList<Pair<String, String>>(size)
+                    forEach {
+                        translatedList.add(Pair(TranslateUtils.translateMeta(it.first), it.second))
+                    }
+                    clear()
+                    addAll(translatedList)
                 }
                 if (isEmpty()) {
                     add(Pair("", sourceUrl))

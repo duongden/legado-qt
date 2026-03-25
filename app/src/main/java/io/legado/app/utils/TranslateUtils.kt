@@ -181,6 +181,41 @@ object TranslateUtils {
     }
 
     /**
+     * Dịch an toàn cho sortUrl hoặc exploreUrl.
+     * Chỉ dịch phần tên đứng trước '::', giữ nguyên phần URL sau '::'.
+     */
+    suspend fun translateSortExploreUrl(raw: String?): String? {
+        if (raw.isNullOrBlank() || !isTranslateEnabled()) return raw
+        
+        // Nếu là JS hoặc có thẻ <js>, không dịch code để tránh hỏng cú pháp JS (như dấu ngoặc)
+        if (raw.trim().startsWith("@js:", true) || raw.trim().startsWith("<js>", true)) {
+            return raw
+        }
+        
+        // Nếu là JSON Array, dùng translateCode để dịch an toàn các chuỗi bên trong
+        if (raw.trim().startsWith("[")) {
+            return translateCode(raw)
+        }
+        
+        // Nếu là định dạng dòng Name::URL
+        val lines = raw.split("\n")
+        val result = StringBuilder()
+        lines.forEachIndexed { index, line ->
+            if (line.contains("::")) {
+                val name = line.substringBefore("::")
+                val url = line.substringAfter("::")
+                result.append(translateCode(name)).append("::").append(url)
+            } else {
+                result.append(translateCode(line))
+            }
+            if (index < lines.size - 1) {
+                result.append("\n")
+            }
+        }
+        return result.toString()
+    }
+
+    /**
      * Translate text for code/templates (preserve exact syntax, brackets, casing)
      */
     suspend fun translateCode(text: String?): String {
