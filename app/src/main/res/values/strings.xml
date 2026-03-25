@@ -1522,7 +1522,7 @@
     <string name="sc_create_file_handler_error">Create file handler error</string>
     <string name="translateEnable">Enable Translation</string>
     <string name="tag_translate_key">Translation API Key</string>
-    <string name="ai_model_status_not_downloaded">Placeholder ai_model_status_not_downloaded</string>
+    <string name="ai_model_status_not_downloaded">Chưa tải model AI, cần tải trong Quản lý từ điển để sử dụng AI Search</string>
     <string name="sc_not_book_source">Không phải nguồn sách</string>
     <string name="sc_new_added">Mới</string>
     <string name="tts_error">Lỗi TTS\n%1$s</string>

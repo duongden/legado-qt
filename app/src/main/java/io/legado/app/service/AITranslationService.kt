@@ -153,17 +153,17 @@ class AITranslationService : BaseService() {
             } else {
                 // Fall back to assets
                 AppLog.put("Downloaded models not found, trying assets...")
-                val cacheDir = java.io.File(cacheDir, "aimodel")
-                if (!cacheDir.exists()) cacheDir.mkdirs()
+                val modelCacheDir = java.io.File(cacheDir, "aimodel")
+                if (!modelCacheDir.exists()) modelCacheDir.mkdirs()
                 
                 AppLog.put("Copying encoder model to cache...")
-                val encoderFile = copyAssetToCache("aimodel/encoder_model.onnx", "encoder_model.onnx", cacheDir)
+                val encoderFile = copyAssetToCache("aimodel/encoder_model.onnx", "encoder_model.onnx", modelCacheDir)
                 AppLog.put("Loading encoder from: ${encoderFile.absolutePath}")
                 encoderSession = ortEnv?.createSession(encoderFile.absolutePath)
                 AppLog.put("Encoder model loaded")
                 
                 AppLog.put("Copying decoder model to cache...")
-                val decoderFile = copyAssetToCache("aimodel/decoder_model.onnx", "decoder_model.onnx", cacheDir)
+                val decoderFile = copyAssetToCache("aimodel/decoder_model.onnx", "decoder_model.onnx", modelCacheDir)
                 AppLog.put("Loading decoder from: ${decoderFile.absolutePath}")
                 decoderSession = ortEnv?.createSession(decoderFile.absolutePath)
                 AppLog.put("Decoder model loaded")
@@ -301,17 +301,23 @@ class AITranslationService : BaseService() {
             
             // input_ids tensor
             val inputIdsLong = inputIds.map { it.toLong() }.toLongArray()
+            val inputIdsBuffer = java.nio.ByteBuffer.allocateDirect(inputIdsLong.size * 8).order(java.nio.ByteOrder.nativeOrder()).asLongBuffer()
+            inputIdsBuffer.put(inputIdsLong)
+            inputIdsBuffer.position(0)
             val inputIdsTensor = OnnxTensor.createTensor(
                 env,
-                LongBuffer.wrap(inputIdsLong),
+                inputIdsBuffer,
                 longArrayOf(batchSize, seqLength)
             )
             
             // attention_mask tensor (all 1s)
             val attentionMask = LongArray(inputIds.size) { 1L }
+            val attentionMaskBuffer = java.nio.ByteBuffer.allocateDirect(attentionMask.size * 8).order(java.nio.ByteOrder.nativeOrder()).asLongBuffer()
+            attentionMaskBuffer.put(attentionMask)
+            attentionMaskBuffer.position(0)
             val attentionMaskTensor = OnnxTensor.createTensor(
                 env,
-                LongBuffer.wrap(attentionMask),
+                attentionMaskBuffer,
                 longArrayOf(batchSize, seqLength)
             )
             
@@ -362,24 +368,33 @@ class AITranslationService : BaseService() {
                 val decoderInputIds = (listOf(DECODER_START_TOKEN_ID) + outputTokens).map { it.toLong() }.toLongArray()
                 val decoderSeqLength = decoderInputIds.size.toLong()
                 
+                val decoderInputIdsBuffer = java.nio.ByteBuffer.allocateDirect(decoderInputIds.size * 8).order(java.nio.ByteOrder.nativeOrder()).asLongBuffer()
+                decoderInputIdsBuffer.put(decoderInputIds)
+                decoderInputIdsBuffer.position(0)
                 val decoderInputIdsTensor = OnnxTensor.createTensor(
                     env,
-                    LongBuffer.wrap(decoderInputIds),
+                    decoderInputIdsBuffer,
                     longArrayOf(1L, decoderSeqLength)
                 )
                 
                 // Encoder hidden states tensor
+                val encoderHiddenStatesBuffer = java.nio.ByteBuffer.allocateDirect(encoderHiddenStates.size * 4).order(java.nio.ByteOrder.nativeOrder()).asFloatBuffer()
+                encoderHiddenStatesBuffer.put(encoderHiddenStates)
+                encoderHiddenStatesBuffer.position(0)
                 val encoderHiddenStatesTensor = OnnxTensor.createTensor(
                     env,
-                    FloatBuffer.wrap(encoderHiddenStates),
+                    encoderHiddenStatesBuffer,
                     longArrayOf(1L, encoderSeqLength.toLong(), hiddenSize.toLong())
                 )
                 
                 // Encoder attention mask
                 val encoderAttentionMask = LongArray(encoderSeqLength) { 1L }
+                val encoderAttentionMaskBuffer = java.nio.ByteBuffer.allocateDirect(encoderAttentionMask.size * 8).order(java.nio.ByteOrder.nativeOrder()).asLongBuffer()
+                encoderAttentionMaskBuffer.put(encoderAttentionMask)
+                encoderAttentionMaskBuffer.position(0)
                 val encoderAttentionMaskTensor = OnnxTensor.createTensor(
                     env,
-                    LongBuffer.wrap(encoderAttentionMask),
+                    encoderAttentionMaskBuffer,
                     longArrayOf(1L, encoderSeqLength.toLong())
                 )
                 
