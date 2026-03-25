@@ -7,7 +7,9 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.widget.SearchView
 import androidx.core.os.bundleOf
@@ -52,6 +54,7 @@ import io.legado.app.utils.startActivity
 import io.legado.app.utils.transaction
 import io.legado.app.utils.viewbindingdelegate.viewBinding
 import io.legado.app.utils.visible
+import io.legado.app.utils.AiModelManager
 import io.legado.app.service.AITranslationService
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Job
@@ -92,7 +95,7 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
     private var historyFlowJob: Job? = null
     private var booksFlowJob: Job? = null
     private var precisionSearchMenuItem: MenuItem? = null
-    private var aiTranslationMenuItem: MenuItem? = null
+    private var btnAiTranslate: ImageButton? = null
     private var isManualStopSearch = false
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -102,11 +105,6 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
         initOtherView()
         initData()
         receiptIntent(intent)
-        
-        // Start AI service if enabled
-        if (getPrefBoolean(PreferKey.aiModelEnabled, false)) {
-            AITranslationService.start(this)
-        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -119,8 +117,6 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
         this.menu = menu
         precisionSearchMenuItem = menu.findItem(R.id.menu_precision_search)
         precisionSearchMenuItem?.isChecked = getPrefBoolean(PreferKey.precisionSearch)
-        aiTranslationMenuItem = menu.findItem(R.id.menu_ai_translation)
-        aiTranslationMenuItem?.isChecked = getPrefBoolean(PreferKey.aiModelEnabled)
         return super.onCompatCreateOptionsMenu(menu)
     }
 
@@ -177,22 +173,7 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
                 }
             }
 
-            R.id.menu_ai_translation -> {
-                val newState = !getPrefBoolean(PreferKey.aiModelEnabled)
-                putPrefBoolean(PreferKey.aiModelEnabled, newState)
-                aiTranslationMenuItem?.isChecked = newState
-                
-                // Start or stop AI service based on toggle
-                if (newState) {
-                    AITranslationService.start(this)
-                } else {
-                    AITranslationService.stop(this)
-                }
-                
-                searchView.query?.toString()?.trim()?.let {
-                    searchView.setQuery(it, true)
-                }
-            }
+
 
             R.id.menu_search_scope -> alertSearchScope()
             R.id.menu_source_manage -> startActivity<BookSourceActivity>()
@@ -220,29 +201,7 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
                     isManualStopSearch = false
                     viewModel.saveSearchKey(searchKey)
                     viewModel.searchKey = ""
-                    
-                    // Check if AI translation is enabled
-                    if (getPrefBoolean(PreferKey.aiModelEnabled, false)) {
-                        // Use AI translation
-                        lifecycleScope.launch {
-                            try {
-                                val aiService = AITranslationService.getInstance()
-                                if (aiService?.isModelReady() == true) {
-                                    val translatedQuery = aiService.translateVietnameseToChinese(searchKey)
-                                    viewModel.search(translatedQuery)
-                                } else {
-                                    // Fallback to original query if AI model is not ready
-                                    viewModel.search(searchKey)
-                                }
-                            } catch (e: Exception) {
-                                // Fallback to original query on error
-                                viewModel.search(searchKey)
-                            }
-                        }
-                    } else {
-                        // Use original query
-                        viewModel.search(searchKey)
-                    }
+                    viewModel.search(searchKey)
                 }
                 visibleInputHelp(false)
                 return true
@@ -263,6 +222,49 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
             }
         }
         visibleInputHelp(true)
+        initAiTranslateButton()
+    }
+
+    private fun initAiTranslateButton() {
+        btnAiTranslate = binding.titleBar.findViewById(R.id.btn_ai_translate)
+        btnAiTranslate?.applyTint(primaryTextColor)
+        btnAiTranslate?.setOnClickListener {
+            val query = searchView.query?.toString()?.trim()
+            if (query.isNullOrBlank()) {
+                return@setOnClickListener
+            }
+            if (!AiModelManager.isModelReady(this)) {
+                Toast.makeText(this, getString(R.string.ai_model_status_not_downloaded), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            // Start service if not running
+            if (AITranslationService.getInstance() == null) {
+                AITranslationService.start(this)
+            }
+            btnAiTranslate?.isEnabled = false
+            lifecycleScope.launch {
+                try {
+                    // Wait for service to be ready (max 5s)
+                    var waitCount = 0
+                    while (AITranslationService.getInstance()?.isModelReady() != true && waitCount < 50) {
+                        kotlinx.coroutines.delay(100)
+                        waitCount++
+                    }
+                    val aiService = AITranslationService.getInstance()
+                    if (aiService?.isModelReady() == true) {
+                        val translated = aiService.translateVietnameseToChinese(query)
+                        searchView.setQuery(translated, false)
+                    } else {
+                        Toast.makeText(this@SearchActivity, "AI Model đang tải, vui lòng thử lại", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    AppLog.put("AI translate button error: ${e.localizedMessage}", e)
+                    Toast.makeText(this@SearchActivity, "Lỗi dịch: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                } finally {
+                    btnAiTranslate?.isEnabled = true
+                }
+            }
+        }
     }
 
     private fun initRecyclerView() {
