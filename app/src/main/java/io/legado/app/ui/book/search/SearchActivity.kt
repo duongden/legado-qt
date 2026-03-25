@@ -239,11 +239,13 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
             }
             // Start service if not running
             if (AITranslationService.getInstance() == null) {
+                AppLog.put("AI Search: Starting AITranslationService...")
                 AITranslationService.start(this)
             }
             btnAiTranslate?.isEnabled = false
             lifecycleScope.launch {
                 try {
+                    AppLog.put("AI Search: Waiting for model ready...")
                     // Wait for service to be ready (max 5s)
                     var waitCount = 0
                     while (AITranslationService.getInstance()?.isModelReady() != true && waitCount < 50) {
@@ -252,13 +254,16 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
                     }
                     val aiService = AITranslationService.getInstance()
                     if (aiService?.isModelReady() == true) {
+                        AppLog.put("AI Search: Model ready, translating query: '$query'")
                         val translated = aiService.translateVietnameseToChinese(query)
+                        AppLog.put("AI Search: Translation result: '$translated'")
                         searchView.setQuery(translated, false)
                     } else {
+                        AppLog.put("AI Search: Model not ready after ${waitCount * 100}ms")
                         Toast.makeText(this@SearchActivity, "AI Model đang tải, vui lòng thử lại", Toast.LENGTH_SHORT).show()
                     }
-                } catch (e: Exception) {
-                    AppLog.put("AI translate button error: ${e.localizedMessage}", e)
+                } catch (e: Throwable) {
+                    AppLog.put("AI translate button error: ${e.javaClass.name}: ${e.localizedMessage}", e as? Exception)
                     Toast.makeText(this@SearchActivity, "Lỗi dịch: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
                 } finally {
                     btnAiTranslate?.isEnabled = true

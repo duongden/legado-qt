@@ -170,3 +170,12 @@ cn.hutool.core.util.**{*;}
     public <init>(android.content.Context, android.util.AttributeSet);
     public <init>(android.content.Context, android.util.AttributeSet, int);
 }
+
+# ONNX Runtime - Keep all JNI classes to prevent R8 from stripping them
+-keep class ai.onnxruntime.** { *; }
+-dontwarn ai.onnxruntime.**
+
+# AI Translation Service & Tokenizer
+-keep class io.legado.app.service.AITranslationService { *; }
+-keep class io.legado.app.service.SentencePieceTokenizer { *; }
+-keep class io.legado.app.utils.AiModelManager { *; }

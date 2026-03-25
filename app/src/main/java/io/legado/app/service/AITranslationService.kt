@@ -244,26 +244,33 @@ class AITranslationService : BaseService() {
             val startTime = System.currentTimeMillis()
             
             // Step 1: Tokenize input
+            AppLog.put("AI Translate Step 1: Tokenizing '$vietnameseText'")
             val inputIds = tokenizer!!.encode(vietnameseText)
             if (inputIds.isEmpty()) {
                 AppLog.put("Empty input after tokenization")
                 return vietnameseText
             }
+            AppLog.put("AI Translate Step 1 done: ${inputIds.size} tokens")
             
             // Step 2: Run encoder
+            AppLog.put("AI Translate Step 2: Running encoder...")
             val encoderHiddenStates = runEncoder(inputIds)
             if (encoderHiddenStates == null) {
                 AppLog.put("Encoder failed")
                 return vietnameseText
             }
+            AppLog.put("AI Translate Step 2 done: encoder output ${encoderHiddenStates.size} floats")
             
             // Step 3: Run decoder with greedy decoding
+            AppLog.put("AI Translate Step 3: Running decoder...")
             // Limit output to number of words in input
             val wordCount = vietnameseText.trim().split("\\s+".toRegex()).size
             val maxOutputTokens = wordCount.coerceIn(2, MAX_LENGTH)
             val outputIds = runGreedyDecode(encoderHiddenStates, inputIds.size, maxOutputTokens)
+            AppLog.put("AI Translate Step 3 done: ${outputIds.size} output tokens")
             
             // Step 4: Decode output tokens to text
+            AppLog.put("AI Translate Step 4: Decoding tokens to text...")
             var translatedText = tokenizer!!.decode(outputIds)
             
             // Limit output characters to number of input words
@@ -281,8 +288,8 @@ class AITranslationService : BaseService() {
             
             return translatedText.ifBlank { vietnameseText }
             
-        } catch (e: Exception) {
-            AppLog.put("AI translation failed: ${e.localizedMessage}", e)
+        } catch (e: Throwable) {
+            AppLog.put("AI translation failed: ${e.javaClass.name}: ${e.localizedMessage}", e as? Exception)
             return vietnameseText
         }
     }
