@@ -1,3 +1,7 @@
+**2026-03-25**
+
+* Hợp nhất với nhánh legado sigma   
+
 **2026-03-23**
 
 * Thêm API HTTP `GET /searchBook` hỗ trợ tìm kiếm đồng bộ từ cả nguồn web và kệ sách (hỗ trợ phân trang, dịch meta)
