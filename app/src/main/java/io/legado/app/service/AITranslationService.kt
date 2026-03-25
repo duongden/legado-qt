@@ -244,8 +244,10 @@ class AITranslationService : BaseService() {
             val startTime = System.currentTimeMillis()
             
             // Step 1: Tokenize input
-            AppLog.put("AI Translate Step 1: Tokenizing '$vietnameseText'")
-            val inputIds = tokenizer!!.encode(vietnameseText)
+            // Lowercase the input - MarianMT is case-sensitive and produces wrong output for capitalized text
+            val normalizedText = vietnameseText.lowercase()
+            AppLog.put("AI Translate Step 1: Tokenizing '$normalizedText'")
+            val inputIds = tokenizer!!.encode(normalizedText)
             if (inputIds.isEmpty()) {
                 AppLog.put("Empty input after tokenization")
                 return vietnameseText
