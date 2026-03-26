@@ -107,8 +107,8 @@ object TranslationLoader {
     }
 
     /**
-     * Load dictionary with DoubleArrayTrie
-     * Priority: Binary file > Custom text file > Default text file
+     * Load dictionary with DoubleArrayTrie (Memory-Mapped)
+     * Priority: Custom .dat > Custom .txt (build+save+mmap) > Default .dat from filesDir (mmap)
      */
     private suspend fun loadDictionary(
         binaryAsset: String,
@@ -123,100 +123,81 @@ object TranslationLoader {
 
             if (customBinaryFile.exists()) {
                 try {
-                    FileInputStream(customBinaryFile).use { stream ->
-                        trie.load(stream)
-                        return@withContext trie
-                    }
+                    trie.loadMapped(customBinaryFile)
+                    android.util.Log.d("TranslationLoader", "Loaded custom dict (mmap): ${customBinaryFile.path}")
+                    return@withContext trie
                 } catch (e: Exception) {
                     try {
                         customBinaryFile.delete()
                         android.util.Log.w("TranslationLoader", "Deleted corrupted custom binary: ${customBinaryFile.path}")
-                    } catch (_: Exception) {
-                    }
+                    } catch (_: Exception) {}
                 }
             }
 
             if (customFile.exists()) {
                 FileInputStream(customFile).use { stream ->
                     val entries = loadEntriesFromText(stream)
-                    trie.build(entries)
-
+                    // Build and save as VERSION 3 .dat
+                    val tmpFile = File(customBinaryFile.parentFile, customBinaryFile.name + ".tmp")
                     try {
-                        val tmpFile = File(customBinaryFile.parentFile, customBinaryFile.name + ".tmp")
-                        try {
-                            FileOutputStream(tmpFile).use { fos ->
-                                BufferedOutputStream(fos, 1024 * 1024).use { bos ->
-                                    trie.save(bos)
-                                }
+                        FileOutputStream(tmpFile).use { fos ->
+                            BufferedOutputStream(fos, 1024 * 1024).use { bos ->
+                                trie.save(bos, entries)
                             }
-                            if (customBinaryFile.exists()) customBinaryFile.delete()
-                            if (!tmpFile.renameTo(customBinaryFile)) {
-                                throw IllegalStateException("Failed to rename temp cache file to final: ${customBinaryFile.name}")
-                            }
-                        } catch (e: Exception) {
-                            try { tmpFile.delete() } catch (_: Exception) { }
-                            android.util.Log.w("TranslationLoader", "Failed to cache custom trie", e)
+                        }
+                        if (customBinaryFile.exists()) customBinaryFile.delete()
+                        if (!tmpFile.renameTo(customBinaryFile)) {
+                            throw IllegalStateException("Failed to rename temp cache")
                         }
                     } catch (e: Exception) {
+                        try { tmpFile.delete() } catch (_: Exception) {}
                         android.util.Log.w("TranslationLoader", "Failed to cache custom trie", e)
                     }
-
+                }
+                // Now load the saved file via mmap
+                if (customBinaryFile.exists()) {
+                    trie.loadMapped(customBinaryFile)
+                    android.util.Log.d("TranslationLoader", "Custom dict built+mapped: ${customBinaryFile.path}")
                     return@withContext trie
                 }
             }
         }
 
-        // Try persistent default binary in filesDir
+        // Try persistent default binary in filesDir (memory-mapped)
+        val binDir = File(appCtx.filesDir, DEFAULT_BIN_DIR)
+        val binFile = File(binDir, File(binaryAsset).name)
+        if (binFile.exists()) {
+            try {
+                trie.loadMapped(binFile)
+                android.util.Log.d("TranslationLoader", "Loaded default dict (mmap): ${binFile.path}")
+                return@withContext trie
+            } catch (e: Exception) {
+                try { binFile.delete() } catch (_: Exception) {}
+                android.util.Log.w("TranslationLoader", "Corrupted persistent binary, will re-copy", e)
+            }
+        }
+
+        // Copy asset to filesDir, then memory-map
+        binDir.mkdirs()
+        val tmpFile = File(binDir, binFile.name + ".tmp")
         try {
-            val binDir = File(appCtx.filesDir, DEFAULT_BIN_DIR)
-            val binFile = File(binDir, File(binaryAsset).name)
-            if (binFile.exists()) {
-                FileInputStream(binFile).use { stream ->
-                    trie.load(stream)
-                    return@withContext trie
+            appCtx.assets.open(binaryAsset).use { input ->
+                FileOutputStream(tmpFile).use { fos ->
+                    input.copyTo(fos, 1024 * 1024)
                 }
+            }
+            if (binFile.exists()) binFile.delete()
+            if (!tmpFile.renameTo(binFile)) {
+                throw IllegalStateException("Failed to rename temp asset copy")
             }
         } catch (e: Exception) {
-            try {
-                val binDir = File(appCtx.filesDir, DEFAULT_BIN_DIR)
-                val binFile = File(binDir, File(binaryAsset).name)
-                if (binFile.exists()) {
-                    binFile.delete()
-                    android.util.Log.w("TranslationLoader", "Deleted corrupted persistent binary: ${binFile.path}")
-                }
-            } catch (_: Exception) {
-            }
-            android.util.Log.w("TranslationLoader", "Failed to load persistent binary, will fallback", e)
+            try { tmpFile.delete() } catch (_: Exception) {}
+            android.util.Log.e("TranslationLoader", "Failed to copy asset to filesDir", e)
+            throw e
         }
-        
-        // Load pre-built binary file from assets
-        appCtx.assets.open(binaryAsset).use { stream ->
-            trie.load(stream)
-            // Cache to filesDir for faster future loads
-            try {
-                val binDir = File(appCtx.filesDir, DEFAULT_BIN_DIR)
-                binDir.mkdirs()
-                val binFile = File(binDir, File(binaryAsset).name)
-                val tmpFile = File(binDir, binFile.name + ".tmp")
-                try {
-                    FileOutputStream(tmpFile).use { fos ->
-                        BufferedOutputStream(fos, 1024 * 1024).use { bos ->
-                            trie.save(bos)
-                        }
-                    }
-                    if (binFile.exists()) binFile.delete()
-                    if (!tmpFile.renameTo(binFile)) {
-                        throw IllegalStateException("Failed to rename temp cache file to final: ${binFile.name}")
-                    }
-                } catch (e: Exception) {
-                    try { tmpFile.delete() } catch (_: Exception) { }
-                    android.util.Log.w("TranslationLoader", "Failed to cache default trie", e)
-                }
-            } catch (e: Exception) {
-                android.util.Log.w("TranslationLoader", "Failed to cache default trie", e)
-            }
-        }
-        
+
+        trie.loadMapped(binFile)
+        android.util.Log.d("TranslationLoader", "Asset copied+mapped: ${binFile.path}")
         trie
     }
     

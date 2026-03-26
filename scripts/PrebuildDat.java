@@ -10,14 +10,15 @@ import java.util.*;
 public class PrebuildDat {
 
     static final int MAGIC = 0x44415432; // "DAT2"
-    static final int VERSION = 2;
+    static final int VERSION = 3;
 
     // DoubleArrayTrie fields
-    int[] base, check, valueIndex;
+    int[] base, check;
     boolean[] used;
     String[] values;
     int size, nextCheckPos, maxCharValue;
     HashMap<Character, Integer> charMap = new HashMap<>();
+    byte[] stringPool;
 
     void build(List<String[]> entries) {
         if (entries.isEmpty()) { size = 0; return; }
@@ -29,19 +30,34 @@ public class PrebuildDat {
         size = keys.length;
         values = vals;
         buildCharMapping(keys);
+        
+        try {
+            ByteArrayOutputStream poolBaos = new ByteArrayOutputStream();
+            DataOutputStream poolDos = new DataOutputStream(poolBaos);
+            int[] stringOffsets = new int[vals.length];
+            for (int i = 0; i < vals.length; i++) {
+                stringOffsets[i] = poolBaos.size();
+                byte[] utf8 = vals[i].getBytes("UTF-8");
+                poolDos.writeShort(utf8.length);
+                poolDos.write(utf8);
+            }
+            stringPool = poolBaos.toByteArray();
+            
+            int initSize = calcInitSize(keys);
+            base = new int[initSize]; check = new int[initSize]; used = new boolean[initSize];
+            Arrays.fill(check, -1);
+            nextCheckPos = 0;
 
-        int initSize = calcInitSize(keys);
-        base = new int[initSize]; check = new int[initSize]; valueIndex = new int[initSize]; used = new boolean[initSize];
-        Arrays.fill(check, -1); Arrays.fill(valueIndex, -1);
-        nextCheckPos = 0;
+            check[1] = 0;
+            base[1] = 1;
 
-        check[1] = 0;
-        base[1] = 1;
-
-        int[][] root = fetch(0, 0, keys.length, keys);
-        insert(root, 1, keys, vals);
-        compactArrays();
-        System.out.println("  Built trie: " + keys.length + " entries, base size: " + base.length);
+            int[][] root = fetch(0, 0, keys.length, keys);
+            insert(root, 1, keys, stringOffsets);
+            compactArrays();
+            System.out.println("  Built trie: " + keys.length + " entries, base size: " + base.length);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     void buildCharMapping(String[] keys) {
@@ -74,7 +90,7 @@ public class PrebuildDat {
         return siblings.toArray(new int[0][]);
     }
 
-    void insert(int[][] siblings, int parentIndex, String[] keys, String[] vals) {
+    void insert(int[][] siblings, int parentIndex, String[] keys, int[] stringOffsets) {
         if (siblings.length == 0) return;
         int begin, pos = Math.max(nextCheckPos, siblings[0][0] + 1) - 1;
 
@@ -103,10 +119,10 @@ public class PrebuildDat {
         for (int[] s : siblings) check[begin + s[0]] = parentIndex;
         for (int[] s : siblings) {
             int idx = begin + s[0];
-            if (s[0] == 0) { valueIndex[idx] = s[2]; continue; }
+            if (s[0] == 0) { base[idx] = stringOffsets[s[2]]; continue; }
             int[][] newSiblings = fetch(s[1], s[2], s[3], keys);
             if (newSiblings.length == 0) continue;
-            insert(newSiblings, idx, keys, vals);
+            insert(newSiblings, idx, keys, stringOffsets);
         }
     }
 
@@ -117,10 +133,8 @@ public class PrebuildDat {
         int oldSize = base.length;
         base = Arrays.copyOf(base, newSize);
         check = Arrays.copyOf(check, newSize);
-        valueIndex = Arrays.copyOf(valueIndex, newSize);
         used = Arrays.copyOf(used, newSize);
         Arrays.fill(check, oldSize, newSize, -1);
-        Arrays.fill(valueIndex, oldSize, newSize, -1);
     }
 
     void compactArrays() {
@@ -129,7 +143,7 @@ public class PrebuildDat {
         if (maxUsed < base.length - 1) {
             int s = maxUsed + 1;
             base = Arrays.copyOf(base, s); check = Arrays.copyOf(check, s);
-            valueIndex = Arrays.copyOf(valueIndex, s); used = Arrays.copyOf(used, s);
+            used = Arrays.copyOf(used, s);
         }
     }
 
@@ -143,12 +157,8 @@ public class PrebuildDat {
             buf.asIntBuffer().put(base); dos.write(buf.array());
             buf.clear(); buf.asIntBuffer().put(check); dos.write(buf.array());
 
-            ArrayList<int[]> pairs = new ArrayList<>();
-            for (int i = 0; i < valueIndex.length; i++) {
-                if (valueIndex[i] >= 0 && valueIndex[i] < values.length) pairs.add(new int[]{i, valueIndex[i]});
-            }
-            dos.writeInt(pairs.size());
-            for (int[] p : pairs) { dos.writeInt(p[0]); dos.writeUTF(values[p[1]]); }
+            dos.writeInt(stringPool.length);
+            dos.write(stringPool);
         }
     }
 
