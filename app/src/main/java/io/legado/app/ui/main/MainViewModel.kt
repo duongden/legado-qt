@@ -359,11 +359,7 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
                         source.sortUrl = newSortUrl
                         changed = true
                     }
-                    val newRuleContent = TranslateUtils.translateCode(source.ruleContent)
-                    if (newRuleContent != source.ruleContent) {
-                        source.ruleContent = newRuleContent
-                        changed = true
-                    }
+                    // ruleContent: không dịch để tránh phá vỡ cấu trúc code
                     if (changed) {
                         updatedRssSources.add(source)
                     }

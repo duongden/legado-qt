@@ -211,9 +211,7 @@ class ImportRssSourceViewModel(app: Application) : BaseViewModel(app) {
             if (!source.sortUrl.isNullOrEmpty()) {
                 source.sortUrl = io.legado.app.utils.TranslateUtils.translateSortExploreUrl(source.sortUrl)
             }
-            if (!source.ruleContent.isNullOrEmpty()) {
-                source.ruleContent = io.legado.app.utils.TranslateUtils.translateCode(source.ruleContent)
-            }
+            // ruleContent: không dịch để tránh phá vỡ cấu trúc code
         }
     }
 

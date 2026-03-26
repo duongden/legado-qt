@@ -7,10 +7,8 @@ package io.legado.app.model
  * - Subsequent loads: Load from cached binary files
  * - Custom imports: Build and cache immediately
  */
-import io.legado.app.model.dictionary.ITrieDictionary
-
 data class TranslationData(
-    val names: ITrieDictionary,
-    val vietPhrase: ITrieDictionary,
-    val chinesePhienAm: ITrieDictionary
+    val names: DoubleArrayTrie,
+    val vietPhrase: DoubleArrayTrie,
+    val chinesePhienAm: Map<String, String>
 )
