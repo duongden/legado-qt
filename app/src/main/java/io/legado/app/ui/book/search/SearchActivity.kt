@@ -543,20 +543,25 @@ class SearchActivity : VMBaseActivity<ActivityBookSearchBinding, SearchViewModel
      * 点击历史关键字
      */
     override fun searchHistory(key: String) {
-        lifecycleScope.launch {
-            when {
-                searchView.query.toString() == key -> {
-                    searchView.setQuery(key, true)
-                }
+        val containsChinese = key.any { Character.UnicodeScript.of(it.code) == Character.UnicodeScript.HAN }
+        if (containsChinese) {
+            lifecycleScope.launch {
+                when {
+                    searchView.query.toString() == key -> {
+                        searchView.setQuery(key, true)
+                    }
 
-                withContext(IO) { appDb.bookDao.findByName(key).isEmpty() } -> {
-                    searchView.setQuery(key, true)
-                }
+                    withContext(IO) { appDb.bookDao.findByName(key).isEmpty() } -> {
+                        searchView.setQuery(key, true)
+                    }
 
-                else -> {
-                    searchView.setQuery(key, false)
+                    else -> {
+                        searchView.setQuery(key, false)
+                    }
                 }
             }
+        } else {
+            searchView.setQuery(key, false)
         }
     }
 

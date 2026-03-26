@@ -35,7 +35,7 @@ class DoubleArrayTrie : ITrieDictionary {
     private var nextCheckPos: Int = 0
 
     private companion object {
-        private const val MAGIC = 0x44415452
+        private const val MAGIC = 0x44415432
         private const val VERSION = 2
     }
     
