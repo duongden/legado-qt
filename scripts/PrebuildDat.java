@@ -35,8 +35,11 @@ public class PrebuildDat {
         Arrays.fill(check, -1); Arrays.fill(valueIndex, -1);
         nextCheckPos = 0;
 
+        check[1] = 0;
+        base[1] = 1;
+
         int[][] root = fetch(0, 0, keys.length, keys);
-        insert(root, 0, keys, vals);
+        insert(root, 1, keys, vals);
         compactArrays();
         System.out.println("  Built trie: " + keys.length + " entries, base size: " + base.length);
     }
