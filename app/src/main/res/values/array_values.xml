@@ -58,9 +58,8 @@
 
     <string-array name="language_value">
         <item>auto</item>
-        <item>zh</item>
-        <item>tw</item>
         <item>en</item>
+        <item>vi</item>
     </string-array>
 
 </resources>

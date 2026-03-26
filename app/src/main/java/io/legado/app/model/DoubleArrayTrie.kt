@@ -26,6 +26,7 @@ class DoubleArrayTrie : ITrieDictionary {
     
     // Character code mapping
     private val charMap = mutableMapOf<Char, Int>()
+    private val fastCharMap = IntArray(65536)
     private var maxCharValue = 0
     
     // Statistics
@@ -102,12 +103,18 @@ class DoubleArrayTrie : ITrieDictionary {
         if (base.isEmpty() || startIndex >= text.length) return null
         
         var currentState = 1 // root state
-        var lastMatch: Pair<Int, String>? = null
+        var matchLen = -1
+        var matchVal: String? = null
         var currentIndex = startIndex
         
         while (currentIndex < text.length) {
-            val char = text[currentIndex]
-            val charCode = charMap[char] ?: return lastMatch
+            val charCodeObj = text[currentIndex].code
+            val charCode = if (charCodeObj in 0..65535) {
+                fastCharMap[charCodeObj]
+            } else {
+                charMap[text[currentIndex]] ?: 0
+            }
+            if (charCode == 0) break
             
             val nextState = base[currentState] + charCode
             
@@ -120,7 +127,8 @@ class DoubleArrayTrie : ITrieDictionary {
             if (termState < check.size && check[termState] == nextState) {
                 val idx = valueIndex[termState]
                 if (idx >= 0 && idx < values.size) {
-                    lastMatch = Pair(currentIndex - startIndex + 1, values[idx])
+                    matchLen = currentIndex - startIndex + 1
+                    matchVal = values[idx]
                 }
             }
             
@@ -128,7 +136,7 @@ class DoubleArrayTrie : ITrieDictionary {
             currentIndex++
         }
         
-        return lastMatch
+        return if (matchLen > 0) Pair(matchLen, matchVal!!) else null
     }
 
     override operator fun get(key: String): String? {
@@ -214,10 +222,15 @@ class DoubleArrayTrie : ITrieDictionary {
             
             // Read char mapping
             charMap.clear()
+            fastCharMap.fill(0)
             repeat(charMapSize) {
                 val charCode = dis.readInt()
                 val mappedCode = dis.readInt()
-                charMap[Char(charCode)] = mappedCode
+                val char = Char(charCode)
+                charMap[char] = mappedCode
+                if (charCode in 0..65535) {
+                    fastCharMap[charCode] = mappedCode
+                }
             }
             
             // Read arrays (bulk)
@@ -292,9 +305,15 @@ class DoubleArrayTrie : ITrieDictionary {
         }
 
         charMap.clear()
+        fastCharMap.fill(0)
         var code = 1
         uniqueChars.sorted().forEach { char ->
-            charMap[char] = code++
+            val c = code++
+            charMap[char] = c
+            val cCode = char.code
+            if (cCode in 0..65535) {
+                fastCharMap[cCode] = c
+            }
         }
         maxCharValue = code
     }
