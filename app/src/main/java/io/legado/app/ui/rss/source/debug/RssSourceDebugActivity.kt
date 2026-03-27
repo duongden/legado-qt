@@ -120,7 +120,7 @@ class RssSourceDebugActivity : VMBaseActivity<ActivityRssSourceDebugBinding, Rss
             sortKinds?.firstOrNull()?.let {
                 binding.textFl.text = "${it.first}::${it.second}"
                 if (it.first.startsWith("ERROR:")) {
-                    adapter.addItem("获取发现出错\n${it.second}")
+                    adapter.addItem("Lỗi khi lấy khám phá\n${it.second}")
                     openOrCloseHelp(false)
                     searchView.clearFocus()
                     return@launch
@@ -129,7 +129,7 @@ class RssSourceDebugActivity : VMBaseActivity<ActivityRssSourceDebugBinding, Rss
             @Suppress("USELESS_ELVIS")
             sortKinds?.map { it.first ?: "" }?.let { sortKindTitles ->
                 binding.textFl.onLongClick {
-                    selector("选择分类", sortKindTitles) { _, index ->
+                    selector("Chọn phân loại", sortKindTitles) { _, index ->
                         val sort = sortKinds[index]
                         binding.textFl.text = "${sort.first}::${sort.second}"
                         searchView.setQuery(binding.textFl.text, true)
@@ -154,7 +154,7 @@ class RssSourceDebugActivity : VMBaseActivity<ActivityRssSourceDebugBinding, Rss
         viewModel.startDebug(key, {
             binding.rotateLoading.visible()
         }, {
-            toastOnUi("未获取到书源")
+            toastOnUi("Không lấy được nguồn RSS")
         })
     }
 }

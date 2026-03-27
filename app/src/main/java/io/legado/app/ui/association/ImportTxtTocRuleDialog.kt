@@ -156,9 +156,9 @@ class ImportTxtTocRuleDialog() : BaseDialogFragment(R.layout.dialog_recycler_vie
                 }
                 val localSource = viewModel.checkSources[holder.layoutPosition]
                 tvSourceState.text = when {
-                    localSource == null -> "新增"
-                    item != localSource -> "更新"
-                    else -> "已有"
+                    localSource == null -> "Thêm mới"
+                    item != localSource -> "Cập nhật"
+                    else -> "Đã có"
                 }
             }
         }

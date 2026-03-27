@@ -83,8 +83,8 @@ class ChangeBookSourceDialog() : BaseDialogFragment(R.layout.dialog_book_change_
             val searchGroup = AppConfig.searchGroup
             if (searchGroup.isNotEmpty()) {
                 lifecycleScope.launch {
-                    context?.alert("搜索结果为空") {
-                        setMessage("${searchGroup}分组搜索结果为空,是否切换到全部分组")
+                    context?.alert("Kết quả tìm kiếm trống") {
+                        setMessage("Kết quả tìm kiếm trong nhóm ${searchGroup} trống, bạn có muốn chuyển sang tất cả các nhóm không?")
                         cancelButton()
                         okButton {
                             AppConfig.searchGroup = ""
@@ -393,7 +393,7 @@ class ChangeBookSourceDialog() : BaseDialogFragment(R.layout.dialog_book_change_
         if (book.isWebFile) { //文件类书源不解析目录
             val source = appDb.bookSourceDao.getBookSource(book.origin)
             if (source == null) {
-                AppLog.put("书源不存在", null, true)
+                AppLog.put("Nguồn sách không tồn tại", null, true)
                 return
             }
             waitDialog.dismiss()
@@ -407,7 +407,7 @@ class ChangeBookSourceDialog() : BaseDialogFragment(R.layout.dialog_book_change_
             onSuccess?.invoke()
         }, {
             waitDialog.dismiss()
-            AppLog.put("换源获取目录出错\n$it", it, true)
+            AppLog.put("Lỗi khi lấy danh mục để thay đổi nguồn\n$it", it, true)
         })
         waitDialog.setOnCancelListener {
             coroutine.cancel()

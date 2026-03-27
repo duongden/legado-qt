@@ -174,7 +174,7 @@ class TextChapterLayout(
             listener?.onLayoutPageCompleted(textPages.lastIndex, textPage)
         } catch (e: Exception) {
             e.printStackTrace()
-            AppLog.put("调用布局进度监听回调出错\n${e.localizedMessage}", e)
+            AppLog.put("Lỗi khi gọi callback giám sát tiến độ bố cục\n${e.localizedMessage}", e)
         }
     }
 
@@ -184,7 +184,7 @@ class TextChapterLayout(
             listener?.onLayoutCompleted()
         } catch (e: Exception) {
             e.printStackTrace()
-            AppLog.put("调用布局进度监听回调出错\n${e.localizedMessage}", e)
+            AppLog.put("Lỗi khi gọi callback giám sát tiến độ bố cục\n${e.localizedMessage}", e)
         } finally {
             listener = null
         }
@@ -200,7 +200,7 @@ class TextChapterLayout(
             listener?.onLayoutException(e)
         } catch (e: Exception) {
             e.printStackTrace()
-            AppLog.put("调用布局进度监听回调出错\n${e.localizedMessage}", e)
+            AppLog.put("Lỗi khi gọi callback giám sát tiến độ bố cục\n${e.localizedMessage}", e)
         } finally {
             listener = null
         }

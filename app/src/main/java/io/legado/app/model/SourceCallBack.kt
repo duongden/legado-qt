@@ -105,7 +105,7 @@ object SourceCallBack {
                 }
             }
         }.onError {
-            AppLog.put("${source.bookSourceName}\n书源执行回调事件${event}出错\n${it.localizedMessage}", it, true)
+            AppLog.put("${source.bookSourceName}\nLỗi khi thực thi sự kiện gọi lại ${event} của nguồn sách\n${it.localizedMessage}", it, true)
         }
     }
 
@@ -125,7 +125,7 @@ object SourceCallBack {
                     }
                 }
             }.onFailure {
-                AppLog.put("${source.bookSourceName}\n书源执行回调事件${event}出错\n${it.localizedMessage}", it, true)
+                AppLog.put("${source.bookSourceName}\nLỗi khi thực thi sự kiện gọi lại ${event} của nguồn sách\n${it.localizedMessage}", it, true)
             }
         }
     }

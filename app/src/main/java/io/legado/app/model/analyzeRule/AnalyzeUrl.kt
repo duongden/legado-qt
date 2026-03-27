@@ -234,7 +234,7 @@ class AnalyzeUrl(
             if (urlOption == null) {
                 urlOption = GSON.fromJsonObject<UrlOption>(urlOptionStr).getOrNull()
                 if (urlOption != null) {
-                    log("链接参数 JSON 格式不规范，请改为规范格式")
+                    log("Định dạng JSON của tham số liên kết không chuẩn, vui lòng đổi sang định dạng chuẩn")
                 }
             }
             urlOption?.let { option ->
@@ -389,7 +389,7 @@ class AnalyzeUrl(
 
     fun put(key: String, value: String): String {
         if (key == "bookName" || key == "title") {
-            Debug.log("≡变量 $key 在特定情况下会被覆盖，建议使用其他键名")
+            Debug.log("≡Biến $key sẽ bị ghi đè trong một số trường hợp nhất định, nên sử dụng tên khóa khác")
         }
         chapter?.putVariable(key, value)
             ?: ruleData?.putVariable(key, value)

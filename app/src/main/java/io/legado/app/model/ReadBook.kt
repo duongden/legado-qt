@@ -260,7 +260,7 @@ object ReadBook : CoroutineScope by MainScope() {
         Coroutine.async {
             AppWebDav.getBookProgress(book)
         }.onError {
-            AppLog.put("拉取阅读进度失败", it)
+            AppLog.put("Lấy tiến trình đọc thất bại", it)
         }.onSuccess { progress ->
             if (progress == null || progress.durChapterIndex < book.durChapterIndex ||
                 (progress.durChapterIndex == book.durChapterIndex
@@ -340,11 +340,11 @@ object ReadBook : CoroutineScope by MainScope() {
             curTextChapter = nextTextChapter
             nextTextChapter = null
             if (curTextChapter == null) {
-                AppLog.putDebug("moveToNextChapter-章节未加载,开始加载")
+                AppLog.putDebug("moveToNextChapter-Chương chưa tải, bắt đầu tải")
                 if (upContentInPlace) callBack?.upContent()
                 loadContent(durChapterIndex, upContent, resetPageOffset = false)
             } else if (upContent && upContentInPlace) {
-                AppLog.putDebug("moveToNextChapter-章节已加载,刷新视图")
+                AppLog.putDebug("moveToNextChapter-Chương đã tải, làm mới chế độ xem")
                 callBack?.upContent()
             }
             loadContent(durChapterIndex.plus(1), upContent, false)
@@ -354,7 +354,7 @@ object ReadBook : CoroutineScope by MainScope() {
             curPageChanged()
             return true
         } else {
-            AppLog.putDebug("跳转下一章失败,没有下一章")
+            AppLog.putDebug("Chuyển sang chương tiếp theo thất bại, không có chương tiếp theo")
             return false
         }
     }
@@ -371,11 +371,11 @@ object ReadBook : CoroutineScope by MainScope() {
             curTextChapter = nextTextChapter
             nextTextChapter = null
             if (curTextChapter == null) {
-                AppLog.putDebug("moveToNextChapter-章节未加载,开始加载")
+                AppLog.putDebug("moveToNextChapter-Chương chưa tải, bắt đầu tải")
                 if (upContentInPlace) callBack?.upContentAwait()
                 loadContentAwait(durChapterIndex, upContent, resetPageOffset = false)
             } else if (upContent && upContentInPlace) {
-                AppLog.putDebug("moveToNextChapter-章节已加载,刷新视图")
+                AppLog.putDebug("moveToNextChapter-Chương đã tải, làm mới chế độ xem")
                 callBack?.upContentAwait()
             }
             loadContent(durChapterIndex.plus(1), upContent, false)
@@ -385,7 +385,7 @@ object ReadBook : CoroutineScope by MainScope() {
             curPageChanged()
             return true
         } else {
-            AppLog.putDebug("跳转下一章失败,没有下一章")
+            AppLog.putDebug("Chuyển sang chương tiếp theo thất bại, không có chương tiếp theo")
             return false
         }
     }
@@ -591,7 +591,7 @@ object ReadBook : CoroutineScope by MainScope() {
                 )
             }
         }.onError {
-            AppLog.put("加载正文出错\n${it.localizedMessage}")
+            AppLog.put("Lỗi khi tải nội dung văn bản\n${it.localizedMessage}")
         }
     }
 
@@ -609,7 +609,7 @@ object ReadBook : CoroutineScope by MainScope() {
                 contentLoadFinishAwait(book, chapter, content, upContent, resetPageOffset)
                 success?.invoke()
             } catch (e: Exception) {
-                AppLog.put("加载正文出错\n${e.localizedMessage}")
+                AppLog.put("Lỗi khi tải nội dung văn bản\n${e.localizedMessage}")
             } finally {
                 removeLoading(index)
             }
@@ -652,11 +652,11 @@ object ReadBook : CoroutineScope by MainScope() {
         if (bookSource != null) {
             CacheBook.getOrCreate(bookSource, book).download(scope, chapter, semaphore)
         } else {
-            val msg = if (book.isLocal) "无内容" else "没有书源"
+            val msg = if (book.isLocal) "Không có nội dung" else "Không có nguồn sách"
             contentLoadFinish(
                 book,
                 chapter,
-                "加载正文失败\n$msg",
+                "Tải nội dung văn bản thất bại\n$msg",
                 resetPageOffset = resetPageOffset,
                 success = success
             )
@@ -669,8 +669,8 @@ object ReadBook : CoroutineScope by MainScope() {
         if (bookSource != null) {
             return CacheBook.getOrCreate(bookSource, book).downloadAwait(chapter)
         } else {
-            val msg = if (book.isLocal) "无内容" else "没有书源"
-            return "加载正文失败\n$msg"
+            val msg = if (book.isLocal) "Không có nội dung" else "Không có nguồn sách"
+            return "Tải nội dung văn bản thất bại\n$msg"
         }
     }
 
@@ -937,7 +937,7 @@ object ReadBook : CoroutineScope by MainScope() {
                 }
                 book.update()
             }.onFailure {
-                AppLog.put("保存书籍阅读进度信息出错\n$it", it)
+                AppLog.put("Lỗi khi lưu thông tin tiến trình đọc sách\n$it", it)
             }
         }
     }

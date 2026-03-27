@@ -112,10 +112,10 @@ class BookshelfViewModel(application: Application) : BaseViewModel(application) 
             if (successCount > 0) {
                 context.toastOnUi(R.string.success)
             } else {
-                context.toastOnUi("添加网址失败")
+                context.toastOnUi("Thêm địa chỉ URL thất bại")
             }
         }.onError {
-            AppLog.put("添加网址出错\n${it.localizedMessage}", it, true)
+            AppLog.put("Lỗi thêm địa chỉ URL\n${it.localizedMessage}", it, true)
         }.onFinally {
             addBookProgressLiveData.postValue(-1)
         }
@@ -142,11 +142,11 @@ class BookshelfViewModel(application: Application) : BaseViewModel(application) 
                     writer.close()
                 }
                 file
-            } ?: throw NoStackTraceException("书籍不能为空")
+            } ?: throw NoStackTraceException("Sách không được để trống")
         }.onSuccess {
             success(it)
         }.onError {
-            context.toastOnUi("导出书籍出错\n${it.localizedMessage}")
+            context.toastOnUi("Lỗi xuất sách\n${it.localizedMessage}")
         }
     }
 
@@ -167,7 +167,7 @@ class BookshelfViewModel(application: Application) : BaseViewModel(application) 
                 }
 
                 else -> {
-                    throw NoStackTraceException("格式不对")
+                    throw NoStackTraceException("Định dạng không đúng")
                 }
             }
         }.onError {

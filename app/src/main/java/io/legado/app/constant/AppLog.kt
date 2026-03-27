@@ -6,6 +6,8 @@ import io.legado.app.help.config.AppConfig
 import io.legado.app.utils.LogUtils
 import io.legado.app.utils.toastOnUi
 import splitties.init.appCtx
+import io.legado.app.R
+import kotlinx.coroutines.launch
 
 object AppLog {
 
@@ -16,9 +18,22 @@ object AppLog {
     @Synchronized
     fun put(message: String?, throwable: Throwable? = null, toast: Boolean = false) {
         message ?: return
-        if (toast) {
-            appCtx.toastOnUi(message)
+        if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+            kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                val translatedMsg = io.legado.app.utils.TranslateUtils.translateContent(message)
+                val translatedThrowableMsg = throwable?.localizedMessage?.let { 
+                    io.legado.app.utils.TranslateUtils.translateContent(it) 
+                }
+                val finalMsg = if (translatedThrowableMsg != null) "$translatedMsg\n${appCtx.getString(R.string.error)}: $translatedThrowableMsg" else translatedMsg
+                putInternal(finalMsg, throwable, toast)
+            }
+        } else {
+            putInternal(message, throwable, toast)
         }
+    }
+
+    @Synchronized
+    private fun putInternal(message: String, throwable: Throwable?, toast: Boolean) {
         if (mLogs.size > 100) {
             mLogs.removeLastOrNull()
         }
@@ -37,6 +52,22 @@ object AppLog {
     @Synchronized
     fun putNotSave(message: String?, throwable: Throwable? = null, toast: Boolean = false) {
         message ?: return
+        if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+            kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                val translatedMsg = io.legado.app.utils.TranslateUtils.translateContent(message)
+                val translatedThrowableMsg = throwable?.localizedMessage?.let { 
+                    io.legado.app.utils.TranslateUtils.translateContent(it) 
+                }
+                val finalMsg = if (translatedThrowableMsg != null) "$translatedMsg\n${appCtx.getString(R.string.error)}: $translatedThrowableMsg" else translatedMsg
+                putNotSaveInternal(finalMsg, throwable, toast)
+            }
+        } else {
+            putNotSaveInternal(message, throwable, toast)
+        }
+    }
+
+    @Synchronized
+    private fun putNotSaveInternal(message: String, throwable: Throwable?, toast: Boolean) {
         if (toast) {
             appCtx.toastOnUi(message)
         }

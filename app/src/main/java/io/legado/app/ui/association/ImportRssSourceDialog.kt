@@ -260,9 +260,9 @@ class ImportRssSourceDialog() : BaseDialogFragment(R.layout.dialog_recycler_view
                 }
                 val localSource = viewModel.checkSources[holder.layoutPosition]
                 tvSourceState.text = when {
-                    localSource == null -> "新增"
-                    item.lastUpdateTime > localSource.lastUpdateTime -> "更新"
-                    else -> "已有"
+                    localSource == null -> "Thêm mới"
+                    item.lastUpdateTime > localSource.lastUpdateTime -> "Cập nhật"
+                    else -> "Đã có"
                 }
             }
         }

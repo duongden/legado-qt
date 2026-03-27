@@ -509,7 +509,7 @@ class ExploreAdapter(context: Context, val callBack: CallBack) :
                 }.toString()
             }
         } catch (e: Exception) {
-            AppLog.put(source.getTag() + " exploreUi err:" + (e.localizedMessage ?: e.toString()), e)
+            AppLog.put(source.getTag() + " Lỗi giao diện khám phá:" + (e.localizedMessage ?: e.toString()), e)
             null
         }
     }
@@ -524,7 +524,7 @@ class ExploreAdapter(context: Context, val callBack: CallBack) :
                 }
             }
         } catch (e: Exception) {
-            AppLog.put("ExploreUI Button $name JavaScript error", e)
+            AppLog.put("Lỗi JavaScript nút ExploreUI $name", e)
         }
     }
 

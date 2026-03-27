@@ -44,7 +44,7 @@ class ChangeCoverViewModel(application: Application) : BaseViewModel(application
     private val defaultCover by lazy {
         listOf(
             SearchBook(
-                originName = "默认封面",
+                originName = "Ảnh bìa mặc định",
                 name = name,
                 author = author,
                 coverUrl = "use_default_cover"
@@ -127,7 +127,7 @@ class ChangeCoverViewModel(application: Application) : BaseViewModel(application
                 val coverUrl = BookCover.searchCover(tempBook)
                 if (!coverUrl.isNullOrEmpty()) {
                     val searchBook = SearchBook(
-                        originName = "封面规则",
+                        originName = "Quy tắc ảnh bìa",
                         name = name,
                         author = author,
                         coverUrl = coverUrl,
@@ -139,7 +139,7 @@ class ChangeCoverViewModel(application: Application) : BaseViewModel(application
                     search()
                 }
             } catch (e: Exception) {
-                AppLog.put("封面规则搜索出错\n${e.localizedMessage}", e)
+                AppLog.put("Lỗi khi tìm kiếm quy tắc ảnh bìa\n${e.localizedMessage}", e)
                 search()
             }
         }
@@ -162,7 +162,7 @@ class ChangeCoverViewModel(application: Application) : BaseViewModel(application
             }.onCompletion {
                 searchStateData.postValue(0)
             }.catch {
-                AppLog.put("封面换源搜索出错\n${it.localizedMessage}", it)
+                AppLog.put("Lỗi khi tìm kiếm nguồn ảnh bìa\n${it.localizedMessage}", it)
             }.collect()
         }
     }

@@ -130,7 +130,7 @@ class ContentProcessor private constructor(
                     }
                 }
             } catch (e: Exception) {
-                AppLog.put("去除重复标题出错\n${e.localizedMessage}", e)
+                AppLog.put("Lỗi khi xóa tiêu đề lặp lại\n${e.localizedMessage}", e)
             }
             if (reSegment && book.getReSegment()) {
                 //重新分段
@@ -144,13 +144,13 @@ class ContentProcessor private constructor(
                         2 -> mContent = ChineseUtils.s2t(mContent)
                     }
                 } catch (_: Exception) {
-                    appCtx.toastOnUi("简繁转换出错")
+                    appCtx.toastOnUi("Lỗi khi chuyển đổi giản thể/phồn thể")
                 }
             }
             val useHtmlMap = mutableMapOf<String, String>()
             if (AppConfig.adaptSpecialStyle) { //html处理
                 mContent = AppPattern.useHtmlRegex.replace(mContent) { matchResult ->
-                    val placeholder = "特殊格式的占位不应该被看见${useHtmlMap.size}。"
+                    val placeholder = "Phần giữ chỗ định dạng đặc biệt không được hiển thị ${useHtmlMap.size}."
                     useHtmlMap[placeholder] = "\n${matchResult.value.replace("\n","")}\n"
                     placeholder
                 }
@@ -186,8 +186,8 @@ class ContentProcessor private constructor(
                         mContent = item.name + e.stackTraceStr
                     } catch (_: CancellationException) {
                     } catch (e: Exception) {
-                        AppLog.put("替换净化: 规则 ${item.name}替换出错.\n${mContent}", e)
-                        appCtx.toastOnUi("替换净化: 规则 ${item.name}替换出错")
+                        AppLog.put("Thay thế tinh lọc: Quy tắc ${item.name} lỗi thay thế.\n${mContent}", e)
+                        appCtx.toastOnUi("Thay thế tinh lọc: Quy tắc ${item.name} lỗi thay thế")
                     }
                 }
             }

@@ -114,13 +114,13 @@ class SpeakEngineDialog() : BaseDialogFragment(R.layout.dialog_recycler_view),
                 ivEdit.gone()
                 ivMenuDelete.gone()
                 labelSys.visible()
-                cbName.text = "系统默认"
+                cbName.text = "Mặc định hệ thống"
                 cbName.tag = ""
                 cbName.isChecked = ttsEngine == null || ttsEngine!!.isJsonObject()
                         && GSON.fromJsonObject<SelectItem<String>>(ttsEngine)
                     .getOrNull()?.value.isNullOrEmpty()
                 cbName.setOnClickListener {
-                    upTts(GSON.toJson(SelectItem("系统默认", "")))
+                    upTts(GSON.toJson(SelectItem("Mặc định hệ thống", "")))
                 }
             }
         }
@@ -173,7 +173,7 @@ class SpeakEngineDialog() : BaseDialogFragment(R.layout.dialog_recycler_view),
     private fun initData() {
         lifecycleScope.launch {
             appDb.httpTTSDao.flowAll().catch {
-                AppLog.put("朗读引擎界面获取数据失败\n${it.localizedMessage}", it)
+                AppLog.put("Lấy dữ liệu giao diện cấu hình đọc thất bại\n${it.localizedMessage}", it)
             }.flowOn(IO).conflate().collect {
                 adapter.setItems(it)
             }

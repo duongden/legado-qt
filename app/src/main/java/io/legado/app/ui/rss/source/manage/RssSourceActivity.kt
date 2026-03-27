@@ -331,7 +331,7 @@ class RssSourceActivity : VMBaseActivity<ActivityRssSourceBinding, RssSourceView
                     appDb.rssSourceDao.flowSearch(searchKey)
                 }
             }.catch {
-                AppLog.put("订阅源管理界面更新数据出错", it)
+                AppLog.put("Lỗi cập nhật dữ liệu giao diện quản lý nguồn RSS", it)
             }.flowOn(IO).conflate().collect {
                 adapter.setItems(it, adapter.diffItemCallback)
                 delay(100)

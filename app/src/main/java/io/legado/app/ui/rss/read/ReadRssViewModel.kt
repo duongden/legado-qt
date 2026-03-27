@@ -127,7 +127,7 @@ class ReadRssViewModel(application: Application) : BaseViewModel(application) {
                 this@ReadRssViewModel.rssArticle = rssArticle
                 contentLiveData.postValue(body)
             }.onError {
-                contentLiveData.postValue("加载正文失败\n${it.stackTraceToString()}")
+                contentLiveData.postValue("Tải nội dung thất bại\n${it.stackTraceToString()}")
             }
     }
 
@@ -137,7 +137,7 @@ class ReadRssViewModel(application: Application) : BaseViewModel(application) {
             return finish.invoke()
         }
         val rssSource = rssSource ?: let {
-            appCtx.toastOnUi("订阅源不存在")
+            appCtx.toastOnUi("Nguồn đăng ký không tồn tại")
             return finish.invoke()
         }
         val ruleContent = rssSource.ruleContent
@@ -203,9 +203,9 @@ class ReadRssViewModel(application: Application) : BaseViewModel(application) {
             uri.writeBytes(context, fileName, byteArray)
         }.onError {
             ACache.get().remove(imagePathKey)
-            context.toastOnUi("保存图片失败:${it.localizedMessage}")
+            context.toastOnUi("Lưu ảnh thất bại:${it.localizedMessage}")
         }.onSuccess {
-            context.toastOnUi("保存成功")
+            context.toastOnUi("Lưu thành công")
         }
     }
 

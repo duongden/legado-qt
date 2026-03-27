@@ -73,14 +73,14 @@ class SearchViewModel(application: Application) : BaseViewModel(application) {
                     }
                 keys
             }.catch {
-                AppLog.put("搜索界面获取书籍列表失败\n${it.localizedMessage}", it)
+                AppLog.put("Lấy danh sách sách giao diện tìm kiếm thất bại\n${it.localizedMessage}", it)
             }.collect {
                 bookshelf.clear()
                 bookshelf.addAll(it)
                 upAdapterLiveData.postValue("isInBookshelf")
             }
         }.onError {
-            AppLog.put("加载书架数据失败", it)
+            AppLog.put("Tải dữ liệu giá sách thất bại", it)
         }
     }
 

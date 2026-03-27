@@ -124,14 +124,14 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
         lifecycleScope.launch {
-            //隐私协议
+            //Thỏa thuận quyền riêng tư
             if (!privacyPolicy()) return@launch
-            //版本更新
+            //Cập nhật phiên bản
             upVersion()
-            //设置本地密码
+            //Đặt mật khẩu cục bộ
             setLocalPassword()
             notifyAppCrash()
-            //备份同步
+            //Đồng bộ hóa sao lưu
             backupSync()
             //设置回调
             viewModel.setActivityCallback(this@MainActivity)
@@ -298,7 +298,7 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
             return
         }
         LocalConfig.appCrash = false
-        alert(getString(R.string.draw), "检测到阅读发生了崩溃，是否打开崩溃日志以便报告问题？") {
+        alert(getString(R.string.draw), "Phát hiện ứng dụng bị lỗi, bạn có muốn mở nhật ký lỗi để báo cáo sự cố không?") {
             yesButton {
                 showDialogFragment<CrashLogsDialog>()
             }

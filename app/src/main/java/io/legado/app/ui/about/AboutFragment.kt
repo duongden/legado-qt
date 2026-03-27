@@ -116,7 +116,7 @@ class AboutFragment : PreferenceFragmentCompat() {
             startActivity(intent)
             return true
         }.onFailure {
-            toastOnUi("添加失败,请手动添加")
+            toastOnUi("Thêm thất bại, vui lòng thêm thủ công")
         }
         return false
     }
@@ -124,43 +124,43 @@ class AboutFragment : PreferenceFragmentCompat() {
     private fun saveLog() {
         Coroutine.async {
             val backupPath = AppConfig.backupPath ?: let {
-                appCtx.toastOnUi("未设置备份目录")
+                appCtx.toastOnUi("Chưa thiết lập thư mục sao lưu")
                 return@async
             }
             if (!AppConfig.recordLog) {
-                appCtx.toastOnUi("未开启日志记录，请去其他设置里打开记录日志")
+                appCtx.toastOnUi("Chưa bật ghi nhật ký, vui lòng bật ghi nhật ký trong phần Cài đặt khác")
                 delay(3000)
             }
             val doc = FileDoc.fromUri(Uri.parse(backupPath), true)
             copyLogs(doc)
             copyHeapDump(doc)
-            appCtx.toastOnUi("已保存至备份目录")
+            appCtx.toastOnUi("Đã lưu vào thư mục sao lưu")
         }.onError {
-            AppLog.put("保存日志出错\n${it.localizedMessage}", it, true)
+            AppLog.put("Lỗi khi lưu nhật ký\n${it.localizedMessage}", it, true)
         }
     }
 
     private fun createHeapDump() {
         Coroutine.async {
             val backupPath = AppConfig.backupPath ?: let {
-                appCtx.toastOnUi("未设置备份目录")
+                appCtx.toastOnUi("Chưa thiết lập thư mục sao lưu")
                 return@async
             }
             if (!AppConfig.recordHeapDump) {
-                appCtx.toastOnUi("未开启堆转储记录，请去其他设置里打开记录堆转储")
+                appCtx.toastOnUi("Chưa bật ghi Heap Dump, vui lòng bật ghi Heap Dump trong phần Cài đặt khác")
                 delay(3000)
             }
-            appCtx.toastOnUi("开始创建堆转储")
+            appCtx.toastOnUi("Bắt đầu tạo Heap Dump")
             System.gc()
             CrashHandler.doHeapDump(true)
             val doc = FileDoc.fromUri(Uri.parse(backupPath), true)
             if (!copyHeapDump(doc)) {
-                appCtx.toastOnUi("未找到堆转储文件")
+                appCtx.toastOnUi("Không tìm thấy tệp Heap Dump")
             } else {
-                appCtx.toastOnUi("已保存至备份目录")
+                appCtx.toastOnUi("Đã lưu vào thư mục sao lưu")
             }
         }.onError {
-            AppLog.put("保存堆转储失败\n${it.localizedMessage}", it)
+            AppLog.put("Lưu Heap Dump thất bại\n${it.localizedMessage}", it)
         }
     }
 
@@ -207,7 +207,7 @@ class AboutFragment : PreferenceFragmentCompat() {
                 process.inputStream.copyTo(it)
             }
         } catch (e: Exception) {
-            AppLog.put("保存Logcat失败\n$e", e)
+            AppLog.put("Lưu Logcat thất bại\n$e", e)
         }
     }
 

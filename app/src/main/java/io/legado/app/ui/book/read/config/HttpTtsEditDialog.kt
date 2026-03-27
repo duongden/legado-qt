@@ -136,11 +136,11 @@ class HttpTtsEditDialog() : BaseDialogFragment(R.layout.dialog_http_tts_edit, tr
             R.id.menu_fullscreen_edit -> onFullEditClicked()
             R.id.menu_save -> viewModel.save(dataFromView()) {
                 dismissAllowingStateLoss()
-                toastOnUi("保存成功")
+                toastOnUi("Lưu thành công")
             }
             R.id.menu_login -> dataFromView().let { httpTts ->
                 if (httpTts.loginUrl.isNullOrBlank()) {
-                    toastOnUi("登录url不能为空")
+                    toastOnUi("URL đăng nhập không được để trống")
                 } else {
                     viewModel.save(httpTts) {
                         startActivity<SourceLoginActivity> {

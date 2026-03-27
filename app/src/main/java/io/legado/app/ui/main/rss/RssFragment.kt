@@ -143,7 +143,7 @@ class RssFragment() : VMBaseFragment<RssViewModel>(R.layout.fragment_rss), MainF
         groupsFlowJob?.cancel()
         groupsFlowJob = viewLifecycleOwner.lifecycleScope.launch {
             appDb.rssSourceDao.flowEnabledGroups().catch {
-                AppLog.put("订阅界面获取分组数据失败\n${it.localizedMessage}", it)
+                AppLog.put("Lấy dữ liệu nhóm giao diện đăng ký thất bại\n${it.localizedMessage}", it)
             }.flowWithLifecycleAndDatabaseChange(
                 viewLifecycleOwner.lifecycle,
                 Lifecycle.State.RESUMED,
@@ -172,7 +172,7 @@ class RssFragment() : VMBaseFragment<RssViewModel>(R.layout.fragment_rss), MainF
                 Lifecycle.State.RESUMED,
                 AppDatabase.RSS_SOURCE_TABLE_NAME
             ).catch {
-                AppLog.put("订阅界面更新数据出错", it)
+                AppLog.put("Lỗi cập nhật dữ liệu giao diện đăng ký", it)
             }.flowOn(IO).collect {
                 adapter.setItems(it)
             }

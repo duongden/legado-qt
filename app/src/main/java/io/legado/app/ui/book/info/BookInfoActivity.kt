@@ -465,12 +465,12 @@ class BookInfoActivity :
         bookWebDav: RemoteBookWebDav? = AppWebDav.defaultBookWebDav,
     ) {
         lifecycleScope.launch {
-            waitDialog.setText("上传中.....")
+            waitDialog.setText("Đang tải lên...")
             waitDialog.show()
             try {
                 bookWebDav
                     ?.upload(book)
-                    ?: throw NoStackTraceException("未配置webDav")
+                    ?: throw NoStackTraceException("Chưa cấu hình WebDAV")
                 //更新书籍最后更新时间,使之比远程书籍的时间新
                 book.lastCheckTime = System.currentTimeMillis()
                 viewModel.saveBook(book)
@@ -491,7 +491,7 @@ class BookInfoActivity :
         showBookIntro(book)
         if (book.isWebFile) {
             llToc.gone()
-            tvLasted.text = getString(R.string.lasted_show, "下载中...")
+            tvLasted.text = getString(R.string.lasted_show, "Đang tải xuống...")
         } else {
             llToc.visible()
         }

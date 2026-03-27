@@ -37,7 +37,7 @@ data class GithubRelease(
     val isPreRelease: Boolean,
 ) {
     fun gitReleaseToAppReleaseInfo(): List<AppReleaseInfo> {
-        assets ?: throw NoStackTraceException("获取新版本出错")
+        assets ?: throw NoStackTraceException("Lỗi khi lấy phiên bản mới")
         return assets
             .filter { it.isValid }
             .map { it.assetToAppReleaseInfo(isPreRelease, body) }
@@ -51,7 +51,7 @@ data class GiteeRelease(
     val prerelease: Boolean,
 ) {
     fun gitReleaseToAppReleaseInfo(): List<AppReleaseInfo> {
-        assets ?: throw NoStackTraceException("获取新版本出错")
+        assets ?: throw NoStackTraceException("Lỗi khi lấy phiên bản mới")
         return assets
             .filter { it.isValid }
             .map { it.assetToAppReleaseInfo(prerelease, body) }

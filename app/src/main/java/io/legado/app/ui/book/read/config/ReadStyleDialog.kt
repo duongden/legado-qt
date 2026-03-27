@@ -222,7 +222,7 @@ class ReadStyleDialog : BaseDialogFragment(R.layout.dialog_read_book_style),
             payloads: MutableList<Any>
         ) {
             binding.apply {
-                ivStyle.setText(item.name.ifBlank { "文字" })
+                ivStyle.setText(item.name.ifBlank { "Văn bản" })
                 ivStyle.setTextColor(item.curTextColor())
                 ivStyle.setImageDrawable(item.curBgDrawable(100, 150))
                 if (ReadBookConfig.styleSelect == holder.layoutPosition) {

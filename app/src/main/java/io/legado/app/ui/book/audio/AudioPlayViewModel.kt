@@ -65,7 +65,7 @@ class AudioPlayViewModel(application: Application) : BaseViewModel(application) 
             WebBook.getBookInfoAwait(bookSource, book)
             return true
         } catch (e: Exception) {
-            AppLog.put("详情页出错: ${e.localizedMessage}", e, true)
+            AppLog.put("Lỗi trang chi tiết: ${e.localizedMessage}", e, true)
             return false
         }
     }

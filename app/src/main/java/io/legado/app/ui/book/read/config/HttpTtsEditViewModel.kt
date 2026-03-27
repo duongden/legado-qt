@@ -52,7 +52,7 @@ class HttpTtsEditViewModel(app: Application) : BaseViewModel(app) {
     fun importFromClip(onSuccess: (httpTTS: HttpTTS) -> Unit) {
         val text = context.getClipText()
         if (text.isNullOrBlank()) {
-            context.toastOnUi("剪贴板为空")
+            context.toastOnUi("Bộ nhớ tạm trống")
         } else {
             importSource(text, onSuccess)
         }
@@ -69,7 +69,7 @@ class HttpTtsEditViewModel(app: Application) : BaseViewModel(app) {
                     HttpTTS.fromJsonArray(text1).getOrThrow().first()
                 }
                 else -> {
-                    throw NoStackTraceException("格式不对")
+                    throw NoStackTraceException("Định dạng không đúng")
                 }
             }
         }.onSuccess {

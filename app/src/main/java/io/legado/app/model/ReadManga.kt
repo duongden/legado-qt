@@ -184,17 +184,17 @@ object ReadManga : CoroutineScope by MainScope() {
                 }
             }
         }.onError {
-            AppLog.put("加载正文出错\n${it.localizedMessage}")
+            AppLog.put("Lỗi khi tải nội dung\n${it.localizedMessage}", it)
         }
     }
 
     /**
-     * 内容加载完成
+     * Nội dung tải xong
      */
     suspend fun contentLoadFinish(
         chapter: BookChapter,
         content: String?,
-        errorMsg: String = "加载内容失败",
+        errorMsg: String = "Tải nội dung thất bại",
         canceled: Boolean = false
     ) {
         removeLoading(chapter.index)
@@ -208,13 +208,13 @@ object ReadManga : CoroutineScope by MainScope() {
                     return
                 }
                 if (content.isEmpty() && !chapter.isVolume) {
-                    mCallback?.loadFail("正文内容为空")
-                    return
+                    mCallback?.loadFail("Nội dung chính trống")
+                  return
                 }
                 val mangaChapter = getManageChapter(chapter, content)
                 if (mangaChapter.imageCount == 0 && !chapter.isVolume) {
-                    mCallback?.loadFail("正文没有图片")
-                    return
+                    mCallback?.loadFail("Nội dung chính không có hình ảnh")
+                  return
                 }
                 curMangaChapter = mangaChapter
                 mCallback?.upContent()
@@ -293,7 +293,7 @@ object ReadManga : CoroutineScope by MainScope() {
             curPageChanged()
             return true
         } else {
-            AppLog.putDebug("跳转下一章失败,没有下一章")
+            AppLog.putDebug("Chuyển sang chương tiếp theo thất bại, không có chương tiếp theo")
             return false
         }
     }
@@ -345,7 +345,7 @@ object ReadManga : CoroutineScope by MainScope() {
                 }
                 appDb.bookDao.update(book)
             }.onFailure {
-                AppLog.put("保存漫画阅读进度信息出错\n$it", it)
+                AppLog.put("Lỗi khi lưu thông tin tiến độ đọc truyện tranh\n$it", it)
             }
         }
     }
@@ -456,7 +456,7 @@ object ReadManga : CoroutineScope by MainScope() {
                 contentLoadFinish(chapter, null, canceled = true)
             })
         } else {
-            contentLoadFinish(chapter, null, "加载内容失败 没有书源")
+            contentLoadFinish(chapter, null, "Tải nội dung thất bại, không có nguồn sách")
         }
     }
 
@@ -512,8 +512,8 @@ object ReadManga : CoroutineScope by MainScope() {
         Coroutine.async {
             AppWebDav.getBookProgress(book)
         }.onError {
-            AppLog.put("拉取阅读进度失败", it)
-        }.onSuccess { progress ->
+            AppLog.put("Tải tiến độ đọc thất bại", it)
+      }.onSuccess { progress ->
             if (progress == null || progress.durChapterIndex < book.durChapterIndex ||
                 (progress.durChapterIndex == book.durChapterIndex
                         && progress.durChapterPos < book.durChapterPos)
@@ -623,9 +623,9 @@ object ReadManga : CoroutineScope by MainScope() {
         if (imageCount == 0 && chapter.isVolume) {
             pages.add(ReaderLoading(chapter.index, -1, chapter.title, true))
         } else {
-            pages.add(ReaderLoading(chapter.index, -1, "阅读 ${chapter.title}"))
+            pages.add(ReaderLoading(chapter.index, -1, "Đang đọc ${chapter.title}"))
             pages.addAll(list)
-            pages.add(ReaderLoading(chapter.index, imageCount, "已读完 ${chapter.title}"))
+            pages.add(ReaderLoading(chapter.index, imageCount, "Đã đọc xong ${chapter.title}"))
         }
 
         return MangaChapter(chapter, pages, imageCount)

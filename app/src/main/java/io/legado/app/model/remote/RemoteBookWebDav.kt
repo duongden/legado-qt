@@ -32,7 +32,7 @@ class RemoteBookWebDav(
 
     @Throws(Exception::class)
     override suspend fun getRemoteBookList(path: String): MutableList<RemoteBook> {
-        if (!NetworkUtils.isAvailable()) throw NoStackTraceException("网络不可用")
+        if (!NetworkUtils.isAvailable()) throw NoStackTraceException("Mạng không khả dụng")
         val remoteBooks = mutableListOf<RemoteBook>()
         //Read file list
         val remoteWebDavFileList: List<WebDavFile> = WebDav(path, authorization).listFiles()
@@ -50,7 +50,7 @@ class RemoteBookWebDav(
     }
 
     override suspend fun getRemoteBook(path: String): RemoteBook? {
-        if (!NetworkUtils.isAvailable()) throw NoStackTraceException("网络不可用")
+        if (!NetworkUtils.isAvailable()) throw NoStackTraceException("Mạng không khả dụng")
         val webDavFile = WebDav(path, authorization).getWebDavFile()
             ?: return null
         return RemoteBook(webDavFile)
@@ -58,8 +58,8 @@ class RemoteBookWebDav(
 
     override suspend fun downloadRemoteBook(remoteBook: RemoteBook): Uri {
         AppConfig.defaultBookTreeUri
-            ?: throw NoStackTraceException("没有设置书籍保存位置!")
-        if (!NetworkUtils.isAvailable()) throw NoStackTraceException("网络不可用")
+            ?: throw NoStackTraceException("Chưa thiết lập vị trí lưu sách!")
+        if (!NetworkUtils.isAvailable()) throw NoStackTraceException("Mạng không khả dụng")
         val webdav = WebDav(remoteBook.path, authorization)
         return webdav.downloadInputStream().let { inputStream ->
             LocalBook.saveBookFile(inputStream, remoteBook.filename)
@@ -67,7 +67,7 @@ class RemoteBookWebDav(
     }
 
     override suspend fun upload(book: Book) {
-        if (!NetworkUtils.isAvailable()) throw NoStackTraceException("网络不可用")
+        if (!NetworkUtils.isAvailable()) throw NoStackTraceException("Mạng không khả dụng")
         val localBookUri = Uri.parse(book.bookUrl)
         val putUrl = "$rootBookUrl${book.originName}"
         val webDav = WebDav(putUrl, authorization)
@@ -83,7 +83,7 @@ class RemoteBookWebDav(
     }
 
     override suspend fun delete(remoteBookUrl: String) {
-        if (!NetworkUtils.isAvailable()) throw NoStackTraceException("网络不可用")
+        if (!NetworkUtils.isAvailable()) throw NoStackTraceException("Mạng không khả dụng")
         WebDav(remoteBookUrl, authorization).delete()
     }
 

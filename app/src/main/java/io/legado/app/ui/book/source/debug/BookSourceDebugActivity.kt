@@ -130,7 +130,7 @@ class BookSourceDebugActivity : VMBaseActivity<ActivitySourceDebugBinding, BookS
             exploreKinds?.firstOrNull()?.let {
                 binding.textFx.text = "${it.title}::${it.url}"
                 if (it.title.startsWith("ERROR:")) {
-                    adapter.addItem("获取发现出错\n${it.url}")
+                    adapter.addItem("Lỗi khi lấy khám phá\n${it.url}")
                     openOrCloseHelp(false)
                     searchView.clearFocus()
                     return@launch
@@ -139,7 +139,7 @@ class BookSourceDebugActivity : VMBaseActivity<ActivitySourceDebugBinding, BookS
             @Suppress("USELESS_ELVIS")
             exploreKinds?.map { it.title ?: "" }?.let { exploreKindTitles ->
                 binding.textFx.onLongClick {
-                    selector("选择发现", exploreKindTitles) { _, index ->
+                    selector("Chọn khám phá", exploreKindTitles) { _, index ->
                         val explore = exploreKinds[index]
                         binding.textFx.text = "${explore.title}::${explore.url}"
                         searchView.setQuery(binding.textFx.text, true)
@@ -178,7 +178,7 @@ class BookSourceDebugActivity : VMBaseActivity<ActivitySourceDebugBinding, BookS
         viewModel.startDebug(key, {
             binding.rotateLoading.visible()
         }, {
-            toastOnUi("未获取到书源")
+            toastOnUi("Không lấy được nguồn sách")
         })
     }
 

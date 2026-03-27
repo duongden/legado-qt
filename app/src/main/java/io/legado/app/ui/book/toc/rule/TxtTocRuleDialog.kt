@@ -116,7 +116,7 @@ class TxtTocRuleDialog() : BaseDialogFragment(R.layout.dialog_toc_regex),
     private fun initData() {
         lifecycleScope.launch {
             appDb.txtTocRuleDao.observeAll().catch {
-                AppLog.put("TXT目录规则对话框获取数据失败\n${it.localizedMessage}", it)
+                AppLog.put("Lỗi khi lấy dữ liệu tại hộp thoại quy tắc danh mục TXT\n${it.localizedMessage}", it)
             }.flowOn(IO).conflate().collect { tocRules ->
                 initSelectedName(tocRules)
                 adapter.setItems(tocRules, adapter.diffItemCallBack)

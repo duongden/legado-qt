@@ -200,10 +200,10 @@ class TextActionMenu(private val context: Context, private val callBack: CallBac
             holder.itemView.setOnLongClickListener {
                 if (AppConfig.contentSelectSpeakMod == 0) {
                     AppConfig.contentSelectSpeakMod = 1
-                    context.toastOnUi("切换为从选择的地方开始一直朗读")
+                    context.toastOnUi("Chuyển sang chế độ đọc liên tục từ vị trí đã chọn")
                 } else {
                     AppConfig.contentSelectSpeakMod = 0
-                    context.toastOnUi("切换为朗读选择内容")
+                    context.toastOnUi("Chuyển sang chế độ chỉ đọc nội dung đã chọn")
                 }
                 true
             }
@@ -238,7 +238,7 @@ class TextActionMenu(private val context: Context, private val callBack: CallBac
                         it.putExtra(Intent.EXTRA_PROCESS_TEXT, callBack.selectedText)
                         context.startActivity(it)
                     }.onFailure { e ->
-                        AppLog.put("执行文本菜单操作出错\n$e", e, true)
+                        AppLog.put("Lỗi khi thực hiện thao tác trình đơn văn bản\n$e", e, true)
                     }
                 }
             }
@@ -281,7 +281,7 @@ class TextActionMenu(private val context: Context, private val callBack: CallBac
                 ).intent = createProcessTextIntentForResolveInfo(resolveInfo)
             }
         }.onFailure {
-            context.toastOnUi("获取文字操作菜单出错:${it.localizedMessage}")
+            context.toastOnUi("Lỗi khi lấy trình đơn thao tác văn bản: ${it.localizedMessage}")
         }
     }
 

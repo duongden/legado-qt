@@ -344,7 +344,7 @@ object ChapterProvider {
         visibleBottom = paddingTop + visibleHeight
 
         if (paddingLeft >= visibleRight || paddingTop >= visibleBottom) {
-            AppLog.put("边距设置过大，请重新设置", toast = true)
+            AppLog.put("Lề thiết lập quá lớn, vui lòng thiết lập lại", toast = true)
             setFallbackLayout()
         }
 

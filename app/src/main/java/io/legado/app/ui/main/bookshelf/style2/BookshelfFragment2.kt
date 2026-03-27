@@ -205,7 +205,7 @@ class BookshelfFragment2() : BaseBookshelfFragment(R.layout.fragment_bookshelf2)
                 Lifecycle.State.RESUMED,
                 AppDatabase.BOOK_TABLE_NAME
             ).catch {
-                AppLog.put("书架更新出错", it)
+                AppLog.put("Lỗi cập nhật giá sách", it)
             }.conflate().flowOn(Dispatchers.Default).collect { list ->
                 books = list
                 booksAdapter.updateItems(groupId)

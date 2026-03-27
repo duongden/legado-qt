@@ -55,11 +55,11 @@ class CodeEditViewModel(application: Application) : BaseViewModel(application) {
         execute {
             val cacheKey = intent.getStringExtra("cacheKey")
             if (cacheKey != null) {
-                val cacheText = CacheManager.getFromMemory(cacheKey) as? String ?: throw Exception("未获取到查看文本")
+                val cacheText = CacheManager.getFromMemory(cacheKey) as? String ?: throw Exception("Không lấy được văn bản xem")
                 writable = false
                 initialText = cacheText
             } else {
-                initialText = intent.getStringExtra("text") ?: throw Exception("未获取到待编辑文本")
+                initialText = intent.getStringExtra("text") ?: throw Exception("Không lấy được văn bản chờ chỉnh sửa")
             }
             if (isHtmlStr(initialText)) {
                 languageName = "text.html.basic"
@@ -72,7 +72,7 @@ class CodeEditViewModel(application: Application) : BaseViewModel(application) {
         }.onSuccess {
             success.invoke()
         }.onError {
-            context.toastOnUi("error\n${it.localizedMessage}")
+            context.toastOnUi("lỗi\n${it.localizedMessage}")
             it.printOnDebug()
         }
     }
@@ -105,7 +105,7 @@ class CodeEditViewModel(application: Application) : BaseViewModel(application) {
         execute {
             val text = editor.text.toString()
             if (languageName.contains("markdown")) {
-                context.toastOnUi("markdown不需要格式化")
+                context.toastOnUi("Markdown không cần định dạng")
                 return@execute text
             }
             val isHtml = languageName.contains("html")
@@ -158,7 +158,7 @@ class CodeEditViewModel(application: Application) : BaseViewModel(application) {
         }.onSuccess {
             editor.setText(it)
         }.onError {
-            AppLog.put("格式化失败",it, true)
+            AppLog.put("Định dạng thất bại", it, true)
         }
     }
 

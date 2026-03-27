@@ -273,7 +273,7 @@ class ReadMangaActivity : VMBaseActivity<ActivityMangaBinding, ReadMangaViewMode
 
                 if (curFinish) {
                     if (!ReadManga.hasNextChapter) {
-                        loadMoreView.noMore("暂无章节了！")
+                        loadMoreView.noMore("Không còn chương nào!")
                     } else if (nextFinish) {
                         loadMoreView.stopLoad()
                     } else {
@@ -389,7 +389,7 @@ class ReadMangaActivity : VMBaseActivity<ActivityMangaBinding, ReadMangaViewMode
                 binding.tvRetry.isVisible = retry
                 binding.tvMsg.text = msg
             } else {
-                loadMoreView.error(null, "加载失败，点击重试")
+                loadMoreView.error(null, "Tải thất bại, nhấp để thử lại")
             }
         }
     }
@@ -447,7 +447,7 @@ class ReadMangaActivity : VMBaseActivity<ActivityMangaBinding, ReadMangaViewMode
             binding.flLoading.isVisible = true
             viewModel.changeTo(book, toc)
         } else {
-            toastOnUi("所选择的源不是漫画源")
+            toastOnUi("Nguồn đã chọn không phải nguồn truyện tranh")
         }
     }
 

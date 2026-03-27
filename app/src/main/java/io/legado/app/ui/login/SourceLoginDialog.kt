@@ -764,8 +764,8 @@ class SourceLoginDialog : BaseDialogFragment(R.layout.dialog_login, true),
                         dismiss()
                     }
                 } catch (e: Exception) {
-                    AppLog.put("登录出错\n${e.localizedMessage}", e)
-                    context?.toastOnUi("登录出错\n${e.localizedMessage}")
+                    AppLog.put("Lỗi khi đăng nhập\n${e.localizedMessage}", e)
+                    context?.toastOnUi("Lỗi khi đăng nhập\n${e.localizedMessage}")
                     e.printOnDebug()
                 }
             }

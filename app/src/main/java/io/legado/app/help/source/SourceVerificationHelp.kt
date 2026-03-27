@@ -60,14 +60,14 @@ object SourceVerificationHelp {
         var waitUserInput = false
         while (getResult(source.getKey()) == null) {
             if (!waitUserInput && html == null) {
-                AppLog.putDebug("等待返回验证结果...")
+                AppLog.putDebug("Đang chờ kết quả xác minh...")
                 waitUserInput = true
             }
             LockSupport.parkNanos(this, waitTime)
         }
-        val result = getResult(source.getKey()) ?: throw NoStackTraceException("验证结果为空")
+        val result = getResult(source.getKey()) ?: throw NoStackTraceException("Kết quả xác minh trống")
         clearResult(source.getKey())
-        if (result.second.isEmpty()) throw NoStackTraceException("验证结果为空")
+        if (result.second.isEmpty()) throw NoStackTraceException("Kết quả xác minh trống")
         return result
     }
 

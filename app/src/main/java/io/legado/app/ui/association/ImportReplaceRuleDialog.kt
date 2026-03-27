@@ -213,13 +213,13 @@ class ImportReplaceRuleDialog() : BaseDialogFragment(R.layout.dialog_recycler_vi
                 }
                 val localRule = viewModel.checkRules[holder.layoutPosition]
                 tvSourceState.text = when {
-                    localRule == null -> "新增"
+                    localRule == null -> "Thêm mới"
                     item.pattern != localRule.pattern
                             || item.replacement != localRule.replacement
                             || item.isRegex != localRule.isRegex
-                            || item.scope != localRule.scope -> "更新"
+                            || item.scope != localRule.scope -> "Cập nhật"
 
-                    else -> "已有"
+                    else -> "Đã có"
                 }
             }
         }

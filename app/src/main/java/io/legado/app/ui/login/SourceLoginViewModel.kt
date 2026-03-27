@@ -50,7 +50,7 @@ class SourceLoginViewModel(application: Application) : BaseViewModel(application
 
                 else -> {
                     val sourceKey = intent.getStringExtra("key")
-                        ?: throw NoStackTraceException("没有参数")
+                        ?: throw NoStackTraceException("Không có tham số")
                     val type = intent.getStringExtra("type")
                     source = when (type) {
                         "bookSource" ->  appDb.bookSourceDao.getBookSource(sourceKey)
@@ -73,11 +73,11 @@ class SourceLoginViewModel(application: Application) : BaseViewModel(application
             if (it != null) {
                 success.invoke(it)
             } else {
-                context.toastOnUi("未找到书源")
+                context.toastOnUi("Không tìm thấy nguồn sách")
             }
         }.onError {
             error.invoke()
-            AppLog.put("登录 UI 初始化失败\n$it", it, true)
+            AppLog.put("Khởi tạo giao diện đăng nhập thất bại\n$it", it, true)
         }
     }
 

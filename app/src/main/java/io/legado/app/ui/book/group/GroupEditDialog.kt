@@ -117,7 +117,7 @@ class GroupEditDialog() : BaseDialogFragment(R.layout.dialog_book_group_edit) {
             btnOk.onClick {
                 val groupName = tieGroupName.text?.toString()
                 if (groupName.isNullOrEmpty()) {
-                    toastOnUi("分组名称不能为空")
+                    toastOnUi("Tên nhóm không được để trống")
                 } else {
                     val bookSort = binding.spSort.selectedItemPosition - 1
                     val coverPath = binding.ivCover.bitmapPath

@@ -231,7 +231,7 @@ class SearchContentActivity :
                     }
                 }
             }.onFailure {
-                AppLog.put("全文搜索出错\n${it.localizedMessage}", it)
+                AppLog.put("Lỗi khi tìm kiếm nội dung\n${it.localizedMessage}", it)
             }
             binding.tvCurrentSearchInfo.post {
                 binding.fbStop.invisible()

@@ -367,7 +367,7 @@ interface JsExtensions : JsEncodeUtils {
             path.startsWith("http") -> cacheFile(path)
             else -> readTxtFile(path)
         }
-        if (result.isBlank()) throw NoStackTraceException("$path 内容获取失败或者为空")
+        if (result.isBlank()) throw NoStackTraceException("$path không lấy được nội dung hoặc để trống")
         return result
     }
 
@@ -394,7 +394,7 @@ interface JsExtensions : JsEncodeUtils {
             !getFile(cachePath).exists()
         ) {
             val path = downloadFile(urlStr)
-            log("首次下载 $urlStr >> $path")
+            log("Tải xuống lần đầu $urlStr >> $path")
             CacheManager.put(key, path, saveTime)
             readTxtFile(path)
         } else {
@@ -710,7 +710,7 @@ interface JsExtensions : JsEncodeUtils {
         val file = File(aPath)
         val safePath = appCtx.externalCache.parent!!
         if (!file.canonicalPath.startsWith(safePath)) {
-            throw SecurityException("非法路径")
+            throw SecurityException("Đường dẫn không hợp lệ")
         }
         return file
     }
@@ -900,7 +900,7 @@ interface JsExtensions : JsEncodeUtils {
             }
         }
 
-        log("getZipContent 未发现内容")
+        log("getZipContent không tìm thấy nội dung")
         return null
     }
 
@@ -951,7 +951,7 @@ interface JsExtensions : JsEncodeUtils {
         ReplaceWith("queryTTF(data)")
     )
     fun queryBase64TTF(data: String?): QueryTTF? {
-        log("queryBase64TTF(String)方法已过时,并将在未来删除；请无脑使用queryTTF(Any)替代，新方法支持传入 url、本地文件、base64、ByteArray 自动判断&自动缓存，特殊情况需禁用缓存请传入第二可选参数false:Boolean")
+        log("Phương thức queryBase64TTF(String) đã lỗi thời và sẽ bị xóa trong tương lai; vui lòng sử dụng queryTTF(Any) để thay thế, phương thức mới hỗ trợ truyền url, tệp cục bộ, base64, ByteArray để tự động phán đoán & tự động lưu vào bộ nhớ đệm, trường hợp đặc biệt cần tắt bộ nhớ đệm vui lòng truyền tham số thứ hai là false:Boolean")
         return queryTTF(data)
     }
 
@@ -1000,7 +1000,7 @@ interface JsExtensions : JsEncodeUtils {
             if (key != null) AppCacheManager.put(key, qTTF)
             return qTTF
         } catch (e: Exception) {
-            AppLog.put("[queryTTF] 获取字体处理类出错", e)
+            AppLog.put("[queryTTF] Lỗi khi lấy lớp xử lý phông chữ", e)
             throw e
         }
     }
@@ -1128,7 +1128,7 @@ interface JsExtensions : JsEncodeUtils {
         getSource()?.let {
             Debug.log(it.getKey(), msg.toString())
         } ?: Debug.log(msg.toString())
-        AppLog.putDebug("${getTag() ?: "源"}调试输出: $msg")
+        AppLog.putDebug("${getTag() ?: "Nguồn"} đầu ra gỡ lỗi: $msg")
         return msg
     }
 

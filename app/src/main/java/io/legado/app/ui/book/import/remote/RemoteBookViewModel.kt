@@ -105,9 +105,9 @@ class RemoteBookViewModel(application: Application) : BaseViewModel(application)
             }
             isDefaultWebdav = true
             remoteBookWebDav = AppWebDav.defaultBookWebDav
-                ?: throw NoStackTraceException("webDav没有配置")
+                ?: throw NoStackTraceException("WebDav chưa được cấu hình")
         }.onError {
-            context.toastOnUi("初始化webDav出错:${it.localizedMessage}")
+            context.toastOnUi("Lỗi khởi tạo WebDav:${it.localizedMessage}")
         }.onSuccess {
             onSuccess.invoke()
         }
@@ -116,14 +116,14 @@ class RemoteBookViewModel(application: Application) : BaseViewModel(application)
     fun loadRemoteBookList(path: String?, loadCallback: (loading: Boolean) -> Unit) {
         executeLazy {
             val bookWebDav = remoteBookWebDav
-                ?: throw NoStackTraceException("没有配置webDav")
+                ?: throw NoStackTraceException("Chưa cấu hình WebDav")
             dataCallback?.clear()
             val url = path ?: bookWebDav.rootBookUrl
             val bookList = bookWebDav.getRemoteBookList(url)
             dataCallback?.setItems(bookList)
         }.onError {
-            AppLog.put("获取webDav书籍出错\n${it.localizedMessage}", it)
-            context.toastOnUi("获取webDav书籍出错\n${it.localizedMessage}")
+            AppLog.put("Lỗi lấy danh sách sách WebDav\n${it.localizedMessage}", it)
+            context.toastOnUi("Lỗi lấy danh sách sách WebDav\n${it.localizedMessage}")
         }.onStart {
             loadCallback.invoke(true)
         }.onFinally {
@@ -134,7 +134,7 @@ class RemoteBookViewModel(application: Application) : BaseViewModel(application)
     fun addToBookshelf(remoteBooks: HashSet<RemoteBook>, finally: () -> Unit) {
         execute {
             val bookWebDav = remoteBookWebDav
-                ?: throw NoStackTraceException("没有配置webDav")
+                ?: throw NoStackTraceException("Chưa cấu hình WebDav")
             remoteBooks.forEach { remoteBook ->
                 val downloadBookUri = bookWebDav.downloadRemoteBook(remoteBook)
                 LocalBook.importFiles(downloadBookUri).forEach { book ->
@@ -146,8 +146,8 @@ class RemoteBookViewModel(application: Application) : BaseViewModel(application)
                 remoteBook.isOnBookShelf = true
             }
         }.onError {
-            AppLog.put("导入出错\n${it.localizedMessage}", it)
-            context.toastOnUi("导入出错\n${it.localizedMessage}")
+            AppLog.put("Lỗi nhập vào\n${it.localizedMessage}", it)
+            context.toastOnUi("Lỗi nhập vào\n${it.localizedMessage}")
             if (it is SecurityException) {
                 permissionDenialLiveData.postValue(1)
             }

@@ -153,7 +153,7 @@ object VideoPlay : CoroutineScope by MainScope(){
                     }
                 }
             }.onError {
-                AppLog.put("加载视频链接失败", it, true)
+                AppLog.put("Tải liên kết video thất bại", it, true)
             }
             return
         }
@@ -161,7 +161,7 @@ object VideoPlay : CoroutineScope by MainScope(){
         (source as? RssSource)?.let { s ->
             val rssArticle = rssStar?.toRssArticle() ?: rssRecord?.toRssArticle()
             if (rssArticle == null) {
-                appCtx.toastOnUi("未找到订阅")
+                appCtx.toastOnUi("Không tìm thấy đăng ký")
                 return
             }
             val ruleContent = s.ruleContent
@@ -187,14 +187,14 @@ object VideoPlay : CoroutineScope by MainScope(){
                         }
                     }
                 }.onError {
-                    AppLog.put("加载订阅源视频链接失败", it, true)
+                    AppLog.put("Tải liên kết video nguồn đăng ký thất bại", it, true)
                 }
             } else {
                 Rss.getContent(loadScope, rssArticle, ruleContent, s)
                     .onSuccess(IO) { content ->
                         val content = content.trim()
                         val mUrl = if (content.isEmpty()) {
-                            throw ContentEmptyException("正文为空")
+                            throw ContentEmptyException("Nội dung trống")
                         } else if (content.startsWith("<")) { //当作mpd文本
                             val name = MD5Utils.md5Encode(content) + ".mpd"
                             val file = FileUtils.createFileIfNotExist(videoTempFile,name)
@@ -218,14 +218,14 @@ object VideoPlay : CoroutineScope by MainScope(){
                             }
                         }
                     }.onError {
-                        AppLog.put("加载订阅源为链接的正文失败", it, true)
+                        AppLog.put("Tải nội dung nguồn đăng ký dưới dạng liên kết thất bại", it, true)
                     }
             }
             return
         }
         val book = book
         if (book == null) {
-            appCtx.toastOnUi("未找到书籍")
+            appCtx.toastOnUi("Không tìm thấy sách")
             return
         }
         chapter = if (episodes.isNullOrEmpty()) {
@@ -252,7 +252,7 @@ object VideoPlay : CoroutineScope by MainScope(){
             .onSuccess(IO) { content ->
                 val content = content.trim()
                 val mUrl = if (content.isEmpty()) {
-                    throw ContentEmptyException("正文为空")
+                    throw ContentEmptyException("Nội dung trống")
                 } else if (content.startsWith("<")) { //当作mpd文本
                     val name = MD5Utils.md5Encode(content) + ".mpd"
                     val file = FileUtils.createFileIfNotExist(videoTempFile,name)
@@ -281,7 +281,7 @@ object VideoPlay : CoroutineScope by MainScope(){
                     }
                 }
             }.onError {
-                AppLog.put("获取资源链接出错\n$it", it, true)
+                AppLog.put("Lỗi khi lấy liên kết tài nguyên\n$it", it, true)
             }
         isLoading = false
     }
@@ -426,7 +426,7 @@ object VideoPlay : CoroutineScope by MainScope(){
         }
         upEpisodes()
         if (source == null) {
-            appCtx.toastOnUi("未找到源")
+            appCtx.toastOnUi("Không tìm thấy nguồn")
             return false
         }
         record?.let{ //订阅源
@@ -465,11 +465,11 @@ object VideoPlay : CoroutineScope by MainScope(){
         val episodes = episodes ?: return false
         val index = chapterInVolumeIndex + offset
         if (index < 0) {
-            appCtx.toastOnUi("已到开头")
+            appCtx.toastOnUi("Đã đến phần đầu")
             return false
         }
         if (index >= episodes.size) {
-            appCtx.toastOnUi("已播放完")
+            appCtx.toastOnUi("Đã phát xong")
             return false
         }
         chapterInVolumeIndex = index

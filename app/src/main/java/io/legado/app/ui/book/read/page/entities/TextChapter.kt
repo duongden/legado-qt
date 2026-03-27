@@ -267,7 +267,7 @@ data class TextChapter(
 
     fun createLayout(scope: CoroutineScope, book: Book, bookContent: BookContent) {
         if (layout != null) {
-            throw IllegalStateException("已经排版过了")
+            throw IllegalStateException("Đã được bố cục rồi")
         }
         layout = TextChapterLayout(
             scope,

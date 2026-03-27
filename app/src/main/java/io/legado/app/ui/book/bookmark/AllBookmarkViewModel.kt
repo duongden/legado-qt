@@ -30,9 +30,9 @@ class AllBookmarkViewModel(application: Application) : BaseViewModel(application
                 GSON.writeToOutputStream(it, appDb.bookmarkDao.all)
             }
         }.onError {
-            AppLog.put("导出失败\n${it.localizedMessage}", it, true)
+            AppLog.put("Xuất thất bại\n${it.localizedMessage}", it, true)
         }.onSuccess {
-            context.toastOnUi("导出成功")
+            context.toastOnUi("Xuất thành công")
         }
     }
 
@@ -53,14 +53,14 @@ class AllBookmarkViewModel(application: Application) : BaseViewModel(application
                         outputStream.write("## ${it.bookName} ${it.bookAuthor}\n\n".toByteArray())
                     }
                     outputStream.write("#### ${it.chapterName}\n\n".toByteArray())
-                    outputStream.write("###### 原文\n ${it.bookText}\n\n".toByteArray())
-                    outputStream.write("###### 摘要\n ${it.content}\n\n".toByteArray())
+                    outputStream.write("###### Văn bản gốc\n ${it.bookText}\n\n".toByteArray())
+                    outputStream.write("###### Tóm tắt\n ${it.content}\n\n".toByteArray())
                 }
             }
         }.onError {
-            AppLog.put("导出失败\n${it.localizedMessage}", it, true)
+            AppLog.put("Xuất thất bại\n${it.localizedMessage}", it, true)
         }.onSuccess {
-            context.toastOnUi("导出成功")
+            context.toastOnUi("Xuất thành công")
         }
     }
 

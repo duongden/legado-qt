@@ -190,12 +190,12 @@ object AudioPlay : CoroutineScope by MainScope() {
                     .onSuccess { content ->
                         val content = content.trim()
                         if (content.isEmpty()) {
-                            appCtx.toastOnUi("未获取到资源链接")
+                            appCtx.toastOnUi("Không lấy được liên kết tài nguyên")
                         } else {
                             contentLoadFinish(chapter, content)
                         }
                     }.onError {
-                        AppLog.put("获取资源链接出错\n$it", it, true)
+                        AppLog.put("Lỗi khi lấy liên kết tài nguyên\n$it", it, true)
                         upLoading(false)
                     }.onCancel {
                         removeLoading(index)

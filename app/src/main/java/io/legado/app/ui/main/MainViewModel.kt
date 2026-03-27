@@ -167,7 +167,7 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
                     cacheBook()
                 }
             }.catch {
-                AppLog.put("更新目录出错\n${it.localizedMessage}", it)
+                AppLog.put("Lỗi cập nhật mục lục\n${it.localizedMessage}", it)
             }.collect()
         }
     }
@@ -211,7 +211,7 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
             addDownload(source, book)
         }.onFailure {
             currentCoroutineContext().ensureActive()
-            AppLog.put("${book.name} 更新目录失败\n${it.localizedMessage}", it)
+            AppLog.put("${book.name} Cập nhật mục lục thất bại\n${it.localizedMessage}", it)
             //这里可能因为时间太长书籍信息已经更改,所以重新获取
             appDb.bookDao.getBook(book.bookUrl)?.let { book ->
                 book.addType(BookType.updateError)

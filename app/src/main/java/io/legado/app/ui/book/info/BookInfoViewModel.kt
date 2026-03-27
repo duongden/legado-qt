@@ -84,7 +84,7 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
                 upBook(it)
                 return@execute
             }
-            throw NoStackTraceException("未找到书籍")
+            throw NoStackTraceException("Không tìm thấy sách")
         }.onError {
             AppLog.put(it.localizedMessage, it)
             context.toastOnUi(it.localizedMessage)
@@ -144,7 +144,7 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
                 book.tocUrl = ""
                 book.getRemoteUrl()?.let {
                     val bookWebDav = AppWebDav.defaultBookWebDav
-                        ?: throw NoStackTraceException("webDav没有配置")
+                        ?: throw NoStackTraceException("Chưa cấu hình WebDAV")
                     val remoteBook = bookWebDav.getRemoteBook(it)
                     if (remoteBook == null) {
                         book.origin = BookType.localTag
@@ -167,7 +167,7 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
                 }
 
                 else -> {
-                    AppLog.put("下载远程书籍<${book.name}>失败", it)
+                    AppLog.put("Tải sách từ xa <${book.name}> thất bại", it)
                 }
             }
         }.onFinally {
@@ -213,7 +213,7 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
                         loadChapter(it, runPreUpdateJs, isFromBookInfo = true)
                     }
                 }.onError {
-                    AppLog.put("获取书籍信息失败\n${it.localizedMessage}", it)
+                    AppLog.put("Lấy thông tin sách thất bại\n${it.localizedMessage}", it)
                     context.toastOnUi(R.string.error_get_book_info)
                 }
         }
@@ -236,7 +236,7 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
                     chapterListData.postValue(it)
                 }
             }.onError {
-                context.toastOnUi("LoadTocError:${it.localizedMessage}")
+                context.toastOnUi("Lỗi tải mục lục:${it.localizedMessage}")
             }
         } else {
             val bookSource = bookSource ?: let {
@@ -264,7 +264,7 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
                     chapterListData.postValue(it)
                 }.onError {
                     chapterListData.postValue(emptyList())
-                    AppLog.put("获取目录失败\n${it.localizedMessage}", it)
+                    AppLog.put("Lấy mục lục thất bại\n${it.localizedMessage}", it)
                     context.toastOnUi(R.string.error_get_chapter_list)
                 }
         }
@@ -283,7 +283,7 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
         execute {
             webFiles.clear()
             val fileNameNoExtension = if (book.author.isBlank()) book.name
-            else "${book.name} 作者：${book.author}"
+            else "${book.name} Tác giả: ${book.author}"
             book.downloadUrls!!.map {
                 val analyzeUrl = AnalyzeUrl(
                     it, source = bookSource,
@@ -297,10 +297,10 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
                 WebFile(it, mFileName)
             }
         }.onError {
-            context.toastOnUi("LoadWebFileError\n${it.localizedMessage}")
+            context.toastOnUi("Lỗi tải tệp web\n${it.localizedMessage}")
         }.onSuccess {
             webFiles.addAll(it)
-            book.latestChapterTitle = "已下载"
+            book.latestChapterTitle = "Đã tải xuống"
             bookData.postValue(book)
             chapterListData.postValue(emptyList())
         }
@@ -332,8 +332,8 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
             when (it) {
                 is NoBooksDirException -> actionLive.postValue("selectBooksDir")
                 else -> {
-                    AppLog.put("ImportWebFileError\n${it.localizedMessage}", it)
-                    context.toastOnUi("ImportWebFileError\n${it.localizedMessage}")
+                    AppLog.put("Lỗi nhập tệp web\n${it.localizedMessage}", it)
+                    context.toastOnUi("Lỗi nhập tệp web\n${it.localizedMessage}")
                     webFiles.remove(webFile)
                 }
             }
@@ -348,8 +348,8 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
                 AppPattern.bookFileRegex.matches(it)
             }
         }.onError {
-            AppLog.put("getArchiveEntriesName Error:\n${it.localizedMessage}", it)
-            context.toastOnUi("getArchiveEntriesName Error:\n${it.localizedMessage}")
+            AppLog.put("Lỗi lấy tên mục lưu trữ:\n${it.localizedMessage}", it)
+            context.toastOnUi("Lỗi lấy tên mục lưu trữ:\n${it.localizedMessage}")
         }.onSuccess {
             onSuccess.invoke(it)
         }
@@ -372,8 +372,8 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
             val book = changeToLocalBook(it)
             success?.invoke(book)
         }.onError {
-            AppLog.put("importArchiveBook Error:\n${it.localizedMessage}", it)
-            context.toastOnUi("importArchiveBook Error:\n${it.localizedMessage}")
+            AppLog.put("Lỗi nhập sách lưu trữ:\n${it.localizedMessage}", it)
+            context.toastOnUi("Lỗi nhập sách lưu trữ:\n${it.localizedMessage}")
         }
     }
 
@@ -506,7 +506,7 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
         }.onSuccess {
             context.toastOnUi(R.string.clear_cache_success)
         }.onError {
-            context.toastOnUi("清理缓存出错\n${it.localizedMessage}")
+            context.toastOnUi("Lỗi xóa bộ nhớ đệm\n${it.localizedMessage}")
         }
     }
 

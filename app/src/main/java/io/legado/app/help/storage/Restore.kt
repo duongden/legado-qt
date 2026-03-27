@@ -80,15 +80,15 @@ object Restore {
                 ZipUtils.unZipToPath(File(uri.path!!), Backup.backupPath)
             }
         }.onFailure {
-            AppLog.put("复制解压文件出错\n${it.localizedMessage}", it)
+            AppLog.put("Lỗi khi sao chép và giải nén tệp\n${it.localizedMessage}", it)
             return
         }
         kotlin.runCatching {
             restoreLocked(Backup.backupPath)
             LocalConfig.lastBackup = System.currentTimeMillis()
         }.onFailure {
-            appCtx.toastOnUi("恢复备份出错\n${it.localizedMessage}")
-            AppLog.put("恢复备份出错\n${it.localizedMessage}", it)
+            appCtx.toastOnUi("Lỗi khi khôi phục bản sao lưu\n${it.localizedMessage}")
+            AppLog.put("Lỗi khi khôi phục bản sao lưu\n${it.localizedMessage}", it)
         }
     }
 
@@ -194,7 +194,7 @@ object Restore {
                 appDb.serverDao.insert(*it.toTypedArray())
             }
         }?.onFailure {
-            AppLog.put("恢复服务器配置出错\n${it.localizedMessage}", it)
+            AppLog.put("Lỗi khi khôi phục cấu hình máy chủ\n${it.localizedMessage}", it)
         }
         File(path, DirectLinkUpload.ruleFileName).takeIf {
             it.exists()
@@ -202,7 +202,7 @@ object Restore {
             val json = readText()
             ACache.get(cacheDir = false).put(DirectLinkUpload.ruleFileName, json)
         }?.onFailure {
-            AppLog.put("恢复直链上传出错\n${it.localizedMessage}", it)
+            AppLog.put("Lỗi khi khôi phục tải lên liên kết trực tiếp\n${it.localizedMessage}", it)
         }
         //恢复主题配置
         File(path, ThemeConfig.configFileName).takeIf {
@@ -212,7 +212,7 @@ object Restore {
             copyTo(File(ThemeConfig.configFilePath))
             ThemeConfig.upConfig()
         }?.onFailure {
-            AppLog.put("恢复主题出错\n${it.localizedMessage}", it)
+            AppLog.put("Lỗi khi khôi phục chủ đề\n${it.localizedMessage}", it)
         }
         File(path, BookCover.configFileName).takeIf {
             it.exists()
@@ -220,7 +220,7 @@ object Restore {
             val json = readText()
             BookCover.saveCoverRule(json)
         }?.onFailure {
-            AppLog.put("恢复封面规则出错\n${it.localizedMessage}", it)
+            AppLog.put("Lỗi khi khôi phục quy tắc ảnh bìa\n${it.localizedMessage}", it)
         }
         if (!BackupConfig.ignoreReadConfig) {
             //恢复阅读界面配置
@@ -231,7 +231,7 @@ object Restore {
                 copyTo(File(ReadBookConfig.configFilePath))
                 ReadBookConfig.initConfigs()
             }?.onFailure {
-                AppLog.put("恢复阅读界面出错\n${it.localizedMessage}", it)
+                AppLog.put("Lỗi khi khôi phục giao diện đọc\n${it.localizedMessage}", it)
             }
             File(path, ReadBookConfig.shareConfigFileName).takeIf {
                 it.exists()
@@ -240,7 +240,7 @@ object Restore {
                 copyTo(File(ReadBookConfig.shareConfigFilePath))
                 ReadBookConfig.initShareConfig()
             }?.onFailure {
-                AppLog.put("恢复阅读界面出错\n${it.localizedMessage}", it)
+                AppLog.put("Lỗi khi khôi phục giao diện đọc\n${it.localizedMessage}", it)
             }
         }
         //AppWebDav.downBgs()
@@ -322,8 +322,8 @@ object Restore {
                 LogUtils.d(TAG, "阅读恢复备份 $fileName 文件不存在")
             }
         } catch (e: Exception) {
-            AppLog.put("$fileName\n读取解析出错\n${e.localizedMessage}", e)
-            appCtx.toastOnUi("$fileName\n读取文件出错\n${e.localizedMessage}")
+            AppLog.put("$fileName\nLỗi khi đọc và phân tích\n${e.localizedMessage}", e)
+            appCtx.toastOnUi("$fileName\nLỗi khi đọc tệp\n${e.localizedMessage}")
         }
         return null
     }

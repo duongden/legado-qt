@@ -66,7 +66,7 @@ class SourcePickerDialog : BaseDialogFragment(R.layout.dialog_source_picker),
 
     private fun initView() {
         binding.toolBar.setBackgroundColor(primaryColor)
-        binding.toolBar.title = "选择书源"
+        binding.toolBar.title = "Chọn nguồn sách"
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = adapter
         searchView.applyTint(primaryTextColor)
@@ -91,7 +91,7 @@ class SourcePickerDialog : BaseDialogFragment(R.layout.dialog_source_picker),
                 searchKey.isNullOrEmpty() -> appDb.bookSourceDao.flowEnabled()
                 else -> appDb.bookSourceDao.flowSearchEnabled(searchKey)
             }.catch {
-                AppLog.put("书源选择界面获取书源数据失败\n${it.localizedMessage}", it)
+                AppLog.put("Lấy dữ liệu tại giao diện chọn nguồn thất bại\n${it.localizedMessage}", it)
             }.flowOn(IO).collect {
                 adapter.setItems(it)
             }

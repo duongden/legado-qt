@@ -203,7 +203,7 @@ class ReplaceRuleActivity : VMBaseActivity<ActivityReplaceRuleBinding, ReplaceRu
                     appDb.replaceRuleDao.flowSearch("%$searchKey%")
                 }
             }.catch {
-                AppLog.put("替换规则管理界面更新数据出错", it)
+                AppLog.put("Lỗi khi cập nhật dữ liệu tại giao diện quản lý quy tắc thay thế", it)
             }.flowOn(IO).conflate().collect {
                 if (dataInit) {
                     setResult(RESULT_OK)

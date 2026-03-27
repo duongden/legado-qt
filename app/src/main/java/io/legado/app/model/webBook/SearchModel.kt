@@ -61,7 +61,7 @@ class SearchModel(private val scope: CoroutineScope, private val callBack: CallB
             searchBooks.clear()
             bookSourceParts = callBack.getSearchScope().getBookSourceParts()
             if (bookSourceParts.isEmpty()) {
-                callBack.onSearchCancel(NoStackTraceException("启用书源为空"))
+                callBack.onSearchCancel(NoStackTraceException("Nguồn sách đã bật trống"))
                 return
             }
             mSearchId = searchId
@@ -108,7 +108,7 @@ class SearchModel(private val scope: CoroutineScope, private val callBack: CallB
             }.onCompletion {
                 if (it == null) callBack.onSearchFinish(searchBooks.isEmpty(), hasMore)
             }.catch {
-                AppLog.put("书源搜索出错\n${it.localizedMessage}", it)
+                AppLog.put("Lỗi tìm kiếm nguồn sách\n${it.localizedMessage}", it)
             }.collect()
         }
     }

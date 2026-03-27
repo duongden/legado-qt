@@ -156,7 +156,7 @@ class ExploreFragment() : VMBaseFragment<ExploreViewModel>(R.layout.fragment_exp
                 Lifecycle.State.RESUMED,
                 AppDatabase.BOOK_SOURCE_TABLE_NAME
             ).catch {
-                AppLog.put("发现界面更新数据出错", it)
+                AppLog.put("Lỗi cập nhật dữ liệu giao diện khám phá", it)
             }.conflate().flowOn(IO).collect {
                 binding.tvEmptyMsg.isGone = it.isNotEmpty() || searchView.query.isNotEmpty()
                 adapter.setItems(it, diffItemCallBack)

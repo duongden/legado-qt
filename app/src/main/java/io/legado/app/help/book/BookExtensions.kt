@@ -87,7 +87,7 @@ val Book.isNotShelf: Boolean
 
 val Book.archiveName: String
     get() {
-        if (!isArchive) throw NoStackTraceException("Book is not deCompressed from archive")
+        if (!isArchive) throw NoStackTraceException("Sách không được giải nén từ kho lưu trữ")
         // local_book::archive.rar
         // webDav::https://...../archive.rar
         return origin.substringAfter("::").substringAfterLast("/")
@@ -111,7 +111,7 @@ private val localUriCache by lazy {
 
 fun Book.getLocalUri(): Uri {
     if (!isLocal) {
-        throw NoStackTraceException("不是本地书籍")
+        throw NoStackTraceException("Không phải sách địa phương")
     }
     var uri = localUriCache[bookUrl]
     if (uri != null) {
@@ -137,7 +137,7 @@ fun Book.getLocalUri(): Uri {
         val treeUri = defaultBookDir.toUri()
         val treeFileDoc = FileDoc.fromUri(treeUri, true)
         if (!treeFileDoc.exists()) {
-            appCtx.toastOnUi("书籍保存目录失效，请重新设置！")
+            appCtx.toastOnUi("Thư mục lưu trữ sách không hợp lệ, vui lòng thiết lập lại!")
         } else {
             val fileDoc = treeFileDoc.find(originName, 5, 100)
             if (fileDoc != null) {
@@ -319,7 +319,7 @@ fun Book.isSameNameAuthor(other: Any?): Boolean {
 fun Book.getExportFileName(suffix: String): String {
     val jsStr = AppConfig.bookExportFileName
     if (jsStr.isNullOrBlank()) {
-        return "$name 作者：${getRealAuthor()}.$suffix"
+        return "$name Tác giả: ${getRealAuthor()}.$suffix"
     }
     val bindings = buildScriptBindings { bindings ->
         bindings["epubIndex"] = ""// 兼容老版本,修复可能存在的错误
@@ -329,8 +329,8 @@ fun Book.getExportFileName(suffix: String): String {
     return kotlin.runCatching {
         RhinoScriptEngine.eval(jsStr, bindings).toString() + "." + suffix
     }.onFailure {
-        AppLog.put("导出书名规则错误,使用默认规则\n${it.localizedMessage}", it)
-    }.getOrDefault("$name 作者：${getRealAuthor()}.$suffix")
+        AppLog.put("Lỗi quy tắc tên sách khi xuất, sử dụng quy tắc mặc định\n${it.localizedMessage}", it)
+    }.getOrDefault("$name Tác giả: ${getRealAuthor()}.$suffix")
 }
 
 /**
@@ -342,7 +342,7 @@ fun Book.getExportFileName(
     jsStr: String? = AppConfig.episodeExportFileName
 ): String {
     // 默认规则
-    val default = "$name 作者：${getRealAuthor()} [${epubIndex}].$suffix"
+    val default = "$name Tác giả: ${getRealAuthor()} [${epubIndex}].$suffix"
     if (jsStr.isNullOrBlank()) {
         return default
     }
@@ -354,7 +354,7 @@ fun Book.getExportFileName(
     return kotlin.runCatching {
         RhinoScriptEngine.eval(jsStr, bindings).toString() + "." + suffix
     }.onFailure {
-        AppLog.put("导出书名规则错误,使用默认规则\n${it.localizedMessage}", it)
+        AppLog.put("Lỗi quy tắc tên sách khi xuất, sử dụng quy tắc mặc định\n${it.localizedMessage}", it)
     }.getOrDefault(default).normalizeFileName()
 }
 

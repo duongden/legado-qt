@@ -74,9 +74,9 @@ abstract class BaseReadBookActivity :
                     book.bookUrl = doc.uri.toString()
                     book.save()
                     viewModel.loadChapterList(book)
-                } ?: ReadBook.upMsg("找不到文件")
+                } ?: ReadBook.upMsg("Không tìm thấy tệp")
             }
-        } ?: ReadBook.upMsg("没有权限访问")
+        } ?: ReadBook.upMsg("Không có quyền truy cập")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -98,7 +98,7 @@ abstract class BaseReadBookActivity :
         viewModel.permissionDenialLiveData.observe(this) {
             selectBookFolderResult.launch {
                 mode = HandleFileContract.DIR_SYS
-                title = "选择书籍所在文件夹"
+                title = "Chọn thư mục chứa sách"
             }
         }
         if (!LocalConfig.readHelpVersionIsLast) {

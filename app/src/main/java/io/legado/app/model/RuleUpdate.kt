@@ -46,7 +46,7 @@ object RuleUpdate {
                 0 -> GSON.fromJsonArray<BookSource>(it).getOrThrow().let { lists ->
                     val source = lists.firstOrNull() ?: return@let
                     if (source.bookSourceUrl.isEmpty()) {
-                        throw NoStackTraceException("不是书源")
+                        throw NoStackTraceException("Không phải nguồn sách")
                     }
                     lists.forEach { list ->
                         val localSource = appDb.bookSourceDao.getBookSourcePart(list.bookSourceUrl)
@@ -68,7 +68,7 @@ object RuleUpdate {
                 1 -> GSON.fromJsonArray<RssSource>(it).getOrThrow().let { lists ->
                     val source = lists.firstOrNull() ?: return@let
                     if (source.sourceUrl.isEmpty()) {
-                        throw NoStackTraceException("不是订阅源")
+                        throw NoStackTraceException("Không phải nguồn đăng ký")
                     }
                     lists.forEach { list ->
                         val localSource = appDb.rssSourceDao.getByKey(list.sourceUrl)

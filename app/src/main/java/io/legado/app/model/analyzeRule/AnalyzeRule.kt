@@ -94,7 +94,7 @@ class AnalyzeRule(
 
     @JvmOverloads
     fun setContent(content: Any?, baseUrl: String? = null): AnalyzeRule {
-        if (content == null) throw AssertionError("内容不可空（Content cannot be null）")
+        if (content == null) throw AssertionError("Nội dung không thể để trống (Content cannot be null)")
         this.content = content
         isJSON = when (content) {
             is Node -> false
@@ -467,7 +467,7 @@ class AnalyzeRule(
                 .getOrNull()
                 ?.let {
                     if (!loggedNonStandardJSON) {
-                        Debug.log("≡@put 规则 JSON 格式不规范，请改为规范格式")
+                        Debug.log("≡Định dạng JSON của quy tắc @put không chuẩn, vui lòng đổi sang định dạng chuẩn")
                         loggedNonStandardJSON = true
                     }
                     putMap.putAll(it)
@@ -793,7 +793,7 @@ class AnalyzeRule(
      */
     fun put(key: String, value: String): String {
         if (key == "bookName" || key == "title") {
-            Debug.log("≡变量 $key 在特定情况下会被覆盖，建议使用其他键名")
+            Debug.log("≡Biến $key sẽ bị ghi đè trong một số trường hợp nhất định, nên sử dụng tên khóa khác")
         }
         chapter?.putVariable(key, value)
             ?: book?.putVariable(key, value)

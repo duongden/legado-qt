@@ -129,12 +129,12 @@ class ReadAloudDialog : BaseDialogFragment(R.layout.dialog_read_aloud) {
         }
         ivTimer.setOnClickListener {
             AppConfig.ttsTimer = seekTimer.progress
-            toastOnUi("保存设定时间成功！")
+            toastOnUi("Lưu thiết lập thời gian thành công!")
         }
         tvTimer.setOnClickListener {
             val times = intArrayOf(0, 5, 10, 15, 30, 60, 90, 180)
-            val timeKeys = times.map { "$it 分钟" }
-            context?.selector("设定时间", timeKeys) { _, index ->
+            val timeKeys = times.map { "$it phút" }
+            context?.selector("Thiết lập thời gian", timeKeys) { _, index ->
                 ReadAloud.setTimer(requireContext(), times[index])
             }
         }

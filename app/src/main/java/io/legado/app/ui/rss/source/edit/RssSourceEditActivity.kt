@@ -378,7 +378,7 @@ class RssSourceEditActivity :
                 EditEntity(
                     "shouldOverrideUrlLoading",
                     rs.shouldOverrideUrlLoading,
-                    "url跳转拦截(js, 返回true拦截,js变量url,可以通过js打开url,比如调用阅读搜索,添加书架等,简化规则写法,不用webView js注入)"
+                    "Chặn chuyển hướng URL (js, trả về true để chặn, biến js 'url', có thể mở url qua js, ví dụ: gọi tìm kiếm đọc sách, thêm vào kệ sách, v.v., đơn giản hóa cách viết quy tắc, không cần tiêm js vào webView)"
                 )
             )
         }
@@ -470,7 +470,7 @@ class RssSourceEditActivity :
         viewModel.save(getRssSource()) { source ->
             lifecycleScope.launch {
                 var comment =
-                    source.getDisplayVariableComment("源变量可在js中通过source.getVariable()获取")
+                    source.getDisplayVariableComment("Biến nguồn có thể lấy được qua source.getVariable() trong js")
                 val variable = withContext(Dispatchers.IO) { source.getVariable() }
                 if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
                     comment = withContext(Dispatchers.IO) {
@@ -488,18 +488,17 @@ class RssSourceEditActivity :
             }
         }
     }
-
     override fun setVariable(key: String, variable: String?) {
         viewModel.rssSource?.setVariable(variable)
     }
 
     override fun helpActions(): List<SelectItem<String>> {
         return arrayListOf(
-            SelectItem("插入URL参数", "urlOption"),
-            SelectItem("订阅源教程", "ruleHelp"),
-            SelectItem("js教程", "jsHelp"),
-            SelectItem("正则教程", "regexHelp"),
-            SelectItem("选择文件", "selectFile"),
+            SelectItem("Chèn tham số URL", "urlOption"),
+            SelectItem("Hướng dẫn nguồn đăng ký", "ruleHelp"),
+            SelectItem("Hướng dẫn JS", "jsHelp"),
+            SelectItem("Hướng dẫn Regex", "regexHelp"),
+            SelectItem("Chọn tệp", "selectFile"),
         )
     }
 

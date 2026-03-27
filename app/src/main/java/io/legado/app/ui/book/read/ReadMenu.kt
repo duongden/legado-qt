@@ -526,7 +526,7 @@ class ReadMenu @JvmOverloads constructor(
                         if (confirmSkipToChapter) {
                             callBack.skipToChapter(seekBar.progress)
                         } else {
-                            context.alert("章节跳转确认", "确定要跳转章节吗？") {
+                            context.alert("Xác nhận chuyển chương", "Bạn có chắc chắn muốn chuyển chương không?") {
                                 yesButton {
                                     confirmSkipToChapter = true
                                     callBack.skipToChapter(seekBar.progress)

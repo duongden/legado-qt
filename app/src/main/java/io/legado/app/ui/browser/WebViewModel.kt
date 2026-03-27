@@ -47,7 +47,7 @@ class WebViewModel(application: Application) : BaseViewModel(application) {
         execute {
             this@WebViewModel.intent = intent
             val url = intent.getStringExtra("url")
-                ?: throw NoStackTraceException("url不能为空")
+                ?: throw NoStackTraceException("url không thể để trống")
             sourceName = intent.getStringExtra("sourceName") ?: ""
             sourceOrigin = intent.getStringExtra("sourceOrigin") ?: ""
             sourceType = intent.getIntExtra("sourceType", SourceType.book)
@@ -78,7 +78,7 @@ class WebViewModel(application: Application) : BaseViewModel(application) {
         }.onSuccess {
             success.invoke()
         }.onError {
-            context.toastOnUi("error\n${it.localizedMessage}")
+            context.toastOnUi("lỗi\n${it.localizedMessage}")
             it.printOnDebug()
         }
     }
@@ -96,9 +96,9 @@ class WebViewModel(application: Application) : BaseViewModel(application) {
             } ?: throw Throwable("NULL")
         }.onError {
             ACache.get().remove(imagePathKey)
-            context.toastOnUi("保存图片失败:${it.localizedMessage}")
+            context.toastOnUi("Lưu ảnh thất bại: ${it.localizedMessage}")
         }.onSuccess {
-            context.toastOnUi("保存成功")
+            context.toastOnUi("Lưu thành công")
         }
     }
 

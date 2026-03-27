@@ -623,7 +623,7 @@ class ReadBookActivity : BaseReadBookActivity(),
                             textChapter.chapter.getFileName("nr")
                         )
                     ) {
-                        toastOnUi("未找到可移除的重复标题")
+                        toastOnUi("Không tìm thấy tiêu đề lặp lại để xóa")
                     }
                 }
                 viewModel.reverseRemoveSameTitle()
@@ -1291,7 +1291,7 @@ class ReadBookActivity : BaseReadBookActivity(),
         if (book.isLocal) return
         val chapter = appDb.bookChapterDao.getChapter(book.bookUrl, ReadBook.durChapterIndex)
         if (chapter == null) {
-            toastOnUi("no chapter")
+            toastOnUi("không tìm thấy chương")
             return
         }
         alert(R.string.chapter_pay) {
@@ -1335,7 +1335,7 @@ class ReadBookActivity : BaseReadBookActivity(),
                         }
                     }
                 }.onError {
-                    AppLog.put("执行购买操作出错\n${it.localizedMessage}", it, true)
+                    AppLog.put("Lỗi khi thực hiện thao tác mua\n${it.localizedMessage}", it, true)
                 }
             }
             noButton()
@@ -1366,7 +1366,7 @@ class ReadBookActivity : BaseReadBookActivity(),
                         }
                     }
                 }.onError {
-                    AppLog.put("执行图片链接click键值出错\n${it.localizedMessage}", it, true)
+                    AppLog.put("Lỗi khi thực hiện click liên kết hình ảnh\n${it.localizedMessage}", it, true)
                 }
                 return true
             }
@@ -1383,7 +1383,7 @@ class ReadBookActivity : BaseReadBookActivity(),
                     evalJS(jsStr, urlNoOption)
                 }
             }.onError {
-                AppLog.put("执行图片链接js键值出错\n${it.localizedMessage}", it, true)
+                AppLog.put("Lỗi khi thực hiện js liên kết hình ảnh\n${it.localizedMessage}", it, true)
             }
             return true
         }
@@ -1405,7 +1405,7 @@ class ReadBookActivity : BaseReadBookActivity(),
                 }
             }
         }.onError {
-            AppLog.put("执行图片链接click键值出错\n${it.localizedMessage}", it, true)
+            AppLog.put("Lỗi khi thực hiện click liên kết hình ảnh\n${it.localizedMessage}", it, true)
         }
     }
 

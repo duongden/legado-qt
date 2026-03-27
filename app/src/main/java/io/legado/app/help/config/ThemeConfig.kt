@@ -116,7 +116,7 @@ object ThemeConfig {
             val fileRoot = context.externalFiles
             val filePath = FileUtils.getPath(fileRoot, preferenceKey, name)
             if (!FileUtils.exist(filePath)) {
-                appCtx.toastOnUi("未缓存在线背景图\n请重新应用主题")
+                appCtx.toastOnUi("Ảnh nền trực tuyến chưa được lưu vào bộ nhớ tạm\nVui lòng áp dụng lại chủ đề")
                 return null
             }
             path = filePath
@@ -252,7 +252,7 @@ object ThemeConfig {
                 }
                 val fileImg = File(fileFold, name)
                 if (!fileImg.exists()) {
-                    appCtx.toastOnUi("下载背景图片中...")
+                    appCtx.toastOnUi("Đang tải ảnh nền...")
                     Coroutine.async {
                         kotlin.runCatching {
                             val res = okHttpClient.newCallResponse(0) {
@@ -264,7 +264,7 @@ object ThemeConfig {
                                 }
                             }
                         }.onSuccess {
-                            appCtx.toastOnUi("背景图下载成功\n请重新应用主题")
+                            appCtx.toastOnUi("Tải ảnh nền thành công\nVui lòng áp dụng lại chủ đề")
                         }.onFailure {
                             appCtx.toastOnUi(it.localizedMessage)
                         }
@@ -295,7 +295,7 @@ object ThemeConfig {
             AppConfig.isNightTheme = isNightTheme
             applyDayNight(context)
         } catch (e: Exception) {
-            AppLog.put("设置主题出错\n$e", e, true)
+            AppLog.put("Lỗi khi thiết lập chủ đề\n$e", e, true)
         }
     }
 

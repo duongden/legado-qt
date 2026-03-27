@@ -141,7 +141,7 @@ abstract class BaseBookshelfFragment(layoutId: Int) : VMBaseFragment<BookshelfVi
             if (count < 0) {
                 waitDialog.dismiss()
             } else {
-                waitDialog.setText("添加中... ($count)")
+                waitDialog.setText("Đang thêm... (\$count)")
             }
         }
     }
@@ -155,7 +155,7 @@ abstract class BaseBookshelfFragment(layoutId: Int) : VMBaseFragment<BookshelfVi
             customView { alertBinding.root }
             okButton {
                 alertBinding.editView.text?.toString()?.let {
-                    waitDialog.setText("添加中...")
+                    waitDialog.setText("Đang thêm...")
                     waitDialog.show()
                     viewModel.addBookByUrl(it)
                 }

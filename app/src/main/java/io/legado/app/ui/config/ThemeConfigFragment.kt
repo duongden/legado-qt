@@ -348,7 +348,7 @@ class ThemeConfigFragment : PreferenceFragment(),
         if (uri.scheme?.lowercase() in listOf("http", "https")) {
             lifecycleScope.launch {
                 kotlin.runCatching {
-                    appCtx.toastOnUi("下载背景图片中...")
+                    appCtx.toastOnUi("Đang tải ảnh nền...")
                     val analyzeUrl = AnalyzeUrl(uri.toString())
                     val url = analyzeUrl.urlNoQuery
                     var file = requireContext().externalFiles
@@ -380,7 +380,7 @@ class ThemeConfigFragment : PreferenceFragment(),
                         success()
                     }
                 }.onSuccess {
-                    appCtx.toastOnUi("设定成功")
+                    appCtx.toastOnUi("Thiết lập thành công")
                 }.onFailure {
                     appCtx.toastOnUi(it.localizedMessage)
                 }

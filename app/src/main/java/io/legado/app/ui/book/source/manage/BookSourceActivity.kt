@@ -382,7 +382,7 @@ class BookSourceActivity : VMBaseActivity<ActivityBookSourceBinding, BookSourceV
                 lifecycle,
                 table = AppDatabase.BOOK_SOURCE_TABLE_NAME
             ).catch {
-                AppLog.put("书源界面更新书源出错", it)
+                AppLog.put("Lỗi khi cập nhật thư viện nguồn tại giao diện nguồn sách", it)
             }.flowOn(IO).conflate().collect { data ->
                 adapter.setItems(data, adapter.diffItemCallback, !Debug.isChecking)
                 itemTouchCallback.isCanDrag =
@@ -646,9 +646,9 @@ class BookSourceActivity : VMBaseActivity<ActivityBookSourceBinding, BookSourceV
                 bundleOf(Pair("checkSourceMessage", null))
             )
             groups.forEach { group ->
-                if (group.contains("失效") && searchView.query.isEmpty()) {
-                    searchView.setQuery("失效", true)
-                    toastOnUi("发现有失效书源，已为您自动筛选！")
+                if (group.contains("Bị lỗi") && searchView.query.isEmpty()) {
+                    searchView.setQuery("Bị lỗi", true)
+                    toastOnUi("Phát hiện có nguồn sách bị lỗi, đã tự động lọc cho bạn!")
                 }
             }
         }

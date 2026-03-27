@@ -37,7 +37,7 @@ object RssParserByRule {
         Debug.log(sourceUrl, body, state = 10)
         var ruleArticles = rssSource.ruleArticles
         if (ruleArticles.isNullOrBlank()) {
-            Debug.log(sourceUrl, "⇒列表规则为空, 使用默认规则解析")
+            Debug.log(sourceUrl, "⇒Quy tắc danh sách trống, sử dụng quy tắc mặc định để phân tích")
             return RssParserDefault.parseXML(sortName, body, sourceUrl)
         } else {
             val articleList = mutableListOf<RssArticle>()
@@ -50,11 +50,11 @@ object RssParserByRule {
                 reverse = true
                 ruleArticles = ruleArticles.substring(1)
             }
-            Debug.log(sourceUrl, "┌获取列表")
+            Debug.log(sourceUrl, "┌Lấy danh sách")
             val collections = analyzeRule.getElements(ruleArticles)
-            Debug.log(sourceUrl, "└列表大小:${collections.size}")
+            Debug.log(sourceUrl, "└Kích thước danh sách:${collections.size}")
             if (!rssSource.ruleNextPage.isNullOrEmpty()) {
-                Debug.log(sourceUrl, "┌获取下一页链接")
+                Debug.log(sourceUrl, "┌Lấy liên kết trang tiếp theo")
                 if (rssSource.ruleNextPage!!.uppercase(Locale.getDefault()) == "PAGE") {
                     nextUrl = sortUrl
                 } else {
@@ -111,18 +111,18 @@ object RssParserByRule {
         Debug.log(sourceUrl, "┌获取标题", log)
         rssArticle.title = analyzeRule.getString(ruleTitle)
         Debug.log(sourceUrl, "└${rssArticle.title}", log)
-        Debug.log(sourceUrl, "┌获取时间", log)
+        Debug.log(sourceUrl, "┌Lấy thời gian", log)
         rssArticle.pubDate = analyzeRule.getString(rulePubDate)
         Debug.log(sourceUrl, "└${rssArticle.pubDate}", log)
-        Debug.log(sourceUrl, "┌获取描述", log)
+        Debug.log(sourceUrl, "┌Lấy mô tả", log)
         if (ruleDescription.isEmpty()) {
             rssArticle.description = null
-            Debug.log(sourceUrl, "└描述规则为空，将会解析内容页", log)
+            Debug.log(sourceUrl, "└Quy tắc mô tả trống, sẽ phân tích trang nội dung", log)
         } else {
             rssArticle.description = analyzeRule.getString(ruleDescription)
             Debug.log(sourceUrl, "└${rssArticle.description}", log)
         }
-        Debug.log(sourceUrl, "┌获取图片url", log)
+        Debug.log(sourceUrl, "┌Lấy url hình ảnh", log)
         try {
             analyzeRule.getString(ruleImage).let {
                 if (it.isNotEmpty()) {
@@ -133,7 +133,7 @@ object RssParserByRule {
         } catch (e: Exception) {
             Debug.log(sourceUrl, "└${e.localizedMessage}", log)
         }
-        Debug.log(sourceUrl, "┌获取文章链接", log)
+        Debug.log(sourceUrl, "┌Lấy liên kết bài viết", log)
         rssArticle.link = analyzeRule.getString(ruleLink, isUrl = true)
         Debug.log(sourceUrl, "└${rssArticle.link}", log)
         rssArticle.type = type

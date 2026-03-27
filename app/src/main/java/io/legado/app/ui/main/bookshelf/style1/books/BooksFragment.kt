@@ -243,7 +243,7 @@ class BooksFragment() : BaseFragment(R.layout.fragment_books),
                 Lifecycle.State.RESUMED,
                 AppDatabase.BOOK_TABLE_NAME
             ).catch {
-                AppLog.put("书架更新出错", it)
+                AppLog.put("Lỗi cập nhật giá sách", it)
             }.conflate().flowOn(Dispatchers.Default).collect { list ->
                 itemCount = list.size
                 val spanCount = bookshelfLayout

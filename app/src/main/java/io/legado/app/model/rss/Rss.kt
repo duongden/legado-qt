@@ -76,7 +76,7 @@ object Rss {
             }
         }
         checkRedirect(rssSource, res)
-        Debug.log(rssSource.sourceUrl, "≡获取成功:${analyzeUrl.ruleUrl}")
+        Debug.log(rssSource.sourceUrl, "≡Lấy thành công:${analyzeUrl.ruleUrl}")
         return RssParserByRule.parseXML(sortName, sortUrl, res.url, res.body, rssSource, ruleData)
     }
 
@@ -131,7 +131,7 @@ object Rss {
             }
         }
         checkRedirect(rssSource, res)
-        Debug.log(rssSource.sourceUrl, "≡获取成功:${rssSource.sourceUrl}")
+        Debug.log(rssSource.sourceUrl, "≡Lấy thành công:${rssSource.sourceUrl}")
         Debug.log(rssSource.sourceUrl, res.body ?: "", state = 20)
         val analyzeRule = AnalyzeRule(rssArticle, rssSource)
         analyzeRule.setContent(res.body)
@@ -147,8 +147,8 @@ object Rss {
     private fun checkRedirect(rssSource: RssSource, response: StrResponse) {
         response.raw.priorResponse?.let {
             if (it.isRedirect) {
-                Debug.log(rssSource.sourceUrl, "≡检测到重定向(${it.code})")
-                Debug.log(rssSource.sourceUrl, "┌重定向后地址")
+                Debug.log(rssSource.sourceUrl, "≡Phát hiện chuyển hướng(${it.code})")
+                Debug.log(rssSource.sourceUrl, "┌Địa chỉ sau khi chuyển hướng")
                 Debug.log(rssSource.sourceUrl, "└${response.url}")
             }
         }

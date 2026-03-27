@@ -83,7 +83,7 @@ object ReadBookConfig {
                 val json = configFile.readText()
                 configs = GSON.fromJsonArray<Config>(json).getOrThrow()
             } catch (e: Exception) {
-                AppLog.put("读取排版配置文件出错", e)
+                AppLog.put("Lỗi khi đọc tệp cấu hình dàn trang", e)
             }
         }
         (configs ?: DefaultData.readConfigs).let {

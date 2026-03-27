@@ -156,7 +156,7 @@ object CacheBook {
 
     val downloadSummary: String
         get() {
-            return "正在下载:${onDownloadCount}|等待中:${waitCount}|失败:${errorDownloadMap.count()}|成功:${successDownloadSet.size}"
+            return "Đang tải:${onDownloadCount}|Chờ:${waitCount}|Thất bại:${errorDownloadMap.count()}|Thành công:${successDownloadSet.size}"
         }
 
     val isRun: Boolean
@@ -272,7 +272,7 @@ object CacheBook {
                 waitDownloadSet.add(chapter.index)
             } else {
                 AppLog.put(
-                    "下载${book.name}-${chapter.title}失败\n${error.localizedMessage}",
+                    "Tải ${book.name}-${chapter.title} thất bại\n${error.localizedMessage}",
                     error
                 )
             }
@@ -368,7 +368,7 @@ object CacheBook {
                 //Error occurred, wait 1s then re-add to download list
                 delay(1000)
                 onPostError(chapter, it)
-                downloadFinish(chapter, "获取正文失败\n${it.localizedMessage}")
+                downloadFinish(chapter, "Lấy nội dung thất bại\n${it.localizedMessage}")
             }.onCancel {
                 onCancel(chapterIndex)
             }.onFinally {
@@ -396,7 +396,7 @@ object CacheBook {
                 onError(chapter, e)
                 ReadBook.downloadFailChapters[chapter.index] =
                     (ReadBook.downloadFailChapters[chapter.index] ?: 0) + 1
-                return "获取正文失败\n${e.localizedMessage}"
+                return "Lấy nội dung thất bại\n${e.localizedMessage}"
             } finally {
                 postEvent(EventBus.UP_DOWNLOAD, book.bookUrl)
             }
@@ -431,7 +431,7 @@ object CacheBook {
                 onError(chapter, it)
                 ReadBook.downloadFailChapters[chapter.index] =
                     (ReadBook.downloadFailChapters[chapter.index] ?: 0) + 1
-                downloadFinish(chapter, "获取正文失败\n${it.localizedMessage}", resetPageOffset)
+                downloadFinish(chapter, "Lấy nội dung thất bại\n${it.localizedMessage}", resetPageOffset)
             }.onCancel {
                 onCancel(chapter.index)
                 downloadFinish(chapter, "download canceled", resetPageOffset, true)

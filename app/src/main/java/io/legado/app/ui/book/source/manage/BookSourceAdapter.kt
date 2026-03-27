@@ -39,7 +39,7 @@ class BookSourceAdapter(
     ItemTouchCallback.Callback {
 
     private val selected = linkedSetOf<BookSourcePart>()
-    private val finalMessageRegex = Regex("成功|失败")
+    private val finalMessageRegex = Regex("Thành công|Thất bại")
     private val handler = buildMainHandler()
     var showSourceHost = false
 
@@ -235,7 +235,7 @@ class BookSourceAdapter(
         val isEmpty = msg.isEmpty()
         var isFinalMessage = msg.contains(finalMessageRegex)
         if (!Debug.isChecking && !isFinalMessage) {
-            Debug.updateFinalMessage(item.bookSourceUrl, "校验失败")
+            Debug.updateFinalMessage(item.bookSourceUrl, "Xác thực thất bại")
             ivDebugText.text = Debug.debugMessageMap[item.bookSourceUrl] ?: ""
             isFinalMessage = true
         }

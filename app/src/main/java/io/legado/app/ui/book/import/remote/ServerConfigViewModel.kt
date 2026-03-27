@@ -34,7 +34,7 @@ class ServerConfigViewModel(application: Application): BaseViewModel(application
         }.onSuccess {
             onSuccess.invoke()
         }.onError {
-            context.toastOnUi("保存出错\n${it.localizedMessage}")
+            context.toastOnUi("Lỗi khi lưu\n${it.localizedMessage}")
         }
     }
 

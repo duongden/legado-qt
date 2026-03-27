@@ -72,7 +72,7 @@ class RuleSubActivity : BaseActivity<ActivityRuleSubBinding>(),
     private fun initData() {
         lifecycleScope.launch {
             appDb.ruleSubDao.flowAll().catch {
-                AppLog.put("规则订阅界面获取数据失败\n${it.localizedMessage}", it)
+                AppLog.put("Lỗi lấy dữ liệu giao diện đăng ký quy tắc\n${it.localizedMessage}", it)
             }.flowOn(IO).conflate().collect {
                 binding.tvEmptyMsg.isGone = it.isNotEmpty()
                 adapter.setItems(it)

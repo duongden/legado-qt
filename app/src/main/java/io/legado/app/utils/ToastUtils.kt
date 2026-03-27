@@ -12,6 +12,9 @@ import io.legado.app.help.config.AppConfig
 import io.legado.app.lib.theme.bottomBackground
 import io.legado.app.lib.theme.getPrimaryTextColor
 import splitties.systemservices.layoutInflater
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
 
 private var toast: Toast? = null
 
@@ -24,15 +27,27 @@ fun Context.toastOnUi(message: Int, duration: Int = Toast.LENGTH_SHORT) {
 @SuppressLint("InflateParams")
 @Suppress("DEPRECATION")
 fun Context.toastOnUi(message: CharSequence?, duration: Int = Toast.LENGTH_SHORT) {
+    if (message == null) return
+    if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+        kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+            val translated = io.legado.app.utils.TranslateUtils.translateContent(message.toString())
+            showActualToast(this@toastOnUi, translated, duration)
+        }
+    } else {
+        showActualToast(this, message, duration)
+    }
+}
+
+private fun showActualToast(context: Context, message: CharSequence, duration: Int) {
     runOnUI {
         kotlin.runCatching {
             toast?.cancel()
-            toast = Toast(this)
-            val isLight = ColorUtils.isColorLight(bottomBackground)
-            ViewToastBinding.inflate(layoutInflater).run {
+            toast = Toast(context)
+            val isLight = ColorUtils.isColorLight(context.bottomBackground)
+            ViewToastBinding.inflate(context.layoutInflater).run {
                 toast?.view = root
-                cvToast.setCardBackgroundColor(bottomBackground)
-                tvText.setTextColor(getPrimaryTextColor(isLight))
+                cvToast.setCardBackgroundColor(context.bottomBackground)
+                tvText.setTextColor(context.getPrimaryTextColor(isLight))
                 tvText.text = message
             }
             toast?.duration = duration
@@ -42,13 +57,24 @@ fun Context.toastOnUi(message: CharSequence?, duration: Int = Toast.LENGTH_SHORT
 }
 
 fun Context.toastOnUiLegacy(message: CharSequence) {
+    if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+        kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+            val translated = io.legado.app.utils.TranslateUtils.translateContent(message.toString())
+            showActualToastLegacy(this@toastOnUiLegacy, translated, Toast.LENGTH_SHORT)
+        }
+    } else {
+        showActualToastLegacy(this, message, Toast.LENGTH_SHORT)
+    }
+}
+
+private fun showActualToastLegacy(context: Context, message: CharSequence, duration: Int) {
     runOnUI {
         kotlin.runCatching {
             if (toastLegacy == null || BuildConfig.DEBUG || AppConfig.recordLog) {
-                toastLegacy = Toast.makeText(this, message, Toast.LENGTH_SHORT)
+                toastLegacy = Toast.makeText(context, message, duration)
             } else {
                 toastLegacy?.setText(message)
-                toastLegacy?.duration = Toast.LENGTH_SHORT
+                toastLegacy?.duration = duration
             }
             toastLegacy?.show()
         }
@@ -64,16 +90,13 @@ fun Context.longToastOnUi(message: CharSequence?) {
 }
 
 fun Context.longToastOnUiLegacy(message: CharSequence) {
-    runOnUI {
-        kotlin.runCatching {
-            if (toastLegacy == null || BuildConfig.DEBUG || AppConfig.recordLog) {
-                toastLegacy = Toast.makeText(this, message, Toast.LENGTH_LONG)
-            } else {
-                toastLegacy?.setText(message)
-                toastLegacy?.duration = Toast.LENGTH_LONG
-            }
-            toastLegacy?.show()
+    if (io.legado.app.utils.TranslateUtils.isTranslateEnabled()) {
+        kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+            val translated = io.legado.app.utils.TranslateUtils.translateContent(message.toString())
+            showActualToastLegacy(this@longToastOnUiLegacy, translated, Toast.LENGTH_LONG)
         }
+    } else {
+        showActualToastLegacy(this, message, Toast.LENGTH_LONG)
     }
 }
 

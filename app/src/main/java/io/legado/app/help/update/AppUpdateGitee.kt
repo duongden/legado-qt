@@ -36,16 +36,16 @@ object AppUpdateGitee : AppUpdate.AppUpdateInterface {
             url(lastReleaseUrl)
         }
         if (!res.isSuccessful) {
-            throw NoStackTraceException("获取新版本出错(${res.code})")
+            throw NoStackTraceException("Lỗi khi lấy phiên bản mới (${res.code})")
         }
         val body = res.body.text()
         if (body.isBlank()) {
-            throw NoStackTraceException("获取新版本出错")
+            throw NoStackTraceException("Lỗi khi lấy phiên bản mới")
         }
         if (!checkVariant.isBeta()) {
             return GSON.fromJsonArray<GiteeRelease>(body)
                 .getOrElse {
-                    throw NoStackTraceException("获取新版本出错 " + it.localizedMessage)
+                    throw NoStackTraceException("Lỗi khi lấy phiên bản mới " + it.localizedMessage)
                 }
                 .first { !it.prerelease }
                 .gitReleaseToAppReleaseInfo()
@@ -53,7 +53,7 @@ object AppUpdateGitee : AppUpdate.AppUpdateInterface {
         }
         return GSON.fromJsonObject<GiteeRelease>(body)
             .getOrElse {
-                throw NoStackTraceException("获取新版本出错 " + it.localizedMessage)
+                throw NoStackTraceException("Lỗi khi lấy phiên bản mới " + it.localizedMessage)
             }
             .gitReleaseToAppReleaseInfo()
             .sortedByDescending { it.createdAt }
@@ -80,7 +80,7 @@ object AppUpdateGitee : AppUpdate.AppUpdateInterface {
                         it.name
                     )
                 }
-            throw NoStackTraceException("已是最新版本")
+            throw NoStackTraceException("Đã là phiên bản mới nhất")
         }.timeout(10000)
     }
 }

@@ -97,10 +97,10 @@ class ImportBookViewModel(application: Application) : BaseViewModel(application)
             }
             LocalBook.importFiles(fileUris)
         }.onError {
-            context.toastOnUi("添加书架失败，请尝试重新选择文件夹")
-            AppLog.put("添加书架失败\n${it.localizedMessage}", it)
+            context.toastOnUi("Thêm vào giá sách thất bại, vui lòng thử chọn lại thư mục")
+            AppLog.put("Thêm vào giá sách thất bại\n${it.localizedMessage}", it)
         }.onSuccess {
-            context.toastOnUi("添加书架成功")
+            context.toastOnUi("Thêm vào giá sách thành công")
         }.onFinally {
             finally.invoke()
         }
@@ -127,7 +127,7 @@ class ImportBookViewModel(application: Application) : BaseViewModel(application)
             }
             dataCallback?.setItems(docList!!)
         }.onError {
-            context.toastOnUi("获取文件列表出错\n${it.localizedMessage}")
+            context.toastOnUi("Lấy danh sách tệp bị lỗi\n${it.localizedMessage}")
         }
     }
 
@@ -157,7 +157,7 @@ class ImportBookViewModel(application: Application) : BaseViewModel(application)
             }.takeWhile {
                 n > 0
             }.catch {
-                context.toastOnUi("扫描文件夹出错\n${it.localizedMessage}")
+                context.toastOnUi("Quét thư mục bị lỗi\n${it.localizedMessage}")
             }.collect()
     }
 

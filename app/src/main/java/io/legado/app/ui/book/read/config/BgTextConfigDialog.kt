@@ -87,7 +87,7 @@ class BgTextConfigDialog : BaseDialogFragment(R.layout.dialog_read_bg_text) {
     private val adapter by lazy { BgAdapter(requireContext(), secondaryTextColor) }
     private var primaryTextColor = 0
     private var secondaryTextColor = 0
-    private val importFormNet = "网络导入"
+    private val importFormNet = "Nhập từ mạng"
     private val selectBgImage = registerForActivityResult(HandleFileContract()) {
         it.uri?.let { uri ->
             setBgFromUri(uri)
@@ -154,7 +154,7 @@ class BgTextConfigDialog : BaseDialogFragment(R.layout.dialog_read_bg_text) {
         if (ReadBook.book?.isImage == true) {
             spUnderline.isGone = true
         } else {
-            val textStyles = arrayOf("关闭", "实线", "虚线")
+            val textStyles = arrayOf("Tắt", "Nét liền", "Nét đứt")
             val adapter = object : ArrayAdapter<String>(requireContext(), R.layout.item_text_common, textStyles) {
                 override fun getDropDownView(
                     position: Int,
@@ -205,7 +205,7 @@ class BgTextConfigDialog : BaseDialogFragment(R.layout.dialog_read_bg_text) {
 
     @SuppressLint("InflateParams")
     private fun initData() = with(ReadBookConfig.durConfig) {
-        binding.tvName.text = name.ifBlank { "文字" }
+        binding.tvName.text = name.ifBlank { "Văn bản" }
         binding.swDarkStatusIcon.isChecked = curStatusIconDark()
         binding.spUnderline.setSelectionSafely(underlineMode)
         binding.sbBgAlpha.progress = bgAlpha
@@ -232,7 +232,7 @@ class BgTextConfigDialog : BaseDialogFragment(R.layout.dialog_read_bg_text) {
         binding.tvRestore.setOnClickListener {
             val defaultConfigs = DefaultData.readConfigs
             val layoutNames = defaultConfigs.map { it.name }
-            context?.selector("选择预设布局", layoutNames) { _, i ->
+            context?.selector("Chọn bố cục có sẵn", layoutNames) { _, i ->
                 if (i >= 0) {
                     ReadBookConfig.durConfig = defaultConfigs[i].copy()
                     initData()
@@ -292,7 +292,7 @@ class BgTextConfigDialog : BaseDialogFragment(R.layout.dialog_read_bg_text) {
                 postEvent(EventBus.UP_CONFIG, arrayListOf(1, 2, 5))
                 dismissAllowingStateLoss()
             } else {
-                toastOnUi("数量已是最少,不能删除.")
+                toastOnUi("Số lượng đã là tối thiểu, không thể xóa.")
             }
         }
         binding.sbBgAlpha.setOnSeekBarChangeListener(object : SeekBarChangeListener {
@@ -353,11 +353,11 @@ class BgTextConfigDialog : BaseDialogFragment(R.layout.dialog_read_bg_text) {
                 }
             }
         }.onSuccess {
-            toastOnUi("导出成功, 文件名为 $exportFileName")
+            toastOnUi("Xuất thành công, tên tệp là $exportFileName")
         }.onError {
             it.printOnDebug()
-            AppLog.put("导出失败:${it.localizedMessage}", it)
-            longToast("导出失败:${it.localizedMessage}")
+            AppLog.put("Xuất thất bại:${it.localizedMessage}", it)
+            longToast("Xuất thất bại:${it.localizedMessage}")
         }
     }
 
@@ -376,7 +376,7 @@ class BgTextConfigDialog : BaseDialogFragment(R.layout.dialog_read_bg_text) {
 
     @SuppressLint("InflateParams")
     private fun importNetConfigAlert() {
-        alert("输入地址") {
+        alert("Nhập địa chỉ") {
             val alertBinding = DialogEditTextBinding.inflate(layoutInflater)
             customView { alertBinding.root }
             okButton {
@@ -405,7 +405,7 @@ class BgTextConfigDialog : BaseDialogFragment(R.layout.dialog_read_bg_text) {
             importConfig(uri.readBytes(requireContext()))
         }.onError {
             it.printOnDebug()
-            longToast("导入失败:${it.localizedMessage}")
+            longToast("Nhập thất bại:${it.localizedMessage}")
         }
     }
 
@@ -415,10 +415,10 @@ class BgTextConfigDialog : BaseDialogFragment(R.layout.dialog_read_bg_text) {
         }.onSuccess {
             ReadBookConfig.durConfig = it
             postEvent(EventBus.UP_CONFIG, arrayListOf(1, 2, 5))
-            toastOnUi("导入成功")
+            toastOnUi("Nhập thành công")
         }.onError {
             it.printOnDebug()
-            longToast("导入失败:${it.localizedMessage}")
+            longToast("Nhập thất bại:${it.localizedMessage}")
         }
     }
 
@@ -426,7 +426,7 @@ class BgTextConfigDialog : BaseDialogFragment(R.layout.dialog_read_bg_text) {
         if (uri.scheme?.lowercase() in listOf("http", "https")) {
             lifecycleScope.launch {
                 kotlin.runCatching {
-                    appCtx.toastOnUi("下载图片中...")
+                    appCtx.toastOnUi("Đang tải hình ảnh...")
                     val analyzeUrl = AnalyzeUrl(uri.toString())
                     val url = analyzeUrl.urlNoQuery
                     var file = requireContext().externalFiles
@@ -456,7 +456,7 @@ class BgTextConfigDialog : BaseDialogFragment(R.layout.dialog_read_bg_text) {
                     ReadBookConfig.durConfig.setCurBg(2, fileName)
                     postEvent(EventBus.UP_CONFIG, arrayListOf(1))
                 }.onSuccess {
-                    appCtx.toastOnUi("设定成功")
+                    appCtx.toastOnUi("Thiết lập thành công")
                 }.onFailure {
                     appCtx.toastOnUi(it.localizedMessage)
                 }

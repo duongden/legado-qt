@@ -46,7 +46,7 @@ class AllBookmarkActivity : VMBaseActivity<ActivityAllBookmarkBinding, AllBookma
         initView()
         lifecycleScope.launch {
             appDb.bookmarkDao.flowAll().catch {
-                AppLog.put("所有书签界面获取数据失败\n${it.localizedMessage}", it)
+                AppLog.put("Giao diện tất cả dấu trang lấy dữ liệu thất bại\n${it.localizedMessage}", it)
             }.flowOn(IO).collect {
                 adapter.setItems(it)
             }

@@ -14,7 +14,7 @@ import io.legado.app.ui.widget.text.StrokeTextView
 
 class ChineseConverter(context: Context, attrs: AttributeSet?) : StrokeTextView(context, attrs) {
 
-    private val spannableString = SpannableString("简/繁")
+    private val spannableString = SpannableString("Giản/Phồn")
     private var enabledSpan: ForegroundColorSpan = ForegroundColorSpan(context.accentColor)
     private var onChanged: (() -> Unit)? = null
 

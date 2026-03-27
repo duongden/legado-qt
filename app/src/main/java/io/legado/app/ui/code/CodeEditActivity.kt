@@ -337,10 +337,10 @@ class CodeEditActivity :
 
     override fun helpActions(): List<SelectItem<String>> {
         return arrayListOf(
-            SelectItem("书源教程", "ruleHelp"),
-            SelectItem("订阅源教程", "rssRuleHelp"),
-            SelectItem("js教程", "jsHelp"),
-            SelectItem("正则教程", "regexHelp")
+            SelectItem("Hướng dẫn nguồn sách", "ruleHelp"),
+            SelectItem("Hướng dẫn nguồn đăng ký", "rssRuleHelp"),
+            SelectItem("Hướng dẫn JS", "jsHelp"),
+            SelectItem("Hướng dẫn Regex", "regexHelp")
         )
     }
 

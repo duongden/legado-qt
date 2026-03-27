@@ -109,7 +109,7 @@ class SearchMenu @JvmOverloads constructor(
     fun updateSearchInfo() {
         ReadBook.curTextChapter?.let {
             binding.tvCurrentSearchInfo.text =
-                """${context.getString(R.string.search_content_size)}: ${searchResultList.size} / 当前章节: ${it.title}"""
+                """${context.getString(R.string.search_content_size)}: ${searchResultList.size} / Chương hiện tại: ${it.title}"""
         }
     }
 

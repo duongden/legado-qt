@@ -49,7 +49,7 @@ object AppFreezeMonitor {
                 val extra = elapsed - 3000
 
                 if (extra > 300) {
-                    LogUtils.d(TAG, "检测到应用被系统冻结，时长：$extra 毫秒")
+                    LogUtils.d(TAG, "Phát hiện ứng dụng bị hệ thống đóng băng, thời gian: $extra mili giây")
                 }
 
                 previous = current

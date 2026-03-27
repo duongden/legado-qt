@@ -205,7 +205,7 @@ class BookshelfManageActivity :
     private fun initGroupData() {
         lifecycleScope.launch {
             appDb.bookGroupDao.flowAll().catch {
-                AppLog.put("书架管理界面获取分组数据失败\n${it.localizedMessage}", it)
+                AppLog.put("Lỗi khi lấy dữ liệu nhóm tại giao diện quản lý kệ sách\n${it.localizedMessage}", it)
             }.flowOn(IO).conflate().collect {
                 groupList.clear()
                 groupList.addAll(it)
@@ -242,7 +242,7 @@ class BookshelfManageActivity :
                     }
                 }
             }.catch {
-                AppLog.put("书架管理界面获取书籍列表失败\n${it.localizedMessage}", it)
+                AppLog.put("Lỗi khi lấy danh sách sách tại giao diện quản lý kệ sách\n${it.localizedMessage}", it)
             }.flowOn(IO)
                 .conflate().collect {
                     books = it

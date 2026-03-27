@@ -91,8 +91,8 @@ class ChangeChapterSourceDialog() : BaseDialogFragment(R.layout.dialog_chapter_c
             val searchGroup = AppConfig.searchGroup
             if (searchGroup.isNotEmpty()) {
                 lifecycleScope.launch {
-                    context?.alert("搜索结果为空") {
-                        setMessage("${searchGroup}分组搜索结果为空,是否切换到全部分组")
+                    context?.alert("Kết quả tìm kiếm trống") {
+                        setMessage("Kết quả tìm kiếm trong nhóm ${searchGroup} trống, bạn có muốn chuyển sang tất cả các nhóm không?")
                         noButton()
                         yesButton {
                             AppConfig.searchGroup = ""
@@ -318,7 +318,7 @@ class ChangeChapterSourceDialog() : BaseDialogFragment(R.layout.dialog_chapter_c
             binding.recyclerViewToc.scrollToPosition(tocAdapter.durChapterIndex - 5)
         }, {
             binding.clToc.gone()
-            AppLog.put("单章换源获取目录出错\n$it", it, true)
+            AppLog.put("Lỗi khi lấy danh mục để thay đổi nguồn từng chương\n$it", it, true)
         })
     }
 

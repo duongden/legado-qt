@@ -58,13 +58,13 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
                 book != null -> initManga(book)
                 else -> {
                     ReadManga.loadFail(context.getString(R.string.no_book), false)
-                    AppLog.put("未找到漫画书籍\nbookUrl:$bookUrl")
+                    AppLog.put("Không tìm thấy truyện tranh\nbookUrl:$bookUrl")
                 }
             }
         }.onSuccess {
             success?.invoke()
         }.onError {
-            val msg = "初始化数据失败\n${it.localizedMessage}"
+            val msg = "Khởi tạo dữ liệu thất bại\n${it.localizedMessage}"
             AppLog.put(msg, it)
         }.onFinally {
             ReadManga.saveRead()
@@ -149,7 +149,7 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
             return true
         } catch (e: Throwable) {
             currentCoroutineContext().ensureActive()
-            ReadManga.mCallback?.loadFail("详情页出错: ${e.localizedMessage}")
+            ReadManga.mCallback?.loadFail("Lỗi tại trang chi tiết: ${e.localizedMessage}")
             return false
         }
     }
@@ -192,12 +192,12 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
             }.take(1).onEach { (book, toc) ->
                 changeTo(book, toc)
             }.onEmpty {
-                throw NoStackTraceException("没有合适书源")
+                throw NoStackTraceException("Không tìm thấy nguồn phù hợp")
             }.onCompletion {
                 // 换源完成
             }.catch {
-                AppLog.put("自动换源失败\n${it.localizedMessage}", it)
-                context.toastOnUi("自动换源失败\n${it.localizedMessage}")
+                AppLog.put("Tự động đổi nguồn thất bại\n${it.localizedMessage}", it)
+                context.toastOnUi("Tự động đổi nguồn thất bại\n${it.localizedMessage}")
             }.collect()
         }
     }
@@ -213,7 +213,7 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
         execute {
             AppWebDav.getBookProgress(book)
         }.onError {
-            AppLog.put("拉取阅读进度失败《${book.name}》\n${it.localizedMessage}", it)
+            AppLog.put("Lấy tiến trình đọc thất bại 《${book.name}》\n${it.localizedMessage}", it)
         }.onSuccess { progress ->
             progress ?: return@onSuccess
             if (progress.durChapterIndex == book.durChapterIndex && progress.durChapterPos == book.durChapterPos) {
@@ -226,8 +226,8 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
                 alertSync?.invoke(progress)
             } else if (progress.durChapterIndex < book.simulatedTotalChapterNum()) {
                 ReadManga.setProgress(progress)
-                AppLog.put("自动同步阅读进度成功《${book.name}》 ${progress.durChapterTitle}")
-                context.toastOnUi("已同步最新漫画阅读进度")
+                AppLog.put("Tự động đồng bộ tiến trình đọc thành công 《${book.name}》 ${progress.durChapterTitle}")
+                context.toastOnUi("Đã đồng bộ tiến trình đọc truyện tranh mới nhất")
             }
         }
     }
@@ -247,7 +247,7 @@ class ReadMangaViewModel(application: Application) : BaseViewModel(application) 
             ReadManga.resetData(book)
             ReadManga.loadContent()
         }.onError {
-            AppLog.put("换源失败\n$it", it, true)
+            AppLog.put("Đổi nguồn thất bại\n$it", it, true)
         }.onFinally {
             postEvent(EventBus.SOURCE_CHANGED, book.bookUrl)
         }
